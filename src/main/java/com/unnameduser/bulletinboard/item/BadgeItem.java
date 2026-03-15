@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
@@ -36,11 +35,9 @@ public class BadgeItem extends Item {
             nbt.put("NoteData", note.toNbt());
 
             if (!world.isClient) {
-                // Удаляем старую записку
                 otherHand.decrement(1);
-                // Удаляем метку
                 stack.decrement(1);
-                // Добавляем новую записку с меткой
+
                 if (!player.getInventory().insertStack(newNote)) {
                     player.dropItem(newNote, false);
                 }

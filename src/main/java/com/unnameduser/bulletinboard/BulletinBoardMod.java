@@ -96,7 +96,6 @@ public class BulletinBoardMod implements ModInitializer {
 		registerBlock("bulletin_board", BULLETIN_BOARD);
 
 		ModBlockEntities.register();
-
 		ModPackets.register();
 
 		Registry.register(Registries.ITEM_GROUP,

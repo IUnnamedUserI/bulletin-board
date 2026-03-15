@@ -17,7 +17,6 @@ public class NoteEditorScreen extends Screen {
     private TextFieldWidget contentField;
     private final ItemStack notePaper;
 
-    // 🔧 Кнопка-переключатель вместо CheckboxWidget
     private boolean isAnonymous = false;
     private ButtonWidget anonymousButton;
 
@@ -36,7 +35,6 @@ public class NoteEditorScreen extends Screen {
         int centerX = this.width / 2;
         int startY = this.height / 2 - 40;
 
-        // Поле для заголовка
         this.titleField = new TextFieldWidget(
                 this.textRenderer,
                 centerX - 100,
@@ -48,7 +46,6 @@ public class NoteEditorScreen extends Screen {
         this.titleField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.title_placeholder"));
         this.addSelectableChild(this.titleField);
 
-        // Поле для текста
         this.contentField = new TextFieldWidget(
                 this.textRenderer,
                 centerX - 100,
@@ -60,7 +57,6 @@ public class NoteEditorScreen extends Screen {
         this.contentField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.content_placeholder"));
         this.addSelectableChild(this.contentField);
 
-        // 🔧 Кнопка анонимности (вместо CheckboxWidget)
         this.anonymousButton = ButtonWidget.builder(
                         getAnonymousButtonText(),
                         button -> {
@@ -74,7 +70,6 @@ public class NoteEditorScreen extends Screen {
 
         this.setInitialFocus(this.titleField);
 
-        // Кнопки Сохранить/Отмена
         this.addDrawableChild(
                 ButtonWidget.builder(
                                 Text.translatable("gui.bulletin-board.note_editor.save"),
@@ -94,7 +89,6 @@ public class NoteEditorScreen extends Screen {
         );
     }
 
-    // 🔧 Формирование текста кнопки с галочкой
     private Text getAnonymousButtonText() {
         String checkBox = isAnonymous ? "[✓]" : "[ ]";
         return Text.literal(checkBox + " " +
@@ -106,25 +100,19 @@ public class NoteEditorScreen extends Screen {
         String content = contentField.getText().trim();
 
         if (!title.isEmpty() && !content.isEmpty()) {
-            // 🔧 Используем значение кнопки-переключателя
             String author = isAnonymous ?
                     Text.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
                     this.client.player.getName().getString();
 
-            // 🔧 Создаём записку с выбранным цветом метки
             NoteData note = new NoteData(title, content, author, -1);
 
-            // Создаём NBT
             NbtCompound nbt = new NbtCompound();
             nbt.put("NoteData", note.toNbt());
 
-            // 🔧 Находим слот в инвентаре
             int slot = findSlotIndex();
 
-            // 🔧 Обновляем предмет на клиенте
             this.notePaper.setNbt(nbt);
 
-            // 🔧 Отправляем на сервер для синхронизации
             if (slot >= 0) {
                 ModPackets.sendUpdateNoteNbt(slot, nbt);
             }
@@ -133,7 +121,6 @@ public class NoteEditorScreen extends Screen {
         }
     }
 
-    // 🔧 Поиск слота в инвентаре по ссылке на предмет
     private int findSlotIndex() {
         if (this.client == null || this.client.player == null) return -1;
         var inventory = this.client.player.getInventory();
@@ -153,12 +140,10 @@ public class NoteEditorScreen extends Screen {
         int centerX = this.width / 2;
         int startY = this.height / 2 - 40;
 
-        // Заголовок экрана (переводимый)
         context.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.bulletin-board.note_editor.title"),
                 this.width / 2, 20, 0xFFFFFF);
 
-        // Подписи полей (переводимые)
         context.drawText(this.textRenderer,
                 Text.translatable("gui.bulletin-board.note_editor.title_label"),
                 centerX - 100, startY - 12, 0xFFFFFF, false);
@@ -166,7 +151,6 @@ public class NoteEditorScreen extends Screen {
                 Text.translatable("gui.bulletin-board.note_editor.content_label"),
                 centerX - 100, startY + 23, 0xFFFFFF, false);
 
-        // Счётчики символов
         String titleCounter = String.format("%d/%d",
                 this.titleField.getText().length(), TITLE_MAX_LENGTH);
         context.drawText(this.textRenderer, Text.literal(titleCounter),
@@ -179,7 +163,6 @@ public class NoteEditorScreen extends Screen {
                 centerX + 100 - this.textRenderer.getWidth(contentCounter), startY + 23,
                 this.contentField.getText().length() >= CONTENT_MAX_LENGTH ? 0xFF5555 : 0xAAAAAA, false);
 
-        // Поля ввода
         this.titleField.render(context, mouseX, mouseY, delta);
         this.contentField.render(context, mouseX, mouseY, delta);
 
@@ -188,7 +171,6 @@ public class NoteEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Enter сохраняет
         if (keyCode == GLFW.GLFW_KEY_ENTER) {
             this.saveNote();
             return true;

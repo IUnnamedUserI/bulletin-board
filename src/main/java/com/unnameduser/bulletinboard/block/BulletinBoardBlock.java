@@ -16,7 +16,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -123,10 +122,8 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         }
 
         ItemStack heldItem = player.getStackInHand(hand);
-
         int hitPosition = getHitPosition(hit, pos, state);
 
-        // Размещение записки
         if (heldItem.getItem() == BulletinBoardMod.NOTE_PAPER &&
                 heldItem.hasNbt() && heldItem.getNbt().contains("NoteData")) {
 
@@ -147,11 +144,9 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             return ActionResult.SUCCESS;
         }
 
-        // Просмотр записки
         if (hitPosition >= 0) {
             NoteData note = boardEntity.getNoteAtPosition(hitPosition);
             if (note != null) {
-                // 🔧 Всегда отправляем пакет на клиент
                 if (!world.isClient) {
                     ModPackets.sendOpenNoteScreenToClient((ServerPlayerEntity) player, pos, hitPosition);
                 }

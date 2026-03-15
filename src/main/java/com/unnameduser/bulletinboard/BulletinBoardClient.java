@@ -37,7 +37,6 @@ public class BulletinBoardClient implements ClientModInitializer {
                 BulletinBoardRenderer::new
         );
 
-        // Исправленная регистрация глобального приемника пакетов
         ClientPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "open_note"),
                 (client, handler, buf, responseSender) -> {
                     BlockPos pos = buf.readBlockPos();
@@ -149,15 +148,15 @@ public class BulletinBoardClient implements ClientModInitializer {
         double slotX1, slotX2, slotY1, slotY2;
 
         switch (slot) {
-            case 0: // Верхний левый
+            case 0:
                 slotX1 = 0.12; slotX2 = 0.42;
                 slotY1 = 0.45; slotY2 = 0.75;
                 break;
-            case 1: // Нижний левый
+            case 1:
                 slotX1 = 0.12; slotX2 = 0.42;
                 slotY1 = 0.12; slotY2 = 0.42;
                 break;
-            case 2: // Правый большой
+            case 2:
                 slotX1 = 0.46; slotX2 = 0.84;
                 slotY1 = 0.29; slotY2 = 0.71;
                 break;

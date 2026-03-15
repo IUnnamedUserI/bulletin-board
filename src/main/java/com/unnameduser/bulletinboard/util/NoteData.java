@@ -6,7 +6,7 @@ public class NoteData {
     private String title;
     private String content;
     private String author;
-    private int tagColor = -1;  // 🔧 Цвет метки (RGB)
+    private int tagColor = -1;
 
     public NoteData(String title, String content, String author) {
         this(title, content, author, -1);
@@ -51,7 +51,6 @@ public class NoteData {
         this.tagColor = tagColor;
     }
 
-    // 🔧 Сохранение в NBT
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
         nbt.putString("Title", title);
@@ -61,7 +60,6 @@ public class NoteData {
         return nbt;
     }
 
-    // 🔧 Загрузка из NBT
     public static NoteData fromNbt(NbtCompound nbt) {
         String title = nbt.getString("Title");
         String content = nbt.getString("Content");
@@ -71,14 +69,12 @@ public class NoteData {
         return new NoteData(title, content, author, tagColor);
     }
 
-    // 🔧 Для отладки
     @Override
     public String toString() {
         return String.format("NoteData{title='%s', author='%s', tagColor=0x%X}",
                 title, author, tagColor);
     }
 
-    // 🔧 Равенство (для сравнения записок)
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

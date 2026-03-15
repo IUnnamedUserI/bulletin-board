@@ -1,6 +1,5 @@
 package com.unnameduser.bulletinboard.block;
 
-import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -64,13 +63,6 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         return notePositions.indexOf(position);
     }
 
-    private int getNextFreePosition() {
-        for (int i = 0; i < MAX_NOTES; i++) {
-            if (!notePositions.contains(i)) return i;
-        }
-        return -1;
-    }
-
     public List<NoteData> getNotes() {
         return notes;
     }
@@ -80,8 +72,7 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     }
 
     public boolean isPositionFree(int position) {
-        boolean free = !notePositions.contains(position);
-        return free;
+        return !notePositions.contains(position);
     }
 
     @Override

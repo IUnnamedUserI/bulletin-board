@@ -41,7 +41,6 @@ public class NotePaperItem extends Item {
         }
 
         if (world.isClient) {
-            // Клиентская часть — вызов метода, который будет только на клиенте
             openScreen(stack, hasNoteData(stack));
         }
 
@@ -68,7 +67,6 @@ public class NotePaperItem extends Item {
             NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
 
             tooltip.add(Text.literal("§6" + note.getTitle()).formatted(Formatting.GOLD));
-
             tooltip.add(Text.translatable("item.bulletin-board.note_paper.tooltip.author",
                     note.getAuthor()).formatted(Formatting.GRAY));
 
@@ -87,22 +85,22 @@ public class NotePaperItem extends Item {
 
     private String getBadgeIdByColor(int color) {
         return switch (color) {
-            case 0x000000 -> "black_badge";   // Чёрный
-            case 0xFF5555 -> "red_badge";     // Красный
-            case 0x55FF55 -> "green_badge";   // Зелёный
-            case 0x8B4513 -> "brown_badge";   // Коричневый
-            case 0x5555FF -> "blue_badge";    // Синий
-            case 0xAA00AA -> "purple_badge";  // Фиолетовый
-            case 0x00AAAA -> "cyan_badge";    // Бирюзовый
-            case 0xAAAAAA -> "light_gray_badge"; // Светло-серый
-            case 0x555555 -> "gray_badge";    // Серый
-            case 0xFFAAFF -> "pink_badge";    // Розовый
-            case 0xAAFF55 -> "lime_badge";    // Лаймовый
-            case 0xFFFF55 -> "yellow_badge";  // Жёлтый
-            case 0x55FFFF -> "light_blue_badge"; // Голубой
-            case 0xFF55FF -> "magenta_badge"; // Сиреневый
-            case 0xFFAA00 -> "orange_badge";  // Оранжевый
-            case 0xFFFFFF -> "white_badge";   // Белый
+            case 0x000000 -> "black_badge";
+            case 0xFF5555 -> "red_badge";
+            case 0x55FF55 -> "green_badge";
+            case 0x8B4513 -> "brown_badge";
+            case 0x5555FF -> "blue_badge";
+            case 0xAA00AA -> "purple_badge";
+            case 0x00AAAA -> "cyan_badge";
+            case 0xAAAAAA -> "light_gray_badge";
+            case 0x555555 -> "gray_badge";
+            case 0xFFAAFF -> "pink_badge";
+            case 0xAAFF55 -> "lime_badge";
+            case 0xFFFF55 -> "yellow_badge";
+            case 0x55FFFF -> "light_blue_badge";
+            case 0xFF55FF -> "magenta_badge";
+            case 0xFFAA00 -> "orange_badge";
+            case 0xFFFFFF -> "white_badge";
             default -> null;
         };
     }

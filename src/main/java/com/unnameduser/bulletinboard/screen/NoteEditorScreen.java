@@ -20,8 +20,8 @@ public class NoteEditorScreen extends Screen {
     private boolean isAnonymous = false;
     private ButtonWidget anonymousButton;
 
-    private static final int TITLE_MAX_LENGTH = 48;
-    private static final int CONTENT_MAX_LENGTH = 386;
+    private static final int TITLE_MAX_LENGTH = 40;
+    private static final int CONTENT_MAX_LENGTH = 512;
 
     public NoteEditorScreen(ItemStack notePaper) {
         super(Text.translatable("gui.bulletin-board.note_editor.title"));

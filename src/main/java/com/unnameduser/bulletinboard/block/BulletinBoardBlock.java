@@ -9,6 +9,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -147,6 +149,14 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         if (hitPosition >= 0) {
             NoteData note = boardEntity.getNoteAtPosition(hitPosition);
             if (note != null) {
+                if (!note.hasSeal() && !boardEntity.isNoteStillValid(note)) {
+                    int index = boardEntity.getNoteIndexByPosition(hitPosition);
+                    if (index >= 0) {
+                        boardEntity.removeNote(index);
+                    }
+                    return ActionResult.SUCCESS;
+                }
+
                 if (!world.isClient) {
                     ModPackets.sendOpenNoteScreenToClient((ServerPlayerEntity) player, pos, hitPosition);
                 }
@@ -192,5 +202,14 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         if (notes.isEmpty()) {
             return;
         }
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return world.isClient ? null : (world1, pos, state1, be) -> {
+            if (be instanceof BulletinBoardBlockEntity boardBe) {
+                boardBe.tick();
+            }
+        };
     }
 }

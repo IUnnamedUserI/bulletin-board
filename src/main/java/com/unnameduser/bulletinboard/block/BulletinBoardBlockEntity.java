@@ -19,9 +19,31 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     private List<NoteData> notes = new ArrayList<>();
     private List<Integer> notePositions = new ArrayList<>();
     private static final int MAX_NOTES = 3;
+    private static final long NOTE_LIFETIME = 3600000;
 
     public BulletinBoardBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BULLETIN_BOARD_ENTITY, pos, state);
+    }
+
+    public void tick() {
+        if (world == null || world.isClient) return;
+
+        boolean changed = false;
+        long currentTime = System.currentTimeMillis();
+
+        for (int i = notes.size() -1; i >= 0; i--) {
+            NoteData note = notes.get(i);
+            if (!note.hasSeal() && (currentTime - note.getCreationTime()) > NOTE_LIFETIME) {
+                notes.remove(i);
+                notePositions.remove(i);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            markDirty();
+            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+        }
     }
 
     public boolean addNoteAtPosition(NoteData note, int position) {
@@ -117,5 +139,11 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     @Override
     public NbtCompound toInitialChunkDataNbt() {
         return createNbt();
+    }
+
+    public boolean isNoteStillValid(NoteData note) {
+        if (note.hasSeal()) return  true;
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - note.getCreationTime() <= NOTE_LIFETIME);
     }
 }

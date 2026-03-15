@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "bulletin-board",
-	"version": "1.0.1 hotfix",
+	"version": "1.1.1",
 	"name": "Bulletin Board Mod",
 	"description": "A mod for bulletin boards",
 	"authors": ["UnnamedUser"],

@@ -1,14 +1,11 @@
 package com.unnameduser.bulletinboard.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
-import net.minecraft.util.Identifier;
 
 public class NoteViewScreen extends Screen {
     private final NoteData note;
@@ -29,8 +26,6 @@ public class NoteViewScreen extends Screen {
         this.boardEntity = boardEntity;
         this.notePosition = notePosition;
     }
-
-    private static final Identifier BACKGROUND_TEXTURE = new Identifier(BulletinBoardMod.MOD_ID, "textures/gui/note_background.png");
 
     @Override
     protected void init() {
@@ -67,15 +62,25 @@ public class NoteViewScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (boardEntity != null && notePosition >= 0) {
+            NoteData currentNote = boardEntity.getNoteAtPosition(notePosition);
+            if (currentNote == null || !currentNote.equals(note)) {
+                this.close();
+                return;
+            }
+        }
+
         this.renderBackground(context);
 
         int parchmentX = this.width / 2 - 150;
         int parchmentY = this.height / 2 - 120;
-        int parchmentWidth = 400;
+        int parchmentWidth = 300;
         int parchmentHeight = 220;
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        context.drawTexture(BACKGROUND_TEXTURE, parchmentX, parchmentY, 0, 0, parchmentWidth, parchmentHeight, parchmentWidth, parchmentHeight);
+        context.fill(parchmentX, parchmentY,
+                parchmentX + parchmentWidth, parchmentY + parchmentHeight,
+                PARCHMENT_COLOR);
+        context.drawBorder(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
 
         context.drawCenteredTextWithShadow(this.textRenderer,
                 Text.literal("§l" + note.getTitle()),

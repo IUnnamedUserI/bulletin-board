@@ -7,16 +7,24 @@ public class NoteData {
     private String content;
     private String author;
     private int tagColor = -1;
+    private long creationTime;
+    private boolean hasSeal;
 
     public NoteData(String title, String content, String author) {
-        this(title, content, author, -1);
+        this(title, content, author, -1, System.currentTimeMillis(), false);
     }
 
     public NoteData(String title, String content, String author, int tagColor) {
+        this(title, content, author, tagColor, System.currentTimeMillis(), tagColor != -1);
+    }
+
+    public NoteData(String title, String content, String author, int tagColor, long creationTime, boolean hasSeal) {
         this.title = title;
         this.content = content;
         this.author = author;
         this.tagColor = tagColor;
+        this.creationTime = creationTime;
+        this.hasSeal = hasSeal;
     }
 
     public String getTitle() {
@@ -35,6 +43,10 @@ public class NoteData {
         return tagColor;
     }
 
+    public long getCreationTime() { return creationTime; }
+
+    public boolean hasSeal() { return hasSeal; }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -51,12 +63,16 @@ public class NoteData {
         this.tagColor = tagColor;
     }
 
+    public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
+
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
         nbt.putString("Title", title);
         nbt.putString("Content", content);
         nbt.putString("Author", author);
         nbt.putInt("TagColor", tagColor);
+        nbt.putLong("CreationTime", creationTime);
+        nbt.putBoolean("HasSeal", hasSeal);
         return nbt;
     }
 
@@ -65,6 +81,8 @@ public class NoteData {
         String content = nbt.getString("Content");
         String author = nbt.getString("Author");
         int tagColor = nbt.contains("TagColor", 3) ? nbt.getInt("TagColor") : -1;
+        long creationTime = nbt.contains("CreationTime") ? nbt.getLong("CreationTime") : System.currentTimeMillis();
+        boolean hasSeal = nbt.contains("HasSeal") ? nbt.getBoolean("HasSeal") : (tagColor != -1);
 
         return new NoteData(title, content, author, tagColor);
     }

@@ -30,6 +30,8 @@ public class BadgeItem extends Item {
             NoteData note = NoteData.fromNbt(otherHand.getNbt().getCompound("NoteData"));
             note.setTagColor(badgeColor);
 
+            note.setHasSeal(true);
+
             ItemStack newNote = new ItemStack(BulletinBoardMod.NOTE_PAPER, 1);
             NbtCompound nbt = newNote.getOrCreateNbt();
             nbt.put("NoteData", note.toNbt());

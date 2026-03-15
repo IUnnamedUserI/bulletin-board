@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "bulletin-board",
+	"version": "1.0.1 hotfix",
+	"name": "Bulletin Board Mod",
+	"description": "A mod for bulletin boards",
+	"authors": ["UnnamedUser"],
+	"contact": {
+		"homepage": "https://modrinth.com/project/bulletin-board"
+	},
+	"license": "MIT",
+	"icon": "assets/bulletin-board/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.unnameduser.bulletinboard.BulletinBoardMod"
+		],
+		"client": [
+			"com.unnameduser.bulletinboard.BulletinBoardClient"
+		]
+	},
+	"mixins": [],
+	"depends": {
+		"fabricloader": ">=0.14.22",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}

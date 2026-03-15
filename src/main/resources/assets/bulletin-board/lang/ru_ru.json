@@ -1,0 +1,49 @@
+{
+  "item.bulletin-board.note_paper": "Лист для записки",
+  "item.bulletin-board.black_badge": "Чёрная печать",
+  "item.bulletin-board.red_badge": "Красная печать",
+  "item.bulletin-board.green_badge": "Зелёная печать",
+  "item.bulletin-board.brown_badge": "Коричневая печать",
+  "item.bulletin-board.blue_badge": "Синяя печать",
+  "item.bulletin-board.purple_badge": "Фиолетовая печать",
+  "item.bulletin-board.cyan_badge": "Бирюзовая печать",
+  "item.bulletin-board.light_gray_badge": "Светло-серая печать",
+  "item.bulletin-board.gray_badge": "Серая печать",
+  "item.bulletin-board.pink_badge": "Розовая печать",
+  "item.bulletin-board.lime_badge": "Лаймовая печать",
+  "item.bulletin-board.yellow_badge": "Жёлтая печать",
+  "item.bulletin-board.light_blue_badge": "Голубая печать",
+  "item.bulletin-board.magenta_badge": "Сиреневая печать",
+  "item.bulletin-board.orange_badge": "Оранжевая печать",
+  "item.bulletin-board.white_badge": "Белая печать",
+  
+  "block.bulletin-board.bulletin_board": "Доска объявлений",
+  
+  "itemGroup.bulletin-board.general": "Доски объявлений",
+  
+  "gui.bulletin-board.note_editor.title": "Написать записку",
+  "gui.bulletin-board.note_editor.title_label": "Заголовок:",
+  "gui.bulletin-board.note_editor.content_label": "Текст:",
+  "gui.bulletin-board.note_editor.save": "Сохранить",
+  "gui.bulletin-board.note_editor.cancel": "Отмена",
+  "gui.bulletin-board.note_editor.title_placeholder": "Введите заголовок",
+  "gui.bulletin-board.note_editor.content_placeholder": "Введите текст записки",
+  
+  "gui.bulletin-board.note_view.title": "Записка",
+  "gui.bulletin-board.note_view.close": "Закрыть",
+  "gui.bulletin-board.note_view.take": "Забрать",
+  "gui.bulletin-board.note_view.from": "— %s",
+  
+  "item.bulletin-board.note_paper.tooltip.author": "от %s",
+  "item.bulletin-board.note_paper.tooltip.empty": "Пустой лист",
+  
+  "message.bulletin-board.note_placed": "§aЗаписка повешена на доску!",
+  "message.bulletin-board.note_taken": "§aЗаписка снята с доски!",
+  "message.bulletin-board.slot_occupied": "§cЭто место уже занято!",
+  "message.bulletin-board.note_empty": "§cСначала напишите текст на листе!",
+  "message.bulletin-board.board_empty": "§7На доске нет записок",
+  "message.bulletin-board.notes_header": "§6=== Записки на доске ===",
+  "message.bulletin-board.badge_attached": "§aПечать прикреплена к записке!",
+  "gui.bulletin-board.note_editor.anonymous": "Анонимно",
+"gui.bulletin-board.note_editor.anonymous_name": "Аноним"
+}

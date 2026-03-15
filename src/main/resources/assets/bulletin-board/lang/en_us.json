@@ -1,0 +1,49 @@
+{
+  "item.bulletin-board.note_paper": "Note Paper",
+  "item.bulletin-board.black_badge": "Black Seal",
+  "item.bulletin-board.red_badge": "Red Seal",
+  "item.bulletin-board.green_badge": "Green Seal",
+  "item.bulletin-board.brown_badge": "Brown Seal",
+  "item.bulletin-board.blue_badge": "Blue Seal",
+  "item.bulletin-board.purple_badge": "Purple Seal",
+  "item.bulletin-board.cyan_badge": "Cyan Seal",
+  "item.bulletin-board.light_gray_badge": "Light Gray Seal",
+  "item.bulletin-board.gray_badge": "Gray Seal",
+  "item.bulletin-board.pink_badge": "Pink Seal",
+  "item.bulletin-board.lime_badge": "Lime Seal",
+  "item.bulletin-board.yellow_badge": "Yellow Seal",
+  "item.bulletin-board.light_blue_badge": "Light Blue Seal",
+  "item.bulletin-board.magenta_badge": "Magenta Seal",
+  "item.bulletin-board.orange_badge": "Orange Seal",
+  "item.bulletin-board.white_badge": "White Seal",
+  
+  "block.bulletin-board.bulletin_board": "Bulletin Board",
+  
+  "itemGroup.bulletin-board.general": "Bulletin Boards",
+  
+  "gui.bulletin-board.note_editor.title": "Write a Note",
+  "gui.bulletin-board.note_editor.title_label": "Title:",
+  "gui.bulletin-board.note_editor.content_label": "Text:",
+  "gui.bulletin-board.note_editor.save": "Save",
+  "gui.bulletin-board.note_editor.cancel": "Cancel",
+  "gui.bulletin-board.note_editor.title_placeholder": "Enter title",
+  "gui.bulletin-board.note_editor.content_placeholder": "Enter note text",
+  
+  "gui.bulletin-board.note_view.title": "Note",
+  "gui.bulletin-board.note_view.close": "Close",
+  "gui.bulletin-board.note_view.take": "Take",
+  "gui.bulletin-board.note_view.from": "— %s",
+  
+  "item.bulletin-board.note_paper.tooltip.author": "by %s",
+  "item.bulletin-board.note_paper.tooltip.empty": "Empty paper",
+  
+  "message.bulletin-board.note_placed": "§aNote placed on board!",
+  "message.bulletin-board.note_taken": "§aNote taken from board!",
+  "message.bulletin-board.slot_occupied": "§cThis slot is already occupied!",
+  "message.bulletin-board.note_empty": "§cWrite text on the paper first!",
+  "message.bulletin-board.board_empty": "§7No notes on board",
+  "message.bulletin-board.notes_header": "§6=== Notes on board ===",
+  "message.bulletin-board.badge_attached": "§aSeal attached to note!",
+  "gui.bulletin-board.note_editor.anonymous": "Anonymously",
+"gui.bulletin-board.note_editor.anonymous_name": "Anonymous"
+}

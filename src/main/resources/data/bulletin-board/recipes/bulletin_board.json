@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "www",
+    "pbp",
+    "ppp"
+  ],
+  "key": {
+    "w": {
+      "item": "minecraft:wheat"
+    },
+    "p": {
+      "item": "minecraft:oak_planks"
+    },
+    "b": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "item": "bulletin-board:bulletin_board",
+    "count": 1
+  }
+}

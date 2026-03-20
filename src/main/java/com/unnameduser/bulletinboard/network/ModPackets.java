@@ -2,6 +2,8 @@ package com.unnameduser.bulletinboard.network;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
+import com.unnameduser.bulletinboard.item.NotePaperItem;
+import com.unnameduser.bulletinboard.util.NoteData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -43,9 +45,13 @@ public class ModPackets {
                         boardEntity.removeNote(index);
                     }
 
-                    ItemStack noteStack = new ItemStack(BulletinBoardMod.NOTE_PAPER, 1);
+                    // 🔧 ИСПРАВЛЕНО: правильный источник предметов + сохраняем isSmall
+                    ItemStack noteStack = new ItemStack(
+                            note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
+                            1
+                    );
                     NbtCompound nbt = noteStack.getOrCreateNbt();
-                    nbt.put("NoteData", note.toNbt());
+                    nbt.put("NoteData", note.toNbt());  // toNbt() уже содержит isSmall!
 
                     player.getInventory().offerOrDrop(noteStack);
                 }
@@ -64,8 +70,9 @@ public class ModPackets {
             if (slot >= 0 && slot < player.getInventory().size()) {
                 ItemStack stack = player.getInventory().getStack(slot);
 
-                if (stack.getItem() == BulletinBoardMod.NOTE_PAPER) {
-                    stack.setNbt(nbt.copy());
+                // 🔧 ИСПРАВЛЕНО: проверка через instanceof для обоих типов записок
+                if (stack.getItem() instanceof NotePaperItem) {
+                    stack.setNbt(nbt.copy());  // Копируем ВСЕ поля, включая isSmall
                     player.getInventory().markDirty();
                 }
             }
@@ -76,7 +83,6 @@ public class ModPackets {
         if (!ClientPlayNetworking.canSend(TAKE_NOTE)) {
             return;
         }
-
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBlockPos(pos);
         buf.writeInt(noteIndex);
@@ -87,18 +93,10 @@ public class ModPackets {
         if (!ClientPlayNetworking.canSend(UPDATE_NOTE_NBT)) {
             return;
         }
-
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeInt(slot);
         buf.writeNbt(nbt);
         ClientPlayNetworking.send(UPDATE_NOTE_NBT, buf);
-    }
-
-    public static void sendOpenNoteScreen(BlockPos pos, int slot) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeInt(slot);
-        ClientPlayNetworking.send(new Identifier(BulletinBoardMod.MOD_ID, "open_note"), buf);
     }
 
     public static void sendOpenNoteScreenToClient(ServerPlayerEntity player, BlockPos pos, int slot) {

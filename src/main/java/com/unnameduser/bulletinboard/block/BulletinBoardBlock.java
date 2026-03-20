@@ -1,6 +1,7 @@
 package com.unnameduser.bulletinboard.block;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
+import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.block.Block;
@@ -126,21 +127,28 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         ItemStack heldItem = player.getStackInHand(hand);
         int hitPosition = getHitPosition(hit, pos, state);
 
-        if (heldItem.getItem() == BulletinBoardMod.NOTE_PAPER &&
+        if (heldItem.getItem() instanceof NotePaperItem notePaper &&
                 heldItem.hasNbt() && heldItem.getNbt().contains("NoteData")) {
 
             if (!world.isClient) {
-                if (hitPosition >= 0 && boardEntity.isPositionFree(hitPosition)) {
+                if (hitPosition >= 0) {
                     NoteData note = NoteData.fromNbt(heldItem.getNbt().getCompound("NoteData"));
 
-                    boolean added = boardEntity.addNoteAtPosition(note, hitPosition);
-
-                    if (added) {
-                        heldItem.decrement(1);
-                        return ActionResult.CONSUME;
+                    boolean canPlace = false;
+                    if (note.isSmall()) {
+                        canPlace = hitPosition >= 0 && hitPosition <= 3;
+                    } else {
+                        canPlace = (hitPosition == 4) ||
+                                (hitPosition == 0) || (hitPosition == 1) ||
+                                (hitPosition == 2) || (hitPosition == 3);
                     }
-                } else if (hitPosition >= 0) {
-                    return ActionResult.FAIL;
+                    if (canPlace && boardEntity.canPlaceNote(note, hitPosition)) {
+                        boolean added = boardEntity.addNoteAtPosition(note, hitPosition);
+                        if (added) {
+                            heldItem.decrement(1);
+                            return ActionResult.CONSUME;
+                        }
+                    }
                 }
             }
             return ActionResult.SUCCESS;
@@ -189,12 +197,21 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
 
         double horizontal = (facing == Direction.NORTH || facing == Direction.SOUTH) ? x : z;
 
-        if (horizontal < 0.5) {
-            if (y > 0.5) return 0;
-            return 1;
-        } else {
-            return 2;
+        // 🔧 ТОЧНЫЕ ГРАНИЦЫ (как в BulletinBoardClient.calculateSlot)
+        // Левая колонка: малые слоты 0-3
+        if (horizontal > 0.15 && horizontal < 0.4) {
+            if (y > 0.12 && y < 0.28) return 3;
+            if (y > 0.29 && y < 0.45) return 2;
+            if (y > 0.47 && y < 0.63) return 1;
+            if (y > 0.65 && y < 0.81) return 0;
+            return -1; // Попал в левую колонку, но между слотами
         }
+        // Правая колонка: большой слот 4
+        else if (horizontal > 0.47 && horizontal < 0.83 && y > 0.3 && y < 0.7) {
+            return 4;
+        }
+
+        return -1; // Попал в доску, но не в слот
     }
 
     private void showNotes(PlayerEntity player, BulletinBoardBlockEntity boardEntity) {

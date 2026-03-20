@@ -11,10 +11,14 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -24,7 +28,11 @@ public class BulletinBoardMod implements ModInitializer {
 	public static final String MOD_ID = "bulletin-board";
 
 	public static final Item NOTE_PAPER = new NotePaperItem(
-			new FabricItemSettings().maxCount(1)
+			new FabricItemSettings().maxCount(1), false
+	);
+
+	public static final Item SMALL_NOTE_PAPER = new NotePaperItem(
+			new FabricItemSettings().maxCount(1), true
 	);
 
 	public static final Item BLACK_BADGE = new BadgeItem(new FabricItemSettings().maxCount(16), 0x1E1E1E);
@@ -53,6 +61,7 @@ public class BulletinBoardMod implements ModInitializer {
 			.displayName(Text.literal("Bulletin Boards"))
 			.entries((context, entries) -> {
 				entries.add(NOTE_PAPER);
+				entries.add(SMALL_NOTE_PAPER);
 				entries.add(BLACK_BADGE);
 				entries.add(RED_BADGE);
 				entries.add(GREEN_BADGE);
@@ -76,6 +85,7 @@ public class BulletinBoardMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "note_paper"), NOTE_PAPER);
+		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "small_note_paper"), SMALL_NOTE_PAPER);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "black_badge"), BLACK_BADGE);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "red_badge"), RED_BADGE);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "green_badge"), GREEN_BADGE);

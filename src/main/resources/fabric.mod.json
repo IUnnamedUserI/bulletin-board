@@ -1,12 +1,12 @@
 {
 	"schemaVersion": 1,
 	"id": "bulletin-board",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"name": "Bulletin Board Mod",
 	"description": "A mod for bulletin boards",
 	"authors": ["UnnamedUser"],
 	"contact": {
-		"homepage": "https://modrinth.com/project/bulletin-board"
+		"homepage": "https://www.curseforge.com/minecraft/mc-mods/bulletin-board"
 	},
 	"license": "MIT",
 	"icon": "assets/bulletin-board/icon.png",

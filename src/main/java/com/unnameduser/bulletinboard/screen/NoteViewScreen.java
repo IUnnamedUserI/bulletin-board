@@ -72,10 +72,12 @@ public class NoteViewScreen extends Screen {
 
         this.renderBackground(context);
 
+        boolean isSmall = note.isSmall();
+
         int parchmentX = this.width / 2 - 150;
         int parchmentY = this.height / 2 - 120;
         int parchmentWidth = 300;
-        int parchmentHeight = 220;
+        int parchmentHeight = isSmall ? 160 : 230;
 
         context.fill(parchmentX, parchmentY,
                 parchmentX + parchmentWidth, parchmentY + parchmentHeight,

@@ -24,8 +24,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class NotePaperItem extends Item {
-    public NotePaperItem(Settings settings) {
+    private final boolean isSmall;
+
+    public NotePaperItem(Settings settings, boolean isSmall) {
         super(settings);
+        this.isSmall = isSmall;
+    }
+
+    public boolean isSmall() {
+        return isSmall;
     }
 
     @Override

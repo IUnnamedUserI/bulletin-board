@@ -16,13 +16,121 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BulletinBoardBlockEntity extends BlockEntity {
-    private List<NoteData> notes = new ArrayList<>();
-    private List<Integer> notePositions = new ArrayList<>();
-    private static final int MAX_NOTES = 3;
-    private static final long NOTE_LIFETIME = 3600000;
+    private List<NoteSlot> slots = new ArrayList<>();
+    private static final int BIG_SLOT = 4;
+    private static final long NOTE_LIFETIME = 3600000; // 1 час
 
     public BulletinBoardBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BULLETIN_BOARD_ENTITY, pos, state);
+    }
+
+    public static class NoteSlot {
+        public final NoteData note;
+        public final int startSlot;
+        public final int slotCount;
+
+        public NoteSlot(NoteData note, int startSlot) {
+            this.note = note;
+            this.startSlot = startSlot;
+            this.slotCount = note.isSmall() ? 1 : 2;
+        }
+
+        public boolean occupies(int slot) {
+            return slot >= startSlot && slot < startSlot + slotCount;
+        }
+    }
+
+    // Добавленный метод
+    private boolean isSlotFree(int slot) {
+        for (NoteSlot s : slots) {
+            if (s.occupies(slot)) return false;
+        }
+        return true;
+    }
+
+    public boolean canPlaceNote(NoteData note, int targetSlot) {
+        if (targetSlot == BIG_SLOT) {
+            return !note.isSmall() && isSlotFree(BIG_SLOT);
+        }
+
+        if (note.isSmall()) {
+            return isSlotFree(targetSlot);
+        } else {
+            if (targetSlot == 0 || targetSlot == 1) {
+                return isSlotFree(0) && isSlotFree(1);
+            } else if (targetSlot == 2 || targetSlot == 3) {
+                return isSlotFree(2) && isSlotFree(3);
+            }
+        }
+        return false;
+    }
+
+    public boolean addNoteAtPosition(NoteData note, int targetSlot) {
+        if (!canPlaceNote(note, targetSlot)) return false;
+
+        int startSlot;
+        if (targetSlot == BIG_SLOT) {
+            startSlot = BIG_SLOT;
+        } else if (note.isSmall()) {
+            startSlot = targetSlot;
+        } else {
+            startSlot = (targetSlot == 0 || targetSlot == 1) ? 0 : 2;
+        }
+
+        slots.add(new NoteSlot(note, startSlot));
+        markDirty();
+        if (world != null && !world.isClient) {
+            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+        }
+        return true;
+    }
+
+    public void removeNote(int slotIndex) {
+        if (slotIndex >= 0 && slotIndex < slots.size()) {
+            slots.remove(slotIndex);
+            markDirty();
+            if (world != null && !world.isClient) {
+                world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+            }
+        }
+    }
+
+    public NoteData getNoteAtPosition(int slot) {
+        for (NoteSlot s : slots) {
+            if (s.occupies(slot)) {
+                return s.note;
+            }
+        }
+        return null;
+    }
+
+    public int getNoteIndexByPosition(int slot) {
+        for (int i = 0; i < slots.size(); i++) {
+            if (slots.get(i).occupies(slot)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public List<NoteData> getNotes() {
+        List<NoteData> notes = new ArrayList<>();
+        for (NoteSlot s : slots) {
+            notes.add(s.note);
+        }
+        return notes;
+    }
+
+    public List<Integer> getNotePositions() {
+        List<Integer> positions = new ArrayList<>();
+        for (NoteSlot s : slots) {
+            positions.add(s.startSlot);
+        }
+        return positions;
+    }
+
+    public boolean isPositionFree(int slot) {
+        return isSlotFree(slot);
     }
 
     public void tick() {
@@ -31,11 +139,11 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         boolean changed = false;
         long currentTime = System.currentTimeMillis();
 
-        for (int i = notes.size() -1; i >= 0; i--) {
-            NoteData note = notes.get(i);
-            if (!note.hasSeal() && (currentTime - note.getCreationTime()) > NOTE_LIFETIME) {
-                notes.remove(i);
-                notePositions.remove(i);
+        for (int i = slots.size() - 1; i >= 0; i--) {
+            NoteSlot slot = slots.get(i);
+            NoteData note = slot.note;
+            if (!note.hasSeal() && (currentTime - note.getCreationTime() > NOTE_LIFETIME)) {
+                slots.remove(i);
                 changed = true;
             }
         }
@@ -46,87 +154,40 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         }
     }
 
-    public boolean addNoteAtPosition(NoteData note, int position) {
-        if (notes.size() < MAX_NOTES && position >= 0 && position < MAX_NOTES && !notePositions.contains(position)) {
-            notes.add(note);
-            notePositions.add(position);
-
-            markDirty();
-
-            if (world != null && !world.isClient) {
-                world.updateListeners(pos, getCachedState(), getCachedState(), 3);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public void removeNote(int index) {
-
-        if (index >= 0 && index < notes.size()) {
-            notes.remove(index);
-            notePositions.remove(index);
-
-            markDirty();
-            if (world != null && !world.isClient) {
-                world.updateListeners(pos, getCachedState(), getCachedState(), 3);
-            }
-        }
-    }
-
-    public NoteData getNoteAtPosition(int position) {
-        int idx = notePositions.indexOf(position);
-        return idx >= 0 ? notes.get(idx) : null;
-    }
-
-    public int getNoteIndexByPosition(int position) {
-        return notePositions.indexOf(position);
-    }
-
-    public List<NoteData> getNotes() {
-        return notes;
-    }
-
-    public List<Integer> getNotePositions() {
-        return notePositions;
-    }
-
-    public boolean isPositionFree(int position) {
-        return !notePositions.contains(position);
+    public boolean isNoteStillValid(NoteData note) {
+        if (note.hasSeal()) return true;
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - note.getCreationTime() <= NOTE_LIFETIME);
     }
 
     @Override
     protected void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
 
-        NbtList notesList = new NbtList();
-        NbtList positionsList = new NbtList();
+        NbtList slotsList = new NbtList();
 
-        for (int i = 0; i < notes.size(); i++) {
-            notesList.add(notes.get(i).toNbt());
-            positionsList.add(NbtInt.of(notePositions.get(i)));
+        for (NoteSlot slot : slots) {
+            NbtCompound slotNbt = new NbtCompound();
+            slotNbt.put("Note", slot.note.toNbt());
+            slotNbt.putInt("StartSlot", slot.startSlot);
+            slotsList.add(slotNbt);
         }
 
-        nbt.put("Notes", notesList);
-        nbt.put("Positions", positionsList);
+        nbt.put("Slots", slotsList);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
-        notes.clear();
-        notePositions.clear();
+        slots.clear();
 
-        NbtList notesList = nbt.getList("Notes", 10);
-        NbtList positionsList = nbt.getList("Positions", 3);
+        NbtList slotsList = nbt.getList("Slots", 10);
 
-        for (int i = 0; i < notesList.size(); i++) {
-            notes.add(NoteData.fromNbt(notesList.getCompound(i)));
-            if (i < positionsList.size()) {
-                notePositions.add(positionsList.getInt(i));
-            }
+        for (int i = 0; i < slotsList.size(); i++) {
+            NbtCompound slotNbt = slotsList.getCompound(i);
+            NoteData note = NoteData.fromNbt(slotNbt.getCompound("Note"));
+            int startSlot = slotNbt.getInt("StartSlot");
+            slots.add(new NoteSlot(note, startSlot));
         }
     }
 
@@ -139,11 +200,5 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     @Override
     public NbtCompound toInitialChunkDataNbt() {
         return createNbt();
-    }
-
-    public boolean isNoteStillValid(NoteData note) {
-        if (note.hasSeal()) return  true;
-        long currentTime = System.currentTimeMillis();
-        return (currentTime - note.getCreationTime() <= NOTE_LIFETIME);
     }
 }

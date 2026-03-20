@@ -1,6 +1,7 @@
 package com.unnameduser.bulletinboard.screen;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
+import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.DrawContext;
@@ -16,16 +17,22 @@ public class NoteEditorScreen extends Screen {
     private TextFieldWidget titleField;
     private TextFieldWidget contentField;
     private final ItemStack notePaper;
+    private final boolean isSmall;
 
     private boolean isAnonymous = false;
     private ButtonWidget anonymousButton;
 
     private static final int TITLE_MAX_LENGTH = 40;
-    private static final int CONTENT_MAX_LENGTH = 512;
+    private static final int CONTENT_MAX_LENGTH_NORMAL = 512;
+    private static final int CONTENT_MAX_LENGTH_SMALL = 256;
+
+    private final int contentMaxLength;
 
     public NoteEditorScreen(ItemStack notePaper) {
         super(Text.translatable("gui.bulletin-board.note_editor.title"));
         this.notePaper = notePaper;
+        this.isSmall = notePaper.getItem() instanceof NotePaperItem && ((NotePaperItem) notePaper.getItem()).isSmall();
+        this.contentMaxLength = isSmall? CONTENT_MAX_LENGTH_SMALL : CONTENT_MAX_LENGTH_NORMAL;
     }
 
     @Override
@@ -53,7 +60,7 @@ public class NoteEditorScreen extends Screen {
                 200, 20,
                 Text.translatable("gui.bulletin-board.note_editor.content_placeholder")
         );
-        this.contentField.setMaxLength(CONTENT_MAX_LENGTH);
+        this.contentField.setMaxLength(contentMaxLength);
         this.contentField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.content_placeholder"));
         this.addSelectableChild(this.contentField);
 
@@ -104,7 +111,7 @@ public class NoteEditorScreen extends Screen {
                     Text.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
                     this.client.player.getName().getString();
 
-            NoteData note = new NoteData(title, content, author, -1);
+            NoteData note = new NoteData(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
 
             NbtCompound nbt = new NbtCompound();
             nbt.put("NoteData", note.toNbt());
@@ -115,6 +122,7 @@ public class NoteEditorScreen extends Screen {
 
             if (slot >= 0) {
                 ModPackets.sendUpdateNoteNbt(slot, nbt);
+                this.client.player.getInventory().markDirty();
             }
 
             this.close();
@@ -158,10 +166,10 @@ public class NoteEditorScreen extends Screen {
                 this.titleField.getText().length() >= TITLE_MAX_LENGTH ? 0xFF5555 : 0xAAAAAA, false);
 
         String contentCounter = String.format("%d/%d",
-                this.contentField.getText().length(), CONTENT_MAX_LENGTH);
+                this.contentField.getText().length(), contentMaxLength);
         context.drawText(this.textRenderer, Text.literal(contentCounter),
                 centerX + 100 - this.textRenderer.getWidth(contentCounter), startY + 23,
-                this.contentField.getText().length() >= CONTENT_MAX_LENGTH ? 0xFF5555 : 0xAAAAAA, false);
+                this.contentField.getText().length() >= contentMaxLength ? 0xFF5555 : 0xAAAAAA, false);
 
         this.titleField.render(context, mouseX, mouseY, delta);
         this.contentField.render(context, mouseX, mouseY, delta);

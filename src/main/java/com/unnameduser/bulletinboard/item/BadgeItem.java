@@ -20,35 +20,48 @@ public class BadgeItem extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getStackInHand(hand);
-        ItemStack otherHand = hand == Hand.MAIN_HAND ?
+        ItemStack badgeStack = player.getStackInHand(hand);
+        ItemStack noteStack = hand == Hand.MAIN_HAND ?
                 player.getOffHandStack() : player.getMainHandStack();
 
-        if (otherHand.getItem() == BulletinBoardMod.NOTE_PAPER &&
-                otherHand.hasNbt() && otherHand.getNbt().contains("NoteData")) {
+        // Проверяем, что во второй руке подписанная записка
+        if ((noteStack.getItem() == BulletinBoardMod.NOTE_PAPER ||
+                noteStack.getItem() == BulletinBoardMod.SMALL_NOTE_PAPER) &&
+                noteStack.hasNbt() && noteStack.getNbt().contains("NoteData")) {
 
-            NoteData note = NoteData.fromNbt(otherHand.getNbt().getCompound("NoteData"));
+            NoteData note = NoteData.fromNbt(noteStack.getNbt().getCompound("NoteData"));
             note.setTagColor(badgeColor);
-
             note.setHasSeal(true);
 
-            ItemStack newNote = new ItemStack(BulletinBoardMod.NOTE_PAPER, 1);
+            ItemStack newNote = new ItemStack(noteStack.getItem(), 1);
             NbtCompound nbt = newNote.getOrCreateNbt();
             nbt.put("NoteData", note.toNbt());
 
             if (!world.isClient) {
-                otherHand.decrement(1);
-                stack.decrement(1);
+                // Удаляем старую записку
+                if (noteStack.getCount() > 1) {
+                    noteStack.decrement(1);
+                } else {
+                    player.getInventory().removeOne(noteStack);
+                }
 
+                // Удаляем печать
+                if (badgeStack.getCount() > 1) {
+                    badgeStack.decrement(1);
+                } else {
+                    player.getInventory().removeOne(badgeStack);
+                }
+
+                // Добавляем новую записку
                 if (!player.getInventory().insertStack(newNote)) {
                     player.dropItem(newNote, false);
                 }
             }
 
-            return TypedActionResult.success(stack);
+            return TypedActionResult.success(badgeStack);
         }
 
-        return TypedActionResult.pass(stack);
+        return TypedActionResult.pass(badgeStack);
     }
 
     public int getBadgeColor() {

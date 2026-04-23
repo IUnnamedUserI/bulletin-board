@@ -1,11 +1,6 @@
 package com.unnameduser.bulletinboard.util;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 
 public class NoteData {
     private String title;
@@ -16,9 +11,8 @@ public class NoteData {
     private boolean hasSeal;
     private boolean isSmall;
 
-    // Конструкторы (оставляем как есть для совместимости)
     public NoteData(String title, String content, String author, boolean isSmall) {
-        this(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
+        this(title, content, author, -1, System.currentTimeMillis(), false, false);
     }
 
     public NoteData(String title, String content, String author, int tagColor) {
@@ -35,50 +29,46 @@ public class NoteData {
         this.isSmall = isSmall;
     }
 
-    // ✅ Геттеры (для Codec)
-    public String getTitle() { return title; }
-    public String getContent() { return content; }
-    public String getAuthor() { return author; }
-    public int getTagColor() { return tagColor; }
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public int getTagColor() {
+        return tagColor;
+    }
+
     public long getCreationTime() { return creationTime; }
+
     public boolean hasSeal() { return hasSeal; }
+
     public boolean isSmall() { return isSmall; }
 
-    // ✅ Сеттеры (оставляем для обратной совместимости)
-    public void setTitle(String title) { this.title = title; }
-    public void setContent(String content) { this.content = content; }
-    public void setAuthor(String author) { this.author = author; }
-    public void setTagColor(int tagColor) { this.tagColor = tagColor; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setTagColor(int tagColor) {
+        this.tagColor = tagColor;
+    }
+
     public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
 
-    // ✅ Codec для сохранения в мир/предмет (постоянное хранение)
-    public static final Codec<NoteData> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    Codec.STRING.fieldOf("title").forGetter(NoteData::getTitle),
-                    Codec.STRING.fieldOf("content").forGetter(NoteData::getContent),
-                    Codec.STRING.fieldOf("author").forGetter(NoteData::getAuthor),
-                    Codec.INT.fieldOf("tag_color").forGetter(NoteData::getTagColor),
-                    Codec.LONG.fieldOf("creation_time").forGetter(NoteData::getCreationTime),
-                    Codec.BOOL.fieldOf("has_seal").forGetter(NoteData::hasSeal),
-                    Codec.BOOL.fieldOf("is_small").forGetter(NoteData::isSmall)
-            ).apply(instance, NoteData::new)
-    );
-
-    // ✅ PacketCodec для сетевой синхронизации (пакеты)
-    public static final PacketCodec<RegistryByteBuf, NoteData> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.STRING, NoteData::getTitle,
-            PacketCodecs.STRING, NoteData::getContent,
-            PacketCodecs.STRING, NoteData::getAuthor,
-            PacketCodecs.INTEGER, NoteData::getTagColor,
-            PacketCodecs.LONG, NoteData::getCreationTime,
-            PacketCodecs.BOOL, NoteData::hasSeal,
-            PacketCodecs.BOOL, NoteData::isSmall,
-            NoteData::new
-    );
-
-    // ⚠️ Старые NBT-методы — можно оставить для миграции или удалить
-    // Если оставляешь — добавь миграцию при загрузке мира
-    @Deprecated
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
         nbt.putString("Title", title);
@@ -91,7 +81,6 @@ public class NoteData {
         return nbt;
     }
 
-    @Deprecated
     public static NoteData fromNbt(NbtCompound nbt) {
         String title = nbt.getString("Title");
         String content = nbt.getString("Content");
@@ -100,10 +89,10 @@ public class NoteData {
         long creationTime = nbt.contains("CreationTime") ? nbt.getLong("CreationTime") : System.currentTimeMillis();
         boolean hasSeal = nbt.contains("HasSeal") ? nbt.getBoolean("HasSeal") : (tagColor != -1);
         boolean isSmall = nbt.contains("IsSmall") && nbt.getBoolean("IsSmall");
+
         return new NoteData(title, content, author, tagColor, creationTime, hasSeal, isSmall);
     }
 
-    // toString / equals / hashCode — оставляем как есть
     @Override
     public String toString() {
         return String.format("NoteData{title='%s', author='%s', tagColor=0x%X}",
@@ -114,6 +103,7 @@ public class NoteData {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof NoteData)) return false;
+
         NoteData other = (NoteData) obj;
         return title.equals(other.title) &&
                 content.equals(other.content) &&

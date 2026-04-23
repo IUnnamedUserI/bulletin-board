@@ -2,17 +2,15 @@ package com.unnameduser.bulletinboard.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.screen.NoteEditorScreen;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipContext;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -28,7 +26,7 @@ import java.util.List;
 public class NotePaperItem extends Item {
     private final boolean isSmall;
 
-    public NotePaperItem(Settings settings, boolean isSmall) {
+    public NotePaperItem(net.minecraft.item.Item.Settings settings, boolean isSmall) {
         super(settings);
         this.isSmall = isSmall;
     }
@@ -59,27 +57,22 @@ public class NotePaperItem extends Item {
     @Environment(EnvType.CLIENT)
     private void openScreen(ItemStack stack, boolean hasNote) {
         if (hasNote) {
-            // ✅ ФИКС: читаем компонент вместо NBT
-            NoteData note = stack.get(BulletinBoardMod.NOTE_DATA);
-            if (note != null) {
-                MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
-            }
+            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
+            MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
         } else {
             MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
         }
     }
 
-    // ✅ ФИКС: проверка через компонент
     private boolean hasNoteData(ItemStack stack) {
-        return stack.contains(BulletinBoardMod.NOTE_DATA);
+        return stack.hasNbt() && stack.getNbt().contains("NoteData");
     }
 
-    // ✅ ФИКС: новая сигнатура appendTooltip для 1.21.1
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        NoteData note = stack.get(BulletinBoardMod.NOTE_DATA);
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, net.minecraft.item.Item.TooltipContext context) {
+        if (hasNoteData(stack)) {
+            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
 
-        if (note != null) {
             tooltip.add(Text.literal("§6" + note.getTitle()).formatted(Formatting.GOLD));
             tooltip.add(Text.translatable("item.bulletin-board.note_paper.tooltip.author",
                     note.getAuthor()).formatted(Formatting.GRAY));

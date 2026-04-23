@@ -8,7 +8,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -30,8 +32,8 @@ public class NoteEditorScreen extends Screen {
     public NoteEditorScreen(ItemStack notePaper) {
         super(Text.translatable("gui.bulletin-board.note_editor.title"));
         this.notePaper = notePaper;
-        this.isSmall = notePaper.getItem() instanceof NotePaperItem noteItem && noteItem.isSmall();
-        this.contentMaxLength = isSmall ? CONTENT_MAX_LENGTH_SMALL : CONTENT_MAX_LENGTH_NORMAL;
+        this.isSmall = notePaper.getItem() instanceof NotePaperItem && ((NotePaperItem) notePaper.getItem()).isSmall();
+        this.contentMaxLength = isSmall? CONTENT_MAX_LENGTH_SMALL : CONTENT_MAX_LENGTH_NORMAL;
     }
 
     @Override
@@ -108,21 +110,20 @@ public class NoteEditorScreen extends Screen {
         if (!title.isEmpty() && !content.isEmpty()) {
             String author = isAnonymous ?
                     Text.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
-                    (this.client != null && this.client.player != null ? this.client.player.getName().getString() : "Unknown");
+                    this.client.player.getName().getString();
 
-            // ✅ Создаём NoteData
             NoteData note = new NoteData(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
 
-            // ✅ ФИКС: устанавливаем компонент вместо NBT
-            this.notePaper.set(BulletinBoardMod.NOTE_DATA, note);
+            NbtCompound nbt = new NbtCompound();
+            nbt.put("NoteData", note.toNbt());
 
             int slot = findSlotIndex();
+
+            this.notePaper.setNbt(nbt);
+
             if (slot >= 0) {
-                // ✅ Отправляем компонент в пакет (вместо NBT)
-                ModPackets.sendUpdateNoteData(slot, note);
-                if (this.client != null && this.client.player != null) {
-                    this.client.player.getInventory().markDirty();
-                }
+                ModPackets.sendUpdateNoteNbt(slot, nbt);
+                this.client.player.getInventory().markDirty();
             }
 
             this.close();
@@ -134,7 +135,7 @@ public class NoteEditorScreen extends Screen {
         var inventory = this.client.player.getInventory();
 
         for (int i = 0; i < inventory.size(); i++) {
-            if (ItemStack.areEqual(inventory.getStack(i), this.notePaper)) {
+            if (inventory.getStack(i) == this.notePaper) {
                 return i;
             }
         }

@@ -4,6 +4,7 @@ import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
+import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -20,6 +21,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -54,22 +56,24 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         BoardType type = state.get(BOARD_TYPE);
         Direction facing = state.get(FACING);
-        return switch (type) {
-            case DOUBLE_WALL -> switch (facing) {
+
+        if (type == BoardType.DOUBLE_WALL) {
+            return switch (facing) {
                 case NORTH -> NORTH_DOUBLE_SHAPE;
                 case SOUTH -> SOUTH_DOUBLE_SHAPE;
                 case WEST -> WEST_DOUBLE_SHAPE;
                 case EAST -> EAST_DOUBLE_SHAPE;
                 default -> NORTH_DOUBLE_SHAPE;
             };
-            default -> switch (facing) {
+        } else {
+            return switch (facing) {
                 case NORTH -> NORTH_SHAPE;
                 case SOUTH -> SOUTH_SHAPE;
                 case WEST -> WEST_SHAPE;
                 case EAST -> EAST_SHAPE;
                 default -> NORTH_SHAPE;
             };
-        };
+        }
     }
 
     @Nullable
@@ -78,9 +82,12 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         Direction side = ctx.getSide();
         if (side == Direction.UP || side == Direction.DOWN) return null;
 
-        Direction facing = ctx.getHorizontalPlayerFacing().getOpposite();
+        Direction playerFacing = ctx.getHorizontalPlayerFacing();
+        Direction facing = playerFacing.getOpposite();
+
         World world = ctx.getWorld();
         BlockPos pos = ctx.getBlockPos();
+
         BoardType baseType = BoardType.SINGLE_WALL;
 
         Direction.Axis axis = facing.getAxis();
@@ -93,7 +100,9 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             baseType = BoardType.DOUBLE_WALL;
         }
 
-        return this.getDefaultState().with(FACING, facing).with(BOARD_TYPE, baseType);
+        return this.getDefaultState()
+                .with(FACING, facing)
+                .with(BOARD_TYPE, baseType);
     }
 
     @Override
@@ -107,45 +116,56 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         return new BulletinBoardBlockEntity(pos, state);
     }
 
-    // ✅ ФИКС: убран параметр Hand — сигнатура изменена в 1.20.5+
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!(world.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity)) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+
+        if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
             return ActionResult.PASS;
         }
 
-        // Берём предмет из основной руки (для простоты; при необходимости можно проверять обе)
-        ItemStack heldItem = player.getMainHandStack();
+        ItemStack heldItem = player.getStackInHand(hand);
         int hitPosition = getHitPosition(hit, pos, state);
 
-        // ✅ ФИКС: Data Components вместо NBT
-        NoteData noteData = heldItem.get(BulletinBoardMod.NOTE_DATA);
+        if (heldItem.getItem() instanceof NotePaperItem notePaper &&
+                heldItem.hasNbt() && heldItem.getNbt().contains("NoteData")) {
 
-        if (heldItem.getItem() instanceof NotePaperItem && noteData != null) {
-            if (!world.isClient && hitPosition >= 0) {
-                boolean canPlace = noteData.isSmall()
-                        ? (hitPosition >= 0 && hitPosition <= 3)
-                        : (hitPosition == 4 || hitPosition == 0 || hitPosition == 1 || hitPosition == 2 || hitPosition == 3);
+            if (!world.isClient) {
+                if (hitPosition >= 0) {
+                    NoteData note = NoteData.fromNbt(heldItem.getNbt().getCompound("NoteData"));
 
-                if (canPlace && boardEntity.canPlaceNote(noteData, hitPosition)) {
-                    if (boardEntity.addNoteAtPosition(noteData, hitPosition)) {
-                        heldItem.decrement(1);
-                        return ActionResult.CONSUME;
+                    boolean canPlace = false;
+                    if (note.isSmall()) {
+                        canPlace = hitPosition >= 0 && hitPosition <= 3;
+                    } else {
+                        canPlace = (hitPosition == 4) ||
+                                (hitPosition == 0) || (hitPosition == 1) ||
+                                (hitPosition == 2) || (hitPosition == 3);
+                    }
+                    if (canPlace && boardEntity.canPlaceNote(note, hitPosition)) {
+                        boolean added = boardEntity.addNoteAtPosition(note, hitPosition);
+                        if (added) {
+                            heldItem.decrement(1);
+                            return ActionResult.CONSUME;
+                        }
                     }
                 }
             }
             return ActionResult.SUCCESS;
         }
 
-        // Чтение записки с доски
         if (hitPosition >= 0) {
             NoteData note = boardEntity.getNoteAtPosition(hitPosition);
             if (note != null) {
                 if (!note.hasSeal() && !boardEntity.isNoteStillValid(note)) {
                     int index = boardEntity.getNoteIndexByPosition(hitPosition);
-                    if (index >= 0) boardEntity.removeNote(index);
+                    if (index >= 0) {
+                        boardEntity.removeNote(index);
+                    }
                     return ActionResult.SUCCESS;
                 }
+
                 if (!world.isClient) {
                     ModPackets.sendOpenNoteScreenToClient((ServerPlayerEntity) player, pos, hitPosition);
                 }
@@ -153,7 +173,6 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             }
         }
 
-        // Показать все записки (админ/отладка)
         if (!world.isClient && player.isSneaking()) {
             showNotes(player, boardEntity);
             return ActionResult.SUCCESS;
@@ -174,32 +193,41 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             case EAST -> x < 0.07;
             default -> false;
         };
-        if (!hitFront || y < 0.0 || y > 1.0) return -1;
+        if (!hitFront) return -1;
+        if (y < 0.0 || y > 1.0) return -1;
 
-        double horizontal = (facing.getAxis() == Direction.Axis.Z) ? x : z;
+        double horizontal = (facing == Direction.NORTH || facing == Direction.SOUTH) ? x : z;
 
+        // 🔧 ТОЧНЫЕ ГРАНИЦЫ (как в BulletinBoardClient.calculateSlot)
+        // Левая колонка: малые слоты 0-3
         if (horizontal > 0.15 && horizontal < 0.4) {
             if (y > 0.12 && y < 0.28) return 3;
             if (y > 0.29 && y < 0.45) return 2;
             if (y > 0.47 && y < 0.63) return 1;
             if (y > 0.65 && y < 0.81) return 0;
-            return -1;
-        } else if (horizontal > 0.47 && horizontal < 0.83 && y > 0.3 && y < 0.7) {
+            return -1; // Попал в левую колонку, но между слотами
+        }
+        // Правая колонка: большой слот 4
+        else if (horizontal > 0.47 && horizontal < 0.83 && y > 0.3 && y < 0.7) {
             return 4;
         }
-        return -1;
+
+        return -1; // Попал в доску, но не в слот
     }
 
     private void showNotes(PlayerEntity player, BulletinBoardBlockEntity boardEntity) {
         var notes = boardEntity.getNotes();
-        if (notes.isEmpty()) return;
-        // TODO: отправить список игроку или вывести в чат
+        if (notes.isEmpty()) {
+            return;
+        }
     }
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? null : (w, p, s, be) -> {
-            if (be instanceof BulletinBoardBlockEntity board) board.tick();
+        return world.isClient ? null : (world1, pos, state1, be) -> {
+            if (be instanceof BulletinBoardBlockEntity boardBe) {
+                boardBe.tick();
+            }
         };
     }
 }

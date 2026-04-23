@@ -18,7 +18,7 @@
     }
   },
   "result": {
-    "item": "bulletin-board:bulletin_board",
+    "id": "bulletin-board:bulletin_board",
     "count": 1
   }
 }

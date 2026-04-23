@@ -2,6 +2,8 @@ package com.unnameduser.bulletinboard.item;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.util.NoteData;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -25,40 +27,48 @@ public class BadgeItem extends Item {
                 player.getOffHandStack() : player.getMainHandStack();
 
         // Проверяем, что во второй руке подписанная записка
+        NbtComponent noteComponent = noteStack.get(DataComponentTypes.CUSTOM_DATA);
         if ((noteStack.getItem() == BulletinBoardMod.NOTE_PAPER ||
                 noteStack.getItem() == BulletinBoardMod.SMALL_NOTE_PAPER) &&
-                noteStack.hasNbt() && noteStack.getNbt().contains("NoteData")) {
+                noteComponent != null) {
 
-            NoteData note = NoteData.fromNbt(noteStack.getNbt().getCompound("NoteData"));
-            note.setTagColor(badgeColor);
-            note.setHasSeal(true);
+            NbtCompound noteRootNbt = noteComponent.copyNbt();
+            if (noteRootNbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+                NbtCompound noteNbt = noteRootNbt.getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY);
+                NoteData note = NoteData.fromNbt(noteNbt);
 
-            ItemStack newNote = new ItemStack(noteStack.getItem(), 1);
-            NbtCompound nbt = newNote.getOrCreateNbt();
-            nbt.put("NoteData", note.toNbt());
+                // Обновляем данные записки
+                note.setTagColor(badgeColor);
+                note.setHasSeal(true);
 
-            if (!world.isClient) {
-                // Удаляем старую записку
-                if (noteStack.getCount() > 1) {
+                // Создаём новую записку с обновлёнными данными
+                ItemStack newNote = new ItemStack(noteStack.getItem(), 1);
+
+                // Правильная структура NBT
+                NbtCompound newNoteNbt = note.toNbt();
+                NbtCompound newRootNbt = new NbtCompound();
+                newRootNbt.put(BulletinBoardMod.NOTE_DATA_NBT_KEY, newNoteNbt);
+
+                NbtComponent newComponent = NbtComponent.of(newRootNbt);
+                newNote.set(DataComponentTypes.CUSTOM_DATA, newComponent);
+
+                if (!world.isClient) {
+                    // Удаляем старую записку
                     noteStack.decrement(1);
-                } else {
-                    player.getInventory().removeOne(noteStack);
-                }
 
-                // Удаляем печать
-                if (badgeStack.getCount() > 1) {
+                    // Удаляем значок
                     badgeStack.decrement(1);
-                } else {
-                    player.getInventory().removeOne(badgeStack);
+
+                    // Добавляем новую записку
+                    if (!player.getInventory().insertStack(newNote)) {
+                        player.dropItem(newNote, false);
+                    }
+
+                    player.getInventory().markDirty();
                 }
 
-                // Добавляем новую записку
-                if (!player.getInventory().insertStack(newNote)) {
-                    player.dropItem(newNote, false);
-                }
+                return TypedActionResult.success(badgeStack);
             }
-
-            return TypedActionResult.success(badgeStack);
         }
 
         return TypedActionResult.pass(badgeStack);

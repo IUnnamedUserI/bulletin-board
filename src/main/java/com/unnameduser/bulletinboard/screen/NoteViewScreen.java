@@ -1,5 +1,6 @@
 package com.unnameduser.bulletinboard.screen;
 
+import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -54,8 +55,7 @@ public class NoteViewScreen extends Screen {
 
     private void takeNote() {
         if (boardEntity != null && notePosition >= 0 && this.client != null) {
-            com.unnameduser.bulletinboard.network.ModPackets.sendTakeNote(
-                    boardEntity.getPos(), notePosition);
+            ModPackets.sendTakeNote(boardEntity.getPos(), notePosition);
             this.close();
         }
     }
@@ -70,7 +70,7 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
 
         boolean isSmall = note.isSmall();
 
@@ -140,5 +140,11 @@ public class NoteViewScreen extends Screen {
     @Override
     public boolean shouldPause() {
         return false;
+    }
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Рисуем непрозрачный фон
+        context.fill(0, 0, this.width, this.height, 0x0F000000);
     }
 }

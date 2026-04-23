@@ -5,10 +5,10 @@
       "item": "minecraft:clay_ball"
     },
     {
-      "item": "minecraft:green_dye"
+      "item": "minecraft:gray_dye"
     }
   ],
   "result": {
-    "item": "bulletin-board:green_badge"
+    "id": "bulletin-board:gray_badge"
   }
 }

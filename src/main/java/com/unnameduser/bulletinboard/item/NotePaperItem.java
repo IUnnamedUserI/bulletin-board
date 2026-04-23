@@ -8,11 +8,13 @@ import com.unnameduser.bulletinboard.screen.NoteEditorScreen;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipContext;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -21,7 +23,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -59,25 +60,42 @@ public class NotePaperItem extends Item {
     @Environment(EnvType.CLIENT)
     private void openScreen(ItemStack stack, boolean hasNote) {
         if (hasNote) {
-            // ✅ ФИКС: читаем компонент вместо NBT
-            NoteData note = stack.get(BulletinBoardMod.NOTE_DATA);
-            if (note != null) {
-                MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
+            // Получаем NbtComponent
+            NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+            if (nbtComponent != null) {
+                // Копируем в NbtCompound для удобной работы
+                NbtCompound nbt = nbtComponent.copyNbt();
+                if (nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+                    NbtCompound noteNbt = nbt.getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY);
+                    NoteData note = NoteData.fromNbt(noteNbt);
+                    MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
+                    return;
+                }
             }
-        } else {
-            MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
         }
+        // Если нет данных - открываем редактор
+        MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
     }
 
-    // ✅ ФИКС: проверка через компонент
     private boolean hasNoteData(ItemStack stack) {
-        return stack.contains(BulletinBoardMod.NOTE_DATA);
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) return false;
+        NbtCompound nbt = nbtComponent.copyNbt();
+        return nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY);
     }
 
-    // ✅ ФИКС: новая сигнатура appendTooltip для 1.21.1
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        NoteData note = stack.get(BulletinBoardMod.NOTE_DATA);
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NoteData note = null;
+
+        if (nbtComponent != null) {
+            NbtCompound nbt = nbtComponent.copyNbt();
+            if (nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+                NbtCompound noteNbt = nbt.getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY);
+                note = NoteData.fromNbt(noteNbt);
+            }
+        }
 
         if (note != null) {
             tooltip.add(Text.literal("§6" + note.getTitle()).formatted(Formatting.GOLD));

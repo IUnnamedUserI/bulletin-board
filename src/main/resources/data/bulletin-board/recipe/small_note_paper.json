@@ -1,12 +1,13 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "bulletin-board:note_paper"
     }
   ],
   "result": {
-    "item": "bulletin-board:small_note_paper",
-    "count": 2
+    "id": "bulletin-board:small_note_paper",
+    "count": 1
   }
 }

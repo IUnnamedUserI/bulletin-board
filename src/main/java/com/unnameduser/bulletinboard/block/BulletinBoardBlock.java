@@ -12,9 +12,12 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
@@ -107,19 +110,20 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         return new BulletinBoardBlockEntity(pos, state);
     }
 
-    // ✅ ФИКС: убран параметр Hand — сигнатура изменена в 1.20.5+
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (!(world.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity)) {
             return ActionResult.PASS;
         }
 
-        // Берём предмет из основной руки (для простоты; при необходимости можно проверять обе)
         ItemStack heldItem = player.getMainHandStack();
         int hitPosition = getHitPosition(hit, pos, state);
 
-        // ✅ ФИКС: Data Components вместо NBT
-        NoteData noteData = heldItem.get(BulletinBoardMod.NOTE_DATA);
+        NbtComponent nbt = heldItem.get(DataComponentTypes.CUSTOM_DATA);
+        NoteData noteData = null;
+        if (nbt != null && nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+            noteData = NoteData.fromNbt(nbt.copyNbt().getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY));
+        }
 
         if (heldItem.getItem() instanceof NotePaperItem && noteData != null) {
             if (!world.isClient && hitPosition >= 0) {
@@ -137,7 +141,6 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             return ActionResult.SUCCESS;
         }
 
-        // Чтение записки с доски
         if (hitPosition >= 0) {
             NoteData note = boardEntity.getNoteAtPosition(hitPosition);
             if (note != null) {
@@ -153,7 +156,6 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
             }
         }
 
-        // Показать все записки (админ/отладка)
         if (!world.isClient && player.isSneaking()) {
             showNotes(player, boardEntity);
             return ActionResult.SUCCESS;
@@ -193,7 +195,6 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
     private void showNotes(PlayerEntity player, BulletinBoardBlockEntity boardEntity) {
         var notes = boardEntity.getNotes();
         if (notes.isEmpty()) return;
-        // TODO: отправить список игроку или вывести в чат
     }
 
     @Override

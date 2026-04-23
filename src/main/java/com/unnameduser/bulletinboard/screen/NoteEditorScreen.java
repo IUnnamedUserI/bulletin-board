@@ -8,7 +8,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -50,6 +53,8 @@ public class NoteEditorScreen extends Screen {
         );
         this.titleField.setMaxLength(TITLE_MAX_LENGTH);
         this.titleField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.title_placeholder"));
+        // ✅ Устанавливаем непрозрачный фон для текстового поля
+        this.titleField.setDrawsBackground(true);
         this.addSelectableChild(this.titleField);
 
         this.contentField = new TextFieldWidget(
@@ -61,6 +66,8 @@ public class NoteEditorScreen extends Screen {
         );
         this.contentField.setMaxLength(contentMaxLength);
         this.contentField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.content_placeholder"));
+        // ✅ Устанавливаем непрозрачный фон для текстового поля
+        this.contentField.setDrawsBackground(true);
         this.addSelectableChild(this.contentField);
 
         this.anonymousButton = ButtonWidget.builder(
@@ -110,19 +117,20 @@ public class NoteEditorScreen extends Screen {
                     Text.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
                     (this.client != null && this.client.player != null ? this.client.player.getName().getString() : "Unknown");
 
-            // ✅ Создаём NoteData
             NoteData note = new NoteData(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
 
-            // ✅ ФИКС: устанавливаем компонент вместо NBT
-            this.notePaper.set(BulletinBoardMod.NOTE_DATA, note);
+            // ✅ СОХРАНЯЕМ ДАННЫЕ ПРЯМО В ПРЕДМЕТ
+            NbtCompound noteNbt = note.toNbt();
+            NbtCompound rootNbt = new NbtCompound();
+            rootNbt.put(BulletinBoardMod.NOTE_DATA_NBT_KEY, noteNbt);
 
+            NbtComponent nbtComponent = NbtComponent.of(rootNbt);
+            notePaper.set(DataComponentTypes.CUSTOM_DATA, nbtComponent);
+
+            // Отправляем на сервер для синхронизации
             int slot = findSlotIndex();
             if (slot >= 0) {
-                // ✅ Отправляем компонент в пакет (вместо NBT)
-                ModPackets.sendUpdateNoteData(slot, note);
-                if (this.client != null && this.client.player != null) {
-                    this.client.player.getInventory().markDirty();
-                }
+                ModPackets.sendUpdateNoteNbt(slot, rootNbt);
             }
 
             this.close();
@@ -143,7 +151,7 @@ public class NoteEditorScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
         int startY = this.height / 2 - 40;
@@ -189,5 +197,11 @@ public class NoteEditorScreen extends Screen {
     @Override
     public boolean shouldPause() {
         return false;
+    }
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Рисуем непрозрачный фон
+        context.fill(0, 0, this.width, this.height, 0x0F000000);
     }
 }

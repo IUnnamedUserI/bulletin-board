@@ -7,25 +7,21 @@ import com.unnameduser.bulletinboard.event.VillageDiscountEvent;
 import com.unnameduser.bulletinboard.integration.TradeOverhaulIntegration;
 import com.unnameduser.bulletinboard.item.BadgeItem;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
-import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.network.*;
 import com.unnameduser.bulletinboard.util.AutoNoteScheduler;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentType;
-import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -35,15 +31,8 @@ public class BulletinBoardMod implements ModInitializer {
 	public static final String MOD_ID = "bulletin-board";
 	public static final Identifier ID = Identifier.of(MOD_ID, MOD_ID);
 
-	// ✅ Регистрация компонента для записок (Data Components API)
-	public static final DataComponentType<NoteData> NOTE_DATA = Registry.register(
-			Registries.DATA_COMPONENT_TYPE,
-			Identifier.of(MOD_ID, "note_data"),
-			DataComponentType.<NoteData>builder()
-					.persistent(NoteData.CODEC)
-					.packetCodec(NoteData.PACKET_CODEC)
-					.build()
-	);
+	// ✅ Ключ для NBT (вместо DataComponentType)
+	public static final String NOTE_DATA_NBT_KEY = "NoteData";
 
 	// Предметы
 	public static final Item NOTE_PAPER = new NotePaperItem(
@@ -104,7 +93,11 @@ public class BulletinBoardMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// ✅ Регистрация предметов (Identifier.of вместо new Identifier)
+		PayloadTypeRegistry.playC2S().register(TakeNotePayload.ID, TakeNotePayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(UpdateNoteNbtPayload.ID, UpdateNoteNbtPayload.CODEC);
+
+		PayloadTypeRegistry.playS2C().register(OpenNotePayload.ID, OpenNotePayload.CODEC);
+
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "note_paper"), NOTE_PAPER);
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "small_note_paper"), SMALL_NOTE_PAPER);
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "black_badge"), BLACK_BADGE);
@@ -124,16 +117,15 @@ public class BulletinBoardMod implements ModInitializer {
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "orange_badge"), ORANGE_BADGE);
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "white_badge"), WHITE_BADGE);
 
-		// Регистрация блока
 		registerBlock("bulletin_board", BULLETIN_BOARD);
 
-		// Остальные системы
 		ModBlockEntities.register();
-		ModPackets.register();
-		registerCommands();
-		registerServerTickEvents();
 
-		// Креативная вкладка
+		// Регистрация обработчиков пакетов (после регистрации типов!)
+		ModPackets.register();
+
+		registerCommands();
+
 		Registry.register(Registries.ITEM_GROUP,
 				Identifier.of(MOD_ID, "general"),
 				BULLETIN_BOARD_GROUP);
@@ -143,29 +135,12 @@ public class BulletinBoardMod implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register(BulletinBoardCommand::register);
 	}
 
-	private void registerServerTickEvents() {
-		ServerTickEvents.START_SERVER_TICK.register(server -> {
-			if (AutoNoteScheduler.getInstance() == null) {
-				AutoNoteScheduler.init(server);
-			}
-			AutoNoteScheduler.tick();
-
-			if (VillageDiscountEvent.getInstance() == null) {
-				VillageDiscountEvent.init(server);
-			}
-			VillageDiscountEvent.getInstance().tick();
-
-			TradeOverhaulIntegration.tick();
-		});
-	}
-
 	private static void registerBlock(String name, Block block) {
 		Registry.register(Registries.BLOCK, Identifier.of(MOD_ID, name), block);
 		Registry.register(Registries.ITEM, Identifier.of(MOD_ID, name),
 				new BlockItem(block, new Item.Settings()));
 	}
 
-	// Хелпер для создания Identifier (опционально)
 	public static Identifier id(String path) {
 		return Identifier.of(MOD_ID, path);
 	}

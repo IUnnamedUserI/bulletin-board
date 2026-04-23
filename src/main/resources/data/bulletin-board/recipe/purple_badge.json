@@ -5,10 +5,10 @@
       "item": "minecraft:clay_ball"
     },
     {
-      "item": "minecraft:brown_dye"
+      "item": "minecraft:purple_dye"
     }
   ],
   "result": {
-    "item": "bulletin-board:brown_badge"
+    "id": "bulletin-board:purple_badge"
   }
 }

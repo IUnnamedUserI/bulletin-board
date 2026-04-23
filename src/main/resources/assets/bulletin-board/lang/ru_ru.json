@@ -1,6 +1,6 @@
 {
   "item.bulletin-board.note_paper": "Лист для записки",
-  "item.bulletin-board.note_paper": "Маленький лист для записки",
+  "item.bulletin-board.small_note_paper": "Маленький лист для записки",
   "item.bulletin-board.black_badge": "Чёрная печать",
   "item.bulletin-board.red_badge": "Красная печать",
   "item.bulletin-board.green_badge": "Зелёная печать",
@@ -17,11 +17,11 @@
   "item.bulletin-board.magenta_badge": "Сиреневая печать",
   "item.bulletin-board.orange_badge": "Оранжевая печать",
   "item.bulletin-board.white_badge": "Белая печать",
-  
+
   "block.bulletin-board.bulletin_board": "Доска объявлений",
-  
+
   "itemGroup.bulletin-board.general": "Доски объявлений",
-  
+
   "gui.bulletin-board.note_editor.title": "Написать записку",
   "gui.bulletin-board.note_editor.title_label": "Заголовок:",
   "gui.bulletin-board.note_editor.content_label": "Текст:",
@@ -29,15 +29,15 @@
   "gui.bulletin-board.note_editor.cancel": "Отмена",
   "gui.bulletin-board.note_editor.title_placeholder": "Введите заголовок",
   "gui.bulletin-board.note_editor.content_placeholder": "Введите текст записки",
-  
+
   "gui.bulletin-board.note_view.title": "Записка",
   "gui.bulletin-board.note_view.close": "Закрыть",
   "gui.bulletin-board.note_view.take": "Забрать",
   "gui.bulletin-board.note_view.from": "— %s",
-  
+
   "item.bulletin-board.note_paper.tooltip.author": "от %s",
   "item.bulletin-board.note_paper.tooltip.empty": "Пустой лист",
-  
+
   "message.bulletin-board.note_placed": "§aЗаписка повешена на доску!",
   "message.bulletin-board.note_taken": "§aЗаписка снята с доски!",
   "message.bulletin-board.slot_occupied": "§cЭто место уже занято!",
@@ -46,5 +46,30 @@
   "message.bulletin-board.notes_header": "§6=== Записки на доске ===",
   "message.bulletin-board.badge_attached": "§aПечать прикреплена к записке!",
   "gui.bulletin-board.note_editor.anonymous": "Анонимно",
-"gui.bulletin-board.note_editor.anonymous_name": "Аноним"
+  "gui.bulletin-board.note_editor.anonymous_name": "Аноним",
+
+  "command.bulletin.no_board_nearby": "§cВблизи нет досок объявлений!",
+  "command.bulletin.board_empty": "§cЭта доска пуста!",
+  "command.bulletin.trigger.success": "§aРазмещено записок: %d",
+  "command.bulletin.clear.success": "§aДоска очищена!",
+  "command.bulletin.not_a_board": "§cЭто не доска объявлений!",
+  "command.bulletin.no_player": "§cТолько игроки могут использовать эту команду!",
+  "command.bulletin.list.empty": "§7На этой доске нет записок",
+  "command.bulletin.list.header": "§6=== Записки на доске (%d) ===",
+
+  "command.bulletin.scheduler.enabled": "§aАвто-размещение записок §eвключено§r§a!",
+  "command.bulletin.scheduler.disabled": "§cАвто-размещение записок §eвыключено§r§c!",
+  "command.bulletin.scheduler.triggered": "§aЗаписка размещена автоматически!",
+  "command.bulletin.scheduler.status.enabled": "§aСтатус: §eВКЛЮЧЕНО§r§a (раз в 15 секунд)",
+  "command.bulletin.scheduler.status.disabled": "§cСтатус: §eВЫКЛЮЧЕНО",
+
+  "command.bulletin.not_initialized": "§cСистема ещё не инициализирована! Перезагрузите мир.",
+  "command.bulletin.discount.trigger.success": "§aЗапущено событие со скидкой!",
+  "command.bulletin.discount.trigger.failed": "§cНе удалось создать событие (нет жителей/досок)",
+  "command.bulletin.discount.list.empty": "§7Нет активных скидок",
+  "command.bulletin.discount.list.header": "§6=== Активные скидки (%d) ===",
+  "command.bulletin.discount.clear.success": "§aВсе скидки сняты!",
+
+  "event.bulletin-board.discount.title": "СКИДКА!",
+  "event.bulletin-board.discount.content": "У %s скидка %d%% на все товары!\nУспейте воспользоваться!"
 }

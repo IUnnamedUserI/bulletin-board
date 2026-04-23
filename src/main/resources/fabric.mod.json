@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
 	"id": "bulletin-board",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"name": "Bulletin Board Mod",
-	"description": "A mod for bulletin boards",
+	"description": "A mod for bulletin boards with living world features",
 	"authors": ["UnnamedUser"],
 	"contact": {
 		"homepage": "https://www.curseforge.com/minecraft/mc-mods/bulletin-board"
@@ -25,5 +25,8 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"tradeoverhaul": "*"
 	}
 }

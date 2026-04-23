@@ -17,11 +17,11 @@
   "item.bulletin-board.magenta_badge": "Magenta Seal",
   "item.bulletin-board.orange_badge": "Orange Seal",
   "item.bulletin-board.white_badge": "White Seal",
-  
+
   "block.bulletin-board.bulletin_board": "Bulletin Board",
-  
+
   "itemGroup.bulletin-board.general": "Bulletin Boards",
-  
+
   "gui.bulletin-board.note_editor.title": "Write a Note",
   "gui.bulletin-board.note_editor.title_label": "Title:",
   "gui.bulletin-board.note_editor.content_label": "Text:",
@@ -29,15 +29,15 @@
   "gui.bulletin-board.note_editor.cancel": "Cancel",
   "gui.bulletin-board.note_editor.title_placeholder": "Enter title",
   "gui.bulletin-board.note_editor.content_placeholder": "Enter note text",
-  
+
   "gui.bulletin-board.note_view.title": "Note",
   "gui.bulletin-board.note_view.close": "Close",
   "gui.bulletin-board.note_view.take": "Take",
   "gui.bulletin-board.note_view.from": "— %s",
-  
+
   "item.bulletin-board.note_paper.tooltip.author": "by %s",
   "item.bulletin-board.note_paper.tooltip.empty": "Empty paper",
-  
+
   "message.bulletin-board.note_placed": "§aNote placed on board!",
   "message.bulletin-board.note_taken": "§aNote taken from board!",
   "message.bulletin-board.slot_occupied": "§cThis slot is already occupied!",
@@ -46,5 +46,30 @@
   "message.bulletin-board.notes_header": "§6=== Notes on board ===",
   "message.bulletin-board.badge_attached": "§aSeal attached to note!",
   "gui.bulletin-board.note_editor.anonymous": "Anonymously",
-"gui.bulletin-board.note_editor.anonymous_name": "Anonymous"
+  "gui.bulletin-board.note_editor.anonymous_name": "Anonymous",
+
+  "command.bulletin.no_board_nearby": "§cNo bulletin boards nearby!",
+  "command.bulletin.board_empty": "§cThis board is empty!",
+  "command.bulletin.trigger.success": "§aPlaced %d note(s)",
+  "command.bulletin.clear.success": "§aBoard cleared!",
+  "command.bulletin.not_a_board": "§cThis is not a bulletin board!",
+  "command.bulletin.no_player": "§cOnly players can use this command!",
+  "command.bulletin.list.empty": "§7No notes on this board",
+  "command.bulletin.list.header": "§6=== Notes on board (%d) ===",
+
+  "command.bulletin.scheduler.enabled": "§aAuto-note placement §eenabled§r§a!",
+  "command.bulletin.scheduler.disabled": "§cAuto-note placement §edisabled§r§c!",
+  "command.bulletin.scheduler.triggered": "§aNote placed automatically!",
+  "command.bulletin.scheduler.status.enabled": "§aStatus: §eENABLED§r§a (every 15 seconds)",
+  "command.bulletin.scheduler.status.disabled": "§cStatus: §eDISABLED",
+
+  "command.bulletin.not_initialized": "§cSystem not initialized yet! Reload the world.",
+  "command.bulletin.discount.trigger.success": "§aDiscount event started!",
+  "command.bulletin.discount.trigger.failed": "§cFailed to create event (no villagers/boards)",
+  "command.bulletin.discount.list.empty": "§7No active discounts",
+  "command.bulletin.discount.list.header": "§6=== Active discounts (%d) ===",
+  "command.bulletin.discount.clear.success": "§aAll discounts cleared!",
+
+  "event.bulletin-board.discount.title": "DISCOUNT!",
+  "event.bulletin-board.discount.content": "%s has %d%% OFF on all items!\nHurry up!"
 }

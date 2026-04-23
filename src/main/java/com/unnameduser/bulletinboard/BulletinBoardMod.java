@@ -2,10 +2,16 @@ package com.unnameduser.bulletinboard;
 
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
+import com.unnameduser.bulletinboard.command.BulletinBoardCommand;
+import com.unnameduser.bulletinboard.event.VillageDiscountEvent;
+import com.unnameduser.bulletinboard.integration.TradeOverhaulIntegration;
 import com.unnameduser.bulletinboard.item.BadgeItem;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.util.AutoNoteScheduler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
@@ -107,10 +113,35 @@ public class BulletinBoardMod implements ModInitializer {
 
 		ModBlockEntities.register();
 		ModPackets.register();
+		registerCommands();
+		registerServerTickEvents();
 
 		Registry.register(Registries.ITEM_GROUP,
 				new Identifier(MOD_ID, "general"),
 				BULLETIN_BOARD_GROUP);
+	}
+
+	private void registerCommands() {
+		CommandRegistrationCallback.EVENT.register(BulletinBoardCommand::register);
+	}
+
+	private void registerServerTickEvents() {
+		ServerTickEvents.START_SERVER_TICK.register(server -> {
+			// Инициализируем планировщик при первом тике сервера
+			if (AutoNoteScheduler.getInstance() == null) {
+				AutoNoteScheduler.init(server);
+			}
+			AutoNoteScheduler.tick();
+			
+			// Инициализируем ивенты скидок при первом тике
+			if (VillageDiscountEvent.getInstance() == null) {
+				VillageDiscountEvent.init(server);
+			}
+			VillageDiscountEvent.getInstance().tick();
+			
+			// Тикаем интеграцию с Trade Overhaul
+			TradeOverhaulIntegration.tick();
+		});
 	}
 
 	private static void registerBlock(String name, Block block) {

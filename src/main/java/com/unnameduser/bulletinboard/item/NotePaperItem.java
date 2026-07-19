@@ -60,6 +60,11 @@ public class NotePaperItem extends Item {
             NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
             MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
         } else {
+            // Передаём тип записки через NBT
+            if (!stack.hasNbt()) {
+                stack.setNbt(new net.minecraft.nbt.NbtCompound());
+            }
+            stack.getNbt().putBoolean("IsSmall", isSmall);
             MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
         }
     }

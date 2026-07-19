@@ -1,38 +1,41 @@
 package com.unnameduser.bulletinboard.screen;
 
-import com.unnameduser.bulletinboard.BulletinBoardMod;
-import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.util.NoteConstants;
 import com.unnameduser.bulletinboard.util.NoteData;
+import com.unnameduser.bulletinboard.widget.AdaptiveRoundedTextFieldWidget;
+import com.unnameduser.bulletinboard.widget.RoundedButtonWidget;
+import com.unnameduser.bulletinboard.widget.RoundedTextFieldWidget;
+import com.unnameduser.bulletinboard.widget.SwitchWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 public class NoteEditorScreen extends Screen {
-    private TextFieldWidget titleField;
-    private TextFieldWidget contentField;
+    private AdaptiveRoundedTextFieldWidget titleField;
+    private RoundedTextFieldWidget contentField;
     private final ItemStack notePaper;
-    private final boolean isSmall;
-
     private boolean isAnonymous = false;
-    private ButtonWidget anonymousButton;
+    private SwitchWidget anonymousSwitch;
 
-    private static final int TITLE_MAX_LENGTH = 40;
-    private static final int CONTENT_MAX_LENGTH_NORMAL = 512;
-    private static final int CONTENT_MAX_LENGTH_SMALL = 256;
-
+    private final int titleMaxLength;
     private final int contentMaxLength;
 
     public NoteEditorScreen(ItemStack notePaper) {
         super(Text.translatable("gui.bulletin-board.note_editor.title"));
         this.notePaper = notePaper;
-        this.isSmall = notePaper.getItem() instanceof NotePaperItem && ((NotePaperItem) notePaper.getItem()).isSmall();
-        this.contentMaxLength = isSmall? CONTENT_MAX_LENGTH_SMALL : CONTENT_MAX_LENGTH_NORMAL;
+
+        // Определяем тип записки по NBT или по умолчанию (полноразмерная)
+        boolean isSmall = false;
+        if (notePaper.hasNbt() && notePaper.getNbt().contains("IsSmall")) {
+            isSmall = notePaper.getNbt().getBoolean("IsSmall");
+        }
+
+        this.titleMaxLength = isSmall ? NoteConstants.SMALL_TITLE_MAX : NoteConstants.FULL_TITLE_MAX;
+        this.contentMaxLength = isSmall ? NoteConstants.SMALL_CONTENT_MAX : NoteConstants.FULL_CONTENT_MAX;
     }
 
     @Override
@@ -40,66 +43,71 @@ public class NoteEditorScreen extends Screen {
         super.init();
 
         int centerX = this.width / 2;
-        int startY = this.height / 2 - 40;
+        int centerY = this.height / 2;
 
-        this.titleField = new TextFieldWidget(
-                this.textRenderer,
-                centerX - 100,
-                startY,
-                200, 20,
+        int fieldWidth = 200;
+        int fieldX = centerX - fieldWidth / 2;
+
+        int contentHeight = 80;
+        int contentY = centerY - contentHeight / 2;
+
+        // === ПОЛЕ ЗАГОЛОВКА ===
+        int titleY = contentY - 40;
+        this.titleField = new AdaptiveRoundedTextFieldWidget(
+                fieldX, titleY,
+                fieldWidth,
+                20, 60,
+                titleMaxLength,
                 Text.translatable("gui.bulletin-board.note_editor.title_placeholder")
         );
-        this.titleField.setMaxLength(TITLE_MAX_LENGTH);
-        this.titleField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.title_placeholder"));
         this.addSelectableChild(this.titleField);
 
-        this.contentField = new TextFieldWidget(
-                this.textRenderer,
-                centerX - 100,
-                startY + 35,
-                200, 20,
+        // === ПОЛЕ СОДЕРЖИМОГО ===
+        this.contentField = new RoundedTextFieldWidget(
+                fieldX, contentY,
+                fieldWidth, contentHeight,
+                contentMaxLength,
                 Text.translatable("gui.bulletin-board.note_editor.content_placeholder")
         );
-        this.contentField.setMaxLength(contentMaxLength);
-        this.contentField.setPlaceholder(Text.translatable("gui.bulletin-board.note_editor.content_placeholder"));
         this.addSelectableChild(this.contentField);
 
-        this.anonymousButton = ButtonWidget.builder(
-                        getAnonymousButtonText(),
-                        button -> {
-                            isAnonymous = !isAnonymous;
-                            anonymousButton.setMessage(getAnonymousButtonText());
-                        }
-                )
-                .dimensions(centerX - 100, startY + 60, 200, 20)
-                .build();
-        this.addDrawableChild(this.anonymousButton);
+        // === ПЕРЕКЛЮЧАТЕЛЬ АНОНИМНОСТИ ===
+        int switchY = contentY + contentHeight + 10;
+        this.anonymousSwitch = new SwitchWidget(
+                fieldX, switchY,
+                Text.translatable("gui.bulletin-board.note_editor.anonymous"),
+                () -> {
+                    isAnonymous = anonymousSwitch.getState();
+                }
+        );
+        this.addDrawableChild(this.anonymousSwitch);
+
+        // === КНОПКИ ===
+        Text saveText = Text.translatable("gui.bulletin-board.note_editor.save");
+        Text cancelText = Text.translatable("gui.bulletin-board.note_editor.cancel");
+
+        int saveWidth = RoundedButtonWidget.calculateWidth(saveText);
+        int cancelWidth = RoundedButtonWidget.calculateWidth(cancelText);
+
+        int totalWidth = saveWidth + cancelWidth + 10;
+        int buttonsStartX = centerX - totalWidth / 2;
+        int buttonY = switchY + 30;
+
+        this.addDrawableChild(new RoundedButtonWidget(
+                buttonsStartX, buttonY,
+                saveText,
+                this::saveNote,
+                0xFF55AA55
+        ));
+
+        this.addDrawableChild(new RoundedButtonWidget(
+                buttonsStartX + saveWidth + 10, buttonY,
+                cancelText,
+                this::close,
+                0xFFFF5555
+        ));
 
         this.setInitialFocus(this.titleField);
-
-        this.addDrawableChild(
-                ButtonWidget.builder(
-                                Text.translatable("gui.bulletin-board.note_editor.save"),
-                                button -> this.saveNote()
-                        )
-                        .dimensions(centerX - 100, startY + 90, 95, 20)
-                        .build()
-        );
-
-        this.addDrawableChild(
-                ButtonWidget.builder(
-                                Text.translatable("gui.bulletin-board.note_editor.cancel"),
-                                button -> this.close()
-                        )
-                        .dimensions(centerX + 5, startY + 90, 95, 20)
-                        .build()
-        );
-    }
-
-    private Text getAnonymousButtonText() {
-        String checkBox = isAnonymous ? "[✓]" : "[ ]";
-        return Text.literal(checkBox + " " +
-                Text.translatable("gui.bulletin-board.note_editor.anonymous").getString());
     }
 
     private void saveNote() {
@@ -111,18 +119,20 @@ public class NoteEditorScreen extends Screen {
                     Text.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
                     this.client.player.getName().getString();
 
-            NoteData note = new NoteData(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
+            NoteData note = new NoteData(title, content, author, -1);
 
             NbtCompound nbt = new NbtCompound();
             nbt.put("NoteData", note.toNbt());
 
-            int slot = findSlotIndex();
+            // Сохраняем тип записки
+            boolean isSmall = titleMaxLength == NoteConstants.SMALL_TITLE_MAX;
+            nbt.putBoolean("IsSmall", isSmall);
 
+            int slot = findSlotIndex();
             this.notePaper.setNbt(nbt);
 
             if (slot >= 0) {
                 ModPackets.sendUpdateNoteNbt(slot, nbt);
-                this.client.player.getInventory().markDirty();
             }
 
             this.close();
@@ -146,30 +156,20 @@ public class NoteEditorScreen extends Screen {
         this.renderBackground(context);
 
         int centerX = this.width / 2;
-        int startY = this.height / 2 - 40;
+        int fieldWidth = 200;
+        int fieldX = centerX - fieldWidth / 2;
 
         context.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.bulletin-board.note_editor.title"),
-                this.width / 2, 20, 0xFFFFFF);
+                centerX, 20, 0xFFFFFF);
 
         context.drawText(this.textRenderer,
                 Text.translatable("gui.bulletin-board.note_editor.title_label"),
-                centerX - 100, startY - 12, 0xFFFFFF, false);
+                fieldX, this.titleField.getY() - 12, 0xFFFFFF, false);
+
         context.drawText(this.textRenderer,
                 Text.translatable("gui.bulletin-board.note_editor.content_label"),
-                centerX - 100, startY + 23, 0xFFFFFF, false);
-
-        String titleCounter = String.format("%d/%d",
-                this.titleField.getText().length(), TITLE_MAX_LENGTH);
-        context.drawText(this.textRenderer, Text.literal(titleCounter),
-                centerX + 100 - this.textRenderer.getWidth(titleCounter), startY - 12,
-                this.titleField.getText().length() >= TITLE_MAX_LENGTH ? 0xFF5555 : 0xAAAAAA, false);
-
-        String contentCounter = String.format("%d/%d",
-                this.contentField.getText().length(), contentMaxLength);
-        context.drawText(this.textRenderer, Text.literal(contentCounter),
-                centerX + 100 - this.textRenderer.getWidth(contentCounter), startY + 23,
-                this.contentField.getText().length() >= contentMaxLength ? 0xFF5555 : 0xAAAAAA, false);
+                fieldX, this.contentField.getY() - 12, 0xFFFFFF, false);
 
         this.titleField.render(context, mouseX, mouseY, delta);
         this.contentField.render(context, mouseX, mouseY, delta);
@@ -178,8 +178,25 @@ public class NoteEditorScreen extends Screen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (titleField != null) {
+            titleField.tick();
+        }
+        if (contentField != null) {
+            contentField.tick();
+        }
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ENTER) {
+            if (this.titleField != null && this.titleField.isFocused()) {
+                return super.keyPressed(keyCode, scanCode, modifiers);
+            }
+            if (this.contentField != null && this.contentField.isFocused()) {
+                return super.keyPressed(keyCode, scanCode, modifiers);
+            }
             this.saveNote();
             return true;
         }

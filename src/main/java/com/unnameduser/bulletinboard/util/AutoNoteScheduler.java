@@ -25,7 +25,7 @@ public class AutoNoteScheduler {
     private final MinecraftServer server;
     private final long intervalTicks;
     private long lastRunTime = 0;
-    private boolean enabled = true;
+    private boolean enabled = false;
     
     // Кэш досок — обновляется только при загрузке чанков
     private static final List<BlockPos> CACHED_BOARDS = new CopyOnWriteArrayList<>();

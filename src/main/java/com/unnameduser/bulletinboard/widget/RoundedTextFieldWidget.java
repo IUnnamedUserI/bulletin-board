@@ -20,7 +20,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
     protected int cursorPos = 0;
     protected int firstLineIndex = 0;
 
-    // Настройки внешнего вида
     protected static final int RADIUS = 8;
     protected static final int BORDER_COLOR = 0xFF888888;
     protected static final int BORDER_COLOR_FOCUSED = 0xFF55AAFF;
@@ -31,7 +30,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
     protected static final int PADDING = 6;
     protected static final int PADDING_BOTTOM = 14;
 
-    // Анимация свечения
     private float glowAlpha = 0.0f;
 
     public RoundedTextFieldWidget(int x, int y, int width, int height, int maxLength, Text placeholder) {
@@ -41,8 +39,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         this.placeholder = placeholder;
         this.cursorPos = 0;
     }
-
-    // ============ ГЕТТЕРЫ И СЕТТЕРЫ ============
 
     public String getText() { return text; }
     public void setText(String text) {
@@ -55,58 +51,20 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         this.cursorPos = MathHelper.clamp(pos, 0, text.length());
     }
 
-    // ============ МЕТОДЫ ДЛЯ NARRATOR ============
-
     @Override
     protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {
         builder.put(net.minecraft.client.gui.screen.narration.NarrationPart.TITLE,
                 Text.literal("Текстовое поле: " + text));
     }
 
+    // В 1.21.1 вместо renderButton используется renderWidget
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.render(context, mouseX, mouseY, delta);
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderContent(context, mouseX, mouseY, delta);
     }
 
-    // ============ АНИМАЦИЯ СВЕЧЕНИЯ ============
-    public void tick() {
-        if (focused && glowAlpha < 1.0f) {
-            glowAlpha += 0.08f;
-        } else if (!focused && glowAlpha > 0.0f) {
-            glowAlpha -= 0.08f;
-        }
-        glowAlpha = MathHelper.clamp(glowAlpha, 0.0f, 1.0f);
-    }
-
-    private void drawGlow(DrawContext context, int x, int y, int w, int h, int r) {
-        if (glowAlpha < 0.01f) return;
-
-        int color = 0x55AAFF;
-        int layers = 6;
-
-        for (int i = 0; i < layers; i++) {
-            float alpha = glowAlpha * (1.0f - (float) i / layers) * 0.3f;
-            int alphaInt = (int) (alpha * 255);
-            int glowColor = (alphaInt << 24) | (color & 0x00FFFFFF);
-            int offset = i / 2;
-
-            drawRoundRectBorder(
-                    context,
-                    x - offset,
-                    y - offset,
-                    w + offset * 2,
-                    h + offset * 2,
-                    r + offset,
-                    glowColor,
-                    1
-            );
-        }
-    }
-
-    // ============ ОТРИСОВКА ============
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    // Основной метод отрисовки (не override)
+    public void renderContent(DrawContext context, int mouseX, int mouseY, float delta) {
         if (!this.visible) return;
 
         int x = getX();
@@ -114,25 +72,20 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         int w = getWidth();
         int h = getHeight();
 
-        // 1. Фон с закруглениями
         drawRoundRect(context, x, y, w, h, RADIUS, BACKGROUND_COLOR);
 
-        // 2. Свечение (если есть фокус)
         if (focused) {
             drawGlow(context, x, y, w, h, RADIUS);
         }
 
-        // 3. Граница
         int borderColor = focused ? BORDER_COLOR_FOCUSED : BORDER_COLOR;
         drawRoundRectBorder(context, x, y, w, h, RADIUS, borderColor, 1);
 
-        // 4. Обрезка области для текста
         int textX = x + PADDING;
         int textY = y + PADDING;
         int maxTextWidth = w - PADDING * 2;
         int maxTextHeight = h - PADDING - PADDING_BOTTOM;
 
-        // 5. Текст или плейсхолдер
         if (text.isEmpty() && !focused) {
             context.drawText(textRenderer, placeholder, textX, textY, PLACEHOLDER_COLOR, false);
         } else {
@@ -151,7 +104,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                 context.drawText(textRenderer, Text.literal(lines.get(i)), textX, lineY, TEXT_COLOR, false);
             }
 
-            // 6. Курсор
             if (focused && (System.currentTimeMillis() / 500 % 2 == 0)) {
                 int cursorLine = getLineIndexForCursor(lines);
                 int posInLine = getPositionInLineForCursor(cursorLine, lines);
@@ -181,7 +133,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
             }
         }
 
-        // 7. Счётчик символов
         String counter = text.length() + "/" + maxLength;
         int counterWidth = textRenderer.getWidth(counter);
         int counterX = x + w - PADDING - counterWidth;
@@ -189,25 +140,35 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         boolean isFull = text.length() >= maxLength;
         int counterColor = isFull ? 0xFFFF5555 : 0xFF888888;
 
-        context.fill(
-                counterX - 3,
-                counterY - 1,
-                counterX + counterWidth + 3,
-                counterY + textRenderer.fontHeight + 1,
-                0xCC1A1A1A
-        );
-
-        context.drawText(
-                textRenderer,
-                Text.literal(counter),
-                counterX,
-                counterY,
-                counterColor,
-                false
-        );
+        context.fill(counterX - 3, counterY - 1, counterX + counterWidth + 3, counterY + textRenderer.fontHeight + 1, 0xCC1A1A1A);
+        context.drawText(textRenderer, Text.literal(counter), counterX, counterY, counterColor, false);
     }
 
-    // ============ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ============
+    // tick() для анимации (вызывается из Screen)
+    public void tick() {
+        if (focused && glowAlpha < 1.0f) {
+            glowAlpha += 0.08f;
+        } else if (!focused && glowAlpha > 0.0f) {
+            glowAlpha -= 0.08f;
+        }
+        glowAlpha = MathHelper.clamp(glowAlpha, 0.0f, 1.0f);
+    }
+
+    private void drawGlow(DrawContext context, int x, int y, int w, int h, int r) {
+        if (glowAlpha < 0.01f) return;
+
+        int color = 0x55AAFF;
+        int layers = 6;
+
+        for (int i = 0; i < layers; i++) {
+            float alpha = glowAlpha * (1.0f - (float) i / layers) * 0.3f;
+            int alphaInt = (int) (alpha * 255);
+            int glowColor = (alphaInt << 24) | (color & 0x00FFFFFF);
+            int offset = i / 2;
+
+            drawRoundRectBorder(context, x - offset, y - offset, w + offset * 2, h + offset * 2, r + offset, glowColor, 1);
+        }
+    }
 
     protected List<String> wrapText(String text, int maxWidth) {
         List<String> lines = new ArrayList<>();
@@ -411,8 +372,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         return true;
     }
 
-    // ============ НАВИГАЦИЯ ============
-
     private void moveCursorUp() {
         List<String> lines = wrapText(text, getWidth() - PADDING * 2);
         if (lines.isEmpty()) return;
@@ -473,8 +432,6 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         return x >= getX() && x <= getX() + getWidth() &&
                 y >= getY() && y <= getY() + getHeight();
     }
-
-    // ============ МЕТОДЫ ОТРИСОВКИ ФИГУР ============
 
     private void drawRoundRect(DrawContext context, int x, int y, int w, int h, int r, int color) {
         drawCornerFilled(context, x + w - r, y + h - r, r, color, 0);

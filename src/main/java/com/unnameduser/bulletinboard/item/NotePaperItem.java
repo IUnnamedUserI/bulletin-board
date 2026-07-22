@@ -2,15 +2,19 @@ package com.unnameduser.bulletinboard.item;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.screen.NoteEditorScreen;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -19,7 +23,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -57,27 +60,44 @@ public class NotePaperItem extends Item {
     @Environment(EnvType.CLIENT)
     private void openScreen(ItemStack stack, boolean hasNote) {
         if (hasNote) {
-            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
-            MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
-        } else {
-            // Передаём тип записки через NBT
-            if (!stack.hasNbt()) {
-                stack.setNbt(new net.minecraft.nbt.NbtCompound());
+            // Получаем NbtComponent
+            NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+            if (nbtComponent != null) {
+                // Копируем в NbtCompound для удобной работы
+                NbtCompound nbt = nbtComponent.copyNbt();
+                if (nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+                    NbtCompound noteNbt = nbt.getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY);
+                    NoteData note = NoteData.fromNbt(noteNbt);
+                    MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
+                    return;
+                }
             }
-            stack.getNbt().putBoolean("IsSmall", isSmall);
-            MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
         }
+        // Если нет данных - открываем редактор
+        MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
     }
 
     private boolean hasNoteData(ItemStack stack) {
-        return stack.hasNbt() && stack.getNbt().contains("NoteData");
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) return false;
+        NbtCompound nbt = nbtComponent.copyNbt();
+        return nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if (hasNoteData(stack)) {
-            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        NoteData note = null;
 
+        if (nbtComponent != null) {
+            NbtCompound nbt = nbtComponent.copyNbt();
+            if (nbt.contains(BulletinBoardMod.NOTE_DATA_NBT_KEY)) {
+                NbtCompound noteNbt = nbt.getCompound(BulletinBoardMod.NOTE_DATA_NBT_KEY);
+                note = NoteData.fromNbt(noteNbt);
+            }
+        }
+
+        if (note != null) {
             tooltip.add(Text.literal("§6" + note.getTitle()).formatted(Formatting.GOLD));
             tooltip.add(Text.translatable("item.bulletin-board.note_paper.tooltip.author",
                     note.getAuthor()).formatted(Formatting.GRAY));

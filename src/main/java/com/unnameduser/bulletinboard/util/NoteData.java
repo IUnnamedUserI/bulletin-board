@@ -12,7 +12,7 @@ public class NoteData {
     private boolean isSmall;
 
     public NoteData(String title, String content, String author, boolean isSmall) {
-        this(title, content, author, -1, System.currentTimeMillis(), false, false);
+        this(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
     }
 
     public NoteData(String title, String content, String author, int tagColor) {
@@ -29,44 +29,18 @@ public class NoteData {
         this.isSmall = isSmall;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public int getTagColor() {
-        return tagColor;
-    }
-
+    public String getTitle() { return title; }
+    public String getContent() { return content; }
+    public String getAuthor() { return author; }
+    public int getTagColor() { return tagColor; }
     public long getCreationTime() { return creationTime; }
-
     public boolean hasSeal() { return hasSeal; }
-
     public boolean isSmall() { return isSmall; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setTagColor(int tagColor) {
-        this.tagColor = tagColor;
-    }
-
+    public void setTitle(String title) { this.title = title; }
+    public void setContent(String content) { this.content = content; }
+    public void setAuthor(String author) { this.author = author; }
+    public void setTagColor(int tagColor) { this.tagColor = tagColor; }
     public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
 
     public NbtCompound toNbt() {
@@ -89,7 +63,6 @@ public class NoteData {
         long creationTime = nbt.contains("CreationTime") ? nbt.getLong("CreationTime") : System.currentTimeMillis();
         boolean hasSeal = nbt.contains("HasSeal") ? nbt.getBoolean("HasSeal") : (tagColor != -1);
         boolean isSmall = nbt.contains("IsSmall") && nbt.getBoolean("IsSmall");
-
         return new NoteData(title, content, author, tagColor, creationTime, hasSeal, isSmall);
     }
 
@@ -103,7 +76,6 @@ public class NoteData {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof NoteData)) return false;
-
         NoteData other = (NoteData) obj;
         return title.equals(other.title) &&
                 content.equals(other.content) &&

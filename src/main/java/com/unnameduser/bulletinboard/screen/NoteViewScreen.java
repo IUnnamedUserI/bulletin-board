@@ -1,5 +1,6 @@
 package com.unnameduser.bulletinboard.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.DrawContext;
@@ -133,8 +134,10 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        this.renderBackground(context);
+        // 1. Рисуем фон с размытием
+        this.renderBackground(context, mouseX, mouseY, delta);
 
+        // 2. Рисуем весь контент поверх размытого фона
         context.fill(parchmentX, parchmentY,
                 parchmentX + parchmentWidth, parchmentY + parchmentHeight,
                 PARCHMENT_COLOR);
@@ -166,7 +169,6 @@ public class NoteViewScreen extends Screen {
                 parchmentX + parchmentWidth - 100, parchmentY + parchmentHeight - 25,
                 0xFF6B5E4A, false);
 
-        // === СТРЕЛКИ ПРОКРУТКИ ===
         boolean canScrollUp = scrollOffset > 0;
         boolean canScrollDown = scrollOffset < maxScroll;
 
@@ -180,7 +182,18 @@ public class NoteViewScreen extends Screen {
             drawArrow(context, parchmentX + parchmentWidth / 2 - 8, arrowY, false, mouseX, mouseY);
         }
 
-        super.render(context, mouseX, mouseY, delta);
+        // 3. Рендерим только кнопки (как в NoteEditorScreen)
+        for (var child : this.children()) {
+            if (child instanceof net.minecraft.client.gui.widget.ClickableWidget widget) {
+                // Проверяем, что это кнопки (не наш собственный контент)
+                if (widget instanceof ButtonWidget) {
+                    widget.render(context, mouseX, mouseY, delta);
+                }
+            }
+        }
+
+        // 4. НЕ вызываем super.render() — он перерисовывает фон повторно!
+        // super.render(context, mouseX, mouseY, delta);
     }
 
     private void drawArrow(DrawContext context, int x, int y, boolean up, int mouseX, int mouseY) {
@@ -225,13 +238,13 @@ public class NoteViewScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (mouseX >= parchmentX && mouseX <= parchmentX + parchmentWidth &&
                 mouseY >= parchmentY && mouseY <= parchmentY + parchmentHeight) {
-            scrollOffset = MathHelper.clamp(scrollOffset - (int) (amount * 15), 0, maxScroll);
+            scrollOffset = MathHelper.clamp(scrollOffset - (int) (verticalAmount * 15), 0, maxScroll);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override

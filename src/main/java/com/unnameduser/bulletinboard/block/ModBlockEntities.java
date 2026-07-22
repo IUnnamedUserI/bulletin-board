@@ -13,7 +13,7 @@ public class ModBlockEntities {
     public static void register() {
         BULLETIN_BOARD_ENTITY = Registry.register(
                 Registries.BLOCK_ENTITY_TYPE,
-                new Identifier(BulletinBoardMod.MOD_ID, "bulletin_board"),
+                Identifier.of(BulletinBoardMod.MOD_ID, "bulletin_board"),
                 FabricBlockEntityTypeBuilder.create(
                         BulletinBoardBlockEntity::new,
                         BulletinBoardMod.BULLETIN_BOARD

@@ -4,6 +4,7 @@ import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
+import com.unnameduser.bulletinboard.network.OpenNotePayload;
 import com.unnameduser.bulletinboard.renderer.BulletinBoardRenderer;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
@@ -18,7 +19,10 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -40,20 +44,18 @@ public class BulletinBoardClient implements ClientModInitializer {
                 BulletinBoardRenderer::new
         );
 
-        ClientPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "open_note"),
-                (client, handler, buf, responseSender) -> {
-                    BlockPos pos = buf.readBlockPos();
-                    int slot = buf.readInt();
-                    client.execute(() -> {
-                        if (client.world != null &&
-                                client.world.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity) {
-                            NoteData note = boardEntity.getNoteAtPosition(slot);
-                            if (note != null) {
-                                client.setScreen(new NoteViewScreen(note, boardEntity, slot));
-                            }
-                        }
-                    });
-                });
+        // Используем новую Payload систему
+        ClientPlayNetworking.registerGlobalReceiver(OpenNotePayload.ID, (payload, context) -> {
+            MinecraftClient.getInstance().execute(() -> {
+                if (context.client().world != null &&
+                        context.client().world.getBlockEntity(payload.pos()) instanceof BulletinBoardBlockEntity boardEntity) {
+                    NoteData note = boardEntity.getNoteAtPosition(payload.slot());
+                    if (note != null) {
+                        context.client().setScreen(new NoteViewScreen(note, boardEntity, payload.slot()));
+                    }
+                }
+            });
+        });
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register((context) -> {
             MinecraftClient client = MinecraftClient.getInstance();
@@ -98,8 +100,8 @@ public class BulletinBoardClient implements ClientModInitializer {
     }
 
     private boolean isSignedNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem  // ← Работает для NOTE_PAPER и SMALL_NOTE_PAPER
-                && stack.hasNbt() && stack.getNbt().contains("NoteData");
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
+        return stack.getItem() instanceof NotePaperItem && nbtComponent != null && !nbtComponent.isEmpty();
     }
 
     private int calculateSlot(BlockHitResult hit, BlockPos pos, Direction facing) {
@@ -120,9 +122,9 @@ public class BulletinBoardClient implements ClientModInitializer {
         double horizontal = (facing == Direction.NORTH || facing == Direction.SOUTH) ? x : z;
 
         if (horizontal < 0.4 && horizontal > 0.15) {
-            if (y < 0.28 && y > 0.12) return 3;  // Между слотами 3 и 2: (0.22 + 0.26) / 2
-            if (y < 0.45 && y > 0.29) return 2;  // Между слотами 2 и 1: (0.44 + 0.48) / 2
-            if (y < 0.63 && y > 0.47) return 1;  // Между слотами 1 и 0: (0.66 + 0.70) / 2
+            if (y < 0.28 && y > 0.12) return 3;
+            if (y < 0.45 && y > 0.29) return 2;
+            if (y < 0.63 && y > 0.47) return 1;
             if (y < 0.81 && y > 0.65) return 0;
             return -1;
         } else if (horizontal > 0.47 && horizontal < 0.83 && y < 0.7 && y > 0.3) {
@@ -146,16 +148,13 @@ public class BulletinBoardClient implements ClientModInitializer {
 
         Box highlightBox = null;
 
-        // 🔧 Логика для МАЛЫХ записок (зелёная подсветка)
         if (hasSmallNote) {
-            // Малые записки можно вешать только в слоты 0-3
             if (slot >= 0 && slot <= 3) {
                 highlightBox = getSlotWorldBox(slot, pos, facing);
             } else {
-                return; // Невалидный слот для малой записки
+                return;
             }
         }
-        // 🔧 Логика для ОБЫЧНЫХ записок
         else if (hasNormalNote) {
             var blockEntity = client.world.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
@@ -176,7 +175,6 @@ public class BulletinBoardClient implements ClientModInitializer {
                 }
             }
         }
-        // 🔧 Пустая рука — жёлтая подсветка для взаимодействия
         else if (hasEmptyHand && tempColor == COLOR_INTERACT) {
             var blockEntity = client.world.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
@@ -199,7 +197,6 @@ public class BulletinBoardClient implements ClientModInitializer {
             return;
         }
 
-        // Отрисовка
         VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
         var cam = client.gameRenderer.getCamera().getPos();
 
@@ -219,10 +216,8 @@ public class BulletinBoardClient implements ClientModInitializer {
 
         double slotX1, slotX2, slotY1, slotY2;
 
-        // Для маленьких слотов (0-3)
         if (slot >= 0 && slot <= 3) {
             slotX1 = 0.14; slotX2 = 0.42;
-            // Высота зависит от слота
             switch (slot) {
                 case 0:
                     slotY1 = 0.64; slotY2 = 0.80;
@@ -239,7 +234,7 @@ public class BulletinBoardClient implements ClientModInitializer {
                 default:
                     slotY1 = 0.04; slotY2 = 0.88;
             }
-        } else { // Большой слот (4)
+        } else {
             slotX1 = 0.47; slotX2 = 0.83;
             slotY1 = 0.3; slotY2 = 0.7;
         }
@@ -263,39 +258,44 @@ public class BulletinBoardClient implements ClientModInitializer {
         double minX = box.minX, maxX = box.maxX;
         double minY = box.minY, maxY = box.maxY;
         double minZ = box.minZ, maxZ = box.maxZ;
-        line(lines, matrices, minX, minY, minZ, maxX, minY, minZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, minY, minZ, minX, maxY, minZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, minX, minY, minZ, minX, minY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a, 1, 0, 0);
+        line(lines, matrices, minX, minY, minZ, maxX, minY, minZ, r, g, b, a);
+        line(lines, matrices, minX, minY, minZ, minX, maxY, minZ, r, g, b, a);
+        line(lines, matrices, minX, minY, minZ, minX, minY, maxZ, r, g, b, a);
+        line(lines, matrices, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a);
+        line(lines, matrices, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a);
+        line(lines, matrices, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a);
+        line(lines, matrices, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a);
+        line(lines, matrices, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a);
+        line(lines, matrices, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a);
+        line(lines, matrices, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a);
+        line(lines, matrices, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a);
+        line(lines, matrices, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a);
     }
 
     private void line(VertexConsumer lines, MatrixStack matrices,
                       double x1, double y1, double z1, double x2, double y2, double z2,
-                      float r, float g, float b, float a, int nx, int ny, int nz) {
+                      float r, float g, float b, float a) {
+        // Добавляем нормали для каждой вершины
         lines.vertex(matrices.peek().getPositionMatrix(), (float)x1, (float)y1, (float)z1)
-                .color(r, g, b, a).normal(nx, ny, nz).next();
+                .color(r, g, b, a)
+                .normal(0, 1, 0);
         lines.vertex(matrices.peek().getPositionMatrix(), (float)x2, (float)y2, (float)z2)
-                .color(r, g, b, a).normal(nx, ny, nz).next();
+                .color(r, g, b, a)
+                .normal(0, 1, 0);
     }
 
     private boolean isSmallNote(ItemStack stack) {
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         return stack.getItem() instanceof NotePaperItem &&
                 ((NotePaperItem) stack.getItem()).isSmall() &&
-                stack.hasNbt() && stack.getNbt().contains("NoteData");
+                nbtComponent != null && nbtComponent.contains("NoteData");
     }
 
     private boolean isNormalNote(ItemStack stack) {
+        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         return stack.getItem() instanceof NotePaperItem &&
                 !((NotePaperItem) stack.getItem()).isSmall() &&
-                stack.hasNbt() && stack.getNbt().contains("NoteData");
+                nbtComponent != null && nbtComponent.contains("NoteData");
     }
 
     private Box getCombinedSlotWorldBox(int slot1, int slot2, BlockPos pos, Direction facing) {

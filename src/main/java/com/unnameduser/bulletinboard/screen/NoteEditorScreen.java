@@ -9,6 +9,9 @@ import com.unnameduser.bulletinboard.widget.RoundedTextFieldWidget;
 import com.unnameduser.bulletinboard.widget.SwitchWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
@@ -28,10 +31,14 @@ public class NoteEditorScreen extends Screen {
         super(Text.translatable("gui.bulletin-board.note_editor.title"));
         this.notePaper = notePaper;
 
-        // Определяем тип записки по NBT или по умолчанию (полноразмерная)
         boolean isSmall = false;
-        if (notePaper.hasNbt() && notePaper.getNbt().contains("IsSmall")) {
-            isSmall = notePaper.getNbt().getBoolean("IsSmall");
+        // В 1.21.1 используется NbtComponent
+        NbtComponent nbtComponent = notePaper.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent != null) {
+            NbtCompound nbt = nbtComponent.copyNbt();
+            if (nbt != null && nbt.contains("IsSmall")) {
+                isSmall = nbt.getBoolean("IsSmall");
+            }
         }
 
         this.titleMaxLength = isSmall ? NoteConstants.SMALL_TITLE_MAX : NoteConstants.FULL_TITLE_MAX;
@@ -51,7 +58,6 @@ public class NoteEditorScreen extends Screen {
         int contentHeight = 80;
         int contentY = centerY - contentHeight / 2;
 
-        // === ПОЛЕ ЗАГОЛОВКА ===
         int titleY = contentY - 40;
         this.titleField = new AdaptiveRoundedTextFieldWidget(
                 fieldX, titleY,
@@ -62,7 +68,6 @@ public class NoteEditorScreen extends Screen {
         );
         this.addSelectableChild(this.titleField);
 
-        // === ПОЛЕ СОДЕРЖИМОГО ===
         this.contentField = new RoundedTextFieldWidget(
                 fieldX, contentY,
                 fieldWidth, contentHeight,
@@ -71,7 +76,6 @@ public class NoteEditorScreen extends Screen {
         );
         this.addSelectableChild(this.contentField);
 
-        // === ПЕРЕКЛЮЧАТЕЛЬ АНОНИМНОСТИ ===
         int switchY = contentY + contentHeight + 10;
         this.anonymousSwitch = new SwitchWidget(
                 fieldX, switchY,
@@ -82,7 +86,6 @@ public class NoteEditorScreen extends Screen {
         );
         this.addDrawableChild(this.anonymousSwitch);
 
-        // === КНОПКИ ===
         Text saveText = Text.translatable("gui.bulletin-board.note_editor.save");
         Text cancelText = Text.translatable("gui.bulletin-board.note_editor.cancel");
 
@@ -124,12 +127,13 @@ public class NoteEditorScreen extends Screen {
             NbtCompound nbt = new NbtCompound();
             nbt.put("NoteData", note.toNbt());
 
-            // Сохраняем тип записки
             boolean isSmall = titleMaxLength == NoteConstants.SMALL_TITLE_MAX;
             nbt.putBoolean("IsSmall", isSmall);
 
             int slot = findSlotIndex();
-            this.notePaper.setNbt(nbt);
+
+            // В 1.21.1 используется NbtComponent.of()
+            this.notePaper.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 
             if (slot >= 0) {
                 ModPackets.sendUpdateNoteNbt(slot, nbt);
@@ -153,8 +157,10 @@ public class NoteEditorScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        // 1. Рисуем фон с размытием
+        this.renderBackground(context, mouseX, mouseY, delta);
 
+        // 2. Рисуем весь контент поверх размытого фона
         int centerX = this.width / 2;
         int fieldWidth = 200;
         int fieldX = centerX - fieldWidth / 2;
@@ -171,10 +177,20 @@ public class NoteEditorScreen extends Screen {
                 Text.translatable("gui.bulletin-board.note_editor.content_label"),
                 fieldX, this.contentField.getY() - 12, 0xFFFFFF, false);
 
-        this.titleField.render(context, mouseX, mouseY, delta);
-        this.contentField.render(context, mouseX, mouseY, delta);
+        // 3. Рендерим текстовые поля (они рисуются поверх фона)
+        this.titleField.renderContent(context, mouseX, mouseY, delta);
+        this.contentField.renderContent(context, mouseX, mouseY, delta);
 
-        super.render(context, mouseX, mouseY, delta);
+        // 4. Рендерим остальные виджеты (кнопки, переключатели)
+        // НЕ вызываем super.render() — он перерисовывает фон повторно!
+        for (var child : this.children()) {
+            if (child instanceof net.minecraft.client.gui.widget.ClickableWidget widget) {
+                // Проверяем, что это не текстовые поля
+                if (widget != titleField && widget != contentField) {
+                    widget.render(context, mouseX, mouseY, delta);
+                }
+            }
+        }
     }
 
     @Override

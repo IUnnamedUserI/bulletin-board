@@ -16,9 +16,9 @@ import java.util.Map;
 
 public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardBlockEntity> {
 
-    private static final Identifier NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/note_paper.png");
-    private static final Identifier SMALL_NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/small_note_paper.png");
-    private static final Identifier BADGE_TEXTURE = new Identifier("bulletin-board", "textures/block/badge.png");
+    private static final Identifier NOTE_TEXTURE = Identifier.of("bulletin-board", "textures/block/note_paper.png");
+    private static final Identifier SMALL_NOTE_TEXTURE = Identifier.of("bulletin-board", "textures/block/small_note_paper.png");
+    private static final Identifier BADGE_TEXTURE = Identifier.of("bulletin-board", "textures/block/badge.png");
 
     private static final Map<Direction, BadgeConfig> BADGE_CONFIGS = new EnumMap<>(Direction.class);
     private static final Map<Direction, BadgeConfig> SMALL_BADGE_CONFIGS = new EnumMap<>(Direction.class);
@@ -163,34 +163,34 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         Identifier texture = isSmall ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(texture));
         MatrixStack.Entry entry = matrices.peek();
-        float nx = 0, ny = 0, nz = 1;
 
+        // В 1.21.1 больше нет метода next()
         if (!mirror) {
             consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
                     .color(255, 255, 255, 255).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
                     .color(255, 255, 255, 255).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
                     .color(255, 255, 255, 255).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
                     .color(255, 255, 255, 255).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
         } else {
             consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
                     .color(255, 255, 255, 255).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
                     .color(255, 255, 255, 255).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
                     .color(255, 255, 255, 255).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
                     .color(255, 255, 255, 255).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
         }
     }
 
@@ -208,7 +208,6 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         matrices.scale(config.scale, config.scale, 1);
 
         MatrixStack.Entry entry = matrices.peek();
-        float nx = 0, ny = 0, nz = 1;
         float r = ((color >> 16) & 0xFF) / 255f;
         float g = ((color >> 8) & 0xFF) / 255f;
         float b = (color & 0xFF) / 255f;
@@ -216,29 +215,29 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         if (!config.mirror) {
             consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
                     .color(r, g, b, 1.0f).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
                     .color(r, g, b, 1.0f).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
                     .color(r, g, b, 1.0f).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
                     .color(r, g, b, 1.0f).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
         } else {
             consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
                     .color(r, g, b, 1.0f).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
                     .color(r, g, b, 1.0f).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
                     .color(r, g, b, 1.0f).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
             consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
                     .color(r, g, b, 1.0f).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+                    .normal(0, 0, 1);
         }
 
         matrices.pop();

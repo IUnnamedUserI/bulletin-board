@@ -13,23 +13,18 @@ public class SwitchWidget extends ClickableWidget {
     private final Runnable onToggle;
     private float animProgress = 0.0f;
 
-    // Размеры
     private static final int SWITCH_WIDTH = 30;
     private static final int SWITCH_HEIGHT = 16;
     private static final int HANDLE_SIZE = 10;
     private static final int HANDLE_OFFSET = 2;
     private static final int RADIUS = 8;
-
-    // Цвета
     private static final int BORDER_COLOR_OFF = 0xFF888888;
     private static final int BORDER_COLOR_ON = 0xFF55AAFF;
     private static final int BG_COLOR = 0xFF1A1A1A;
     private static final int HANDLE_COLOR_OFF = 0xFF888888;
     private static final int HANDLE_COLOR_ON = 0xFF55AAFF;
     private static final int HANDLE_SHADOW = 0xCC555555;
-
-    // Скорость анимации
-    private static final float ANIMATION_SPEED = 0.12f; // Было 0.08f
+    private static final float ANIMATION_SPEED = 0.12f;
 
     public SwitchWidget(int x, int y, Text label, Runnable onToggle) {
         super(x, y, SWITCH_WIDTH + 40, SWITCH_HEIGHT, Text.empty());
@@ -47,11 +42,10 @@ public class SwitchWidget extends ClickableWidget {
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         int x = getX();
         int y = getY();
 
-        // Обновляем анимацию (ускоренную)
         float target = state ? 1.0f : 0.0f;
         if (animProgress < target) {
             animProgress = Math.min(animProgress + ANIMATION_SPEED, 1.0f);
@@ -59,27 +53,19 @@ public class SwitchWidget extends ClickableWidget {
             animProgress = Math.max(animProgress - ANIMATION_SPEED, 0.0f);
         }
 
-        // 1. Фон
         drawRoundRect(context, x, y, SWITCH_WIDTH, SWITCH_HEIGHT, RADIUS, BG_COLOR);
 
-        // 2. Рамка
         int borderColor = state ? BORDER_COLOR_ON : BORDER_COLOR_OFF;
         drawRoundRectBorder(context, x, y, SWITCH_WIDTH, SWITCH_HEIGHT, RADIUS, borderColor, 1);
 
-        // 3. Круглый бегунок
-        // Сдвигаем крайнее правое положение на 1 пиксель левее
         int maxOffset = SWITCH_WIDTH - HANDLE_SIZE - HANDLE_OFFSET * 2 - 1;
         int handleX = x + HANDLE_OFFSET + (int) (maxOffset * animProgress);
-        // Поднимаем бегунок на 1 пиксель выше
         int handleY = y + (SWITCH_HEIGHT - HANDLE_SIZE) / 2 - 1;
         int handleColor = state ? HANDLE_COLOR_ON : HANDLE_COLOR_OFF;
 
-        // Тень
         drawCircle(context, handleX + HANDLE_SIZE / 2 + 1, handleY + HANDLE_SIZE / 2 + 1, HANDLE_SIZE / 2, HANDLE_SHADOW);
-        // Сам бегунок
         drawCircle(context, handleX + HANDLE_SIZE / 2, handleY + HANDLE_SIZE / 2, HANDLE_SIZE / 2, handleColor);
 
-        // 4. Текст
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         int labelX = x + SWITCH_WIDTH + 6;
         int labelY = y + (SWITCH_HEIGHT - textRenderer.fontHeight) / 2;
@@ -105,8 +91,6 @@ public class SwitchWidget extends ClickableWidget {
         }
         return false;
     }
-
-    // ============ МЕТОДЫ ОТРИСОВКИ ============
 
     private void drawRoundRect(DrawContext context, int x, int y, int w, int h, int r, int color) {
         drawCornerFilled(context, x + w - r, y + h - r, r, color, 0);

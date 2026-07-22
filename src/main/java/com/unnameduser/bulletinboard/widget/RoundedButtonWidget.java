@@ -10,11 +10,9 @@ import net.minecraft.util.math.MathHelper;
 public class RoundedButtonWidget extends ClickableWidget {
     private final Runnable onPress;
     private final int hoverColor;
-    private final int textColor;
     private boolean isHovered = false;
     private float glowAlpha = 0.0f;
 
-    // Размеры и цвета
     private static final int MIN_WIDTH = 95;
     private static final int HEIGHT = 24;
     private static final int RADIUS = 8;
@@ -26,7 +24,6 @@ public class RoundedButtonWidget extends ClickableWidget {
         super(x, y, calculateWidth(message), HEIGHT, message);
         this.onPress = onPress;
         this.hoverColor = hoverColor;
-        this.textColor = 0xFFFFFFFF;
     }
 
     public static int calculateWidth(Text message) {
@@ -36,7 +33,7 @@ public class RoundedButtonWidget extends ClickableWidget {
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         int x = getX();
         int y = getY();
         int w = getWidth();
@@ -44,7 +41,6 @@ public class RoundedButtonWidget extends ClickableWidget {
 
         isHovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
 
-        // Обновляем анимацию свечения
         float target = isHovered ? 1.0f : 0.0f;
         if (glowAlpha < target) {
             glowAlpha = Math.min(glowAlpha + 0.08f, 1.0f);
@@ -52,20 +48,16 @@ public class RoundedButtonWidget extends ClickableWidget {
             glowAlpha = Math.max(glowAlpha - 0.08f, 0.0f);
         }
 
-        // 1. Фон
         drawRoundRect(context, x, y, w, h, RADIUS, BG_COLOR);
 
-        // 2. Свечение (при наведении)
         if (glowAlpha > 0.01f) {
             drawGlow(context, x, y, w, h, RADIUS, hoverColor);
         }
 
-        // 3. Окантовка
         int borderColor = isHovered ? hoverColor : BORDER_COLOR;
         drawRoundRectBorder(context, x, y, w, h, RADIUS, borderColor, 1);
 
-        // 4. Текст (цвет меняется при наведении)
-        int color = isHovered ? hoverColor : textColor;
+        int color = isHovered ? hoverColor : 0xFFFFFFFF;
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         Text message = getMessage();
         int textX = x + (w - textRenderer.getWidth(message)) / 2;
@@ -92,8 +84,6 @@ public class RoundedButtonWidget extends ClickableWidget {
         return false;
     }
 
-    // ============ МЕТОДЫ ОТРИСОВКИ ============
-
     private void drawRoundRect(DrawContext context, int x, int y, int w, int h, int r, int color) {
         drawCornerFilled(context, x + w - r, y + h - r, r, color, 0);
         drawCornerFilled(context, x, y + h - r, r, color, 1);
@@ -101,17 +91,6 @@ public class RoundedButtonWidget extends ClickableWidget {
         drawCornerFilled(context, x, y, r, color, 3);
         context.fill(x + r - 1, y, x + w - r + 1, y + h, color);
         context.fill(x, y + r - 1, x + w, y + h - r + 1, color);
-    }
-
-    private void drawRoundRectBorder(DrawContext context, int x, int y, int w, int h, int r, int color, int thickness) {
-        drawCornerBorder(context, x + w - r, y + h - r, r, color, thickness, 0);
-        drawCornerBorder(context, x, y + h - r, r, color, thickness, 1);
-        drawCornerBorder(context, x + w - r, y, r, color, thickness, 2);
-        drawCornerBorder(context, x, y, r, color, thickness, 3);
-        context.fill(x + r - 1, y, x + w - r + 1, y + thickness, color);
-        context.fill(x + r - 1, y + h - thickness, x + w - r + 1, y + h, color);
-        context.fill(x, y + r - 1, x + thickness, y + h - r + 1, color);
-        context.fill(x + w - thickness, y + r - 1, x + w, y + h - r + 1, color);
     }
 
     private void drawCornerFilled(DrawContext context, int x, int y, int r, int color, int corner) {
@@ -130,6 +109,17 @@ public class RoundedButtonWidget extends ClickableWidget {
                 }
             }
         }
+    }
+
+    private void drawRoundRectBorder(DrawContext context, int x, int y, int w, int h, int r, int color, int thickness) {
+        drawCornerBorder(context, x + w - r, y + h - r, r, color, thickness, 0);
+        drawCornerBorder(context, x, y + h - r, r, color, thickness, 1);
+        drawCornerBorder(context, x + w - r, y, r, color, thickness, 2);
+        drawCornerBorder(context, x, y, r, color, thickness, 3);
+        context.fill(x + r - 1, y, x + w - r + 1, y + thickness, color);
+        context.fill(x + r - 1, y + h - thickness, x + w - r + 1, y + h, color);
+        context.fill(x, y + r - 1, x + thickness, y + h - r + 1, color);
+        context.fill(x + w - thickness, y + r - 1, x + w, y + h - r + 1, color);
     }
 
     private void drawCornerBorder(DrawContext context, int x, int y, int r, int color, int thickness, int corner) {
@@ -158,16 +148,7 @@ public class RoundedButtonWidget extends ClickableWidget {
             int alphaInt = (int) (alpha * 255);
             int glowColor = (alphaInt << 24) | (color & 0x00FFFFFF);
             int offset = i / 2;
-            drawRoundRectBorder(
-                    context,
-                    x - offset,
-                    y - offset,
-                    w + offset * 2,
-                    h + offset * 2,
-                    r + offset,
-                    glowColor,
-                    1
-            );
+            drawRoundRectBorder(context, x - offset, y - offset, w + offset * 2, h + offset * 2, r + offset, glowColor, 1);
         }
     }
 

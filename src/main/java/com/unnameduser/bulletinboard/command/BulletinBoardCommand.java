@@ -198,8 +198,14 @@ public class BulletinBoardCommand {
             return 0;
         }
 
-        // Генерируем случайную записку
-        NoteData note = RandomNotePool.generateRandomNote(world.getRandom());
+        // Генерируем случайную записку с автором "Команда" и печатью
+        // Используем мир для получения случайного автора (если нет жителей, будет "Аноним")
+        NoteData note = RandomNotePool.generateRandomNote(
+                world.getRandom(),
+                "Команда",
+                "command",
+                true
+        );
 
         // Находим свободный слот
         List<Integer> freeSlots = findFreeSlots(boardEntity);
@@ -327,7 +333,7 @@ public class BulletinBoardCommand {
 
     private static int schedulerStatus(CommandContext<ServerCommandSource> context) {
         boolean enabled = AutoNoteScheduler.isEnabled();
-        Text status = enabled ? 
+        Text status = enabled ?
                 Text.translatable("command.bulletin.scheduler.status.enabled") :
                 Text.translatable("command.bulletin.scheduler.status.disabled");
         context.getSource().sendFeedback(() -> status, true);
@@ -336,14 +342,14 @@ public class BulletinBoardCommand {
 
     private static int discountTrigger(CommandContext<ServerCommandSource> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
-        
+
         if (event == null) {
             context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
             return 0;
         }
-        
+
         boolean success = event.triggerDiscountEvent();
-        
+
         if (success) {
             context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.trigger.success"), true);
             return 1;
@@ -355,28 +361,28 @@ public class BulletinBoardCommand {
 
     private static int discountList(CommandContext<ServerCommandSource> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
-        
+
         if (event == null) {
             context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
             return 0;
         }
-        
+
         var discounts = event.getActiveDiscounts();
-        
+
         if (discounts.isEmpty()) {
             context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.list.empty"), true);
             return 0;
         }
-        
+
         // Добавляем информацию об интеграции
         boolean tradeOverhaulPresent = TradeOverhaulIntegration.isTradeOverhaulPresent();
         Text integrationStatus = tradeOverhaulPresent ?
                 Text.literal("§a[Trade Overhaul ENABLED] §r") :
                 Text.literal("§c[Trade Overhaul DISABLED] §r");
-        
+
         context.getSource().sendFeedback(() -> integrationStatus, false);
         context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.list.header", discounts.size()), true);
-        
+
         for (var discount : discounts) {
             long remainingMinutes = discount.getRemainingTime() / 60000;
             String discountType = tradeOverhaulPresent ? "§aREAL" : "§eINFO";
@@ -385,18 +391,18 @@ public class BulletinBoardCommand {
                     discount.villagerName, discount.profession, remainingMinutes));
             context.getSource().sendFeedback(() -> message, false);
         }
-        
+
         return discounts.size();
     }
 
     private static int discountClear(CommandContext<ServerCommandSource> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
-        
+
         if (event == null) {
             context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
             return 0;
         }
-        
+
         event.clearAllDiscounts();
         context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.clear.success"), true);
         return 1;

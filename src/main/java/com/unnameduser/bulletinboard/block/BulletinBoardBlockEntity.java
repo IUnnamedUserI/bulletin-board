@@ -19,6 +19,7 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     private List<NoteSlot> slots = new ArrayList<>();
     private static final int BIG_SLOT = 4;
     private static final long NOTE_LIFETIME = 3600000; // 1 час
+    private static final long NOTE_LIFETIME_TICKS = 144000L;
 
     public BulletinBoardBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BULLETIN_BOARD_ENTITY, pos, state);
@@ -137,12 +138,12 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         if (world == null || world.isClient) return;
 
         boolean changed = false;
-        long currentTime = System.currentTimeMillis();
+        long currentGameTime = world.getTime(); // Абсолютное время мира в тиках
 
         for (int i = slots.size() - 1; i >= 0; i--) {
             NoteSlot slot = slots.get(i);
             NoteData note = slot.note;
-            if (!note.hasSeal() && (currentTime - note.getCreationTime() > NOTE_LIFETIME)) {
+            if (!note.hasSeal() && (currentGameTime - note.getCreationTime() > NOTE_LIFETIME_TICKS)) {
                 slots.remove(i);
                 changed = true;
             }
@@ -156,8 +157,9 @@ public class BulletinBoardBlockEntity extends BlockEntity {
 
     public boolean isNoteStillValid(NoteData note) {
         if (note.hasSeal()) return true;
-        long currentTime = System.currentTimeMillis();
-        return (currentTime - note.getCreationTime() <= NOTE_LIFETIME);
+        if (world == null) return true; // Защита от NPE
+        long currentGameTime = world.getTime();
+        return (currentGameTime - note.getCreationTime() <= NOTE_LIFETIME_TICKS);
     }
 
     @Override

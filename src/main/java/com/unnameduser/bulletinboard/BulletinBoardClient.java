@@ -70,7 +70,6 @@ public class BulletinBoardClient implements ClientModInitializer {
             for (Entity entity : client.world.getEntities()) {
                 if (entity instanceof VillagerEntity villager) {
                     String name = VillagerNameClientCache.getName(villager.getUuid());
-                    System.out.println("[Bulletin Board] Rendering villager: " + name + " (" + villager.getUuid() + ")");
                     VillagerNameRenderer.render(villager, name, context.matrixStack(), context.consumers(), context.tickDelta());
                 }
             }

@@ -23,7 +23,6 @@ public class VillagerNameManager extends PersistentState {
 
         String name = VillagerNameConfig.getRandomName();
         villagerNames.put(uuid, name);
-        System.out.println("[Bulletin Board] Generated name '" + name + "' for villager " + uuid);
         markDirty();
         return name;
     }

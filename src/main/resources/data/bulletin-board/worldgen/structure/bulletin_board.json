@@ -18,5 +18,6 @@
     "minecraft:snowy_plains"
   ],
   "use_expansion_hack": false,
-  "spawn_overrides": {}
+  "spawn_overrides": {},
+  "processors": "minecraft:bottom"
 }

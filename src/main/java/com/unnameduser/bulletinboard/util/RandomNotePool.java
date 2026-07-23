@@ -10,9 +10,9 @@ import java.util.List;
  * В будущем может быть расширено для квестов и взаимодействия жителей.
  */
 public class RandomNotePool {
-    
+
     private static final List<NoteTemplate> NOTES = new ArrayList<>();
-    
+
     static {
         // === ОБЪЯВЛЕНИЯ ===
         NOTES.add(new NoteTemplate(
@@ -40,7 +40,7 @@ public class RandomNotePool {
                 "Чёрный кот, отзывается на \"Уголёк\". Видели последний раз у колодца.",
                 NoteCategory.ANNOUNCEMENT
         ));
-        
+
         // === ПРЕДУПРЕЖДЕНИЯ ===
         NOTES.add(new NoteTemplate(
                 "Осторожно, криперы!",
@@ -62,7 +62,7 @@ public class RandomNotePool {
                 "Прошлой ночью были замечены зомби у стен. Усильте охрану!",
                 NoteCategory.WARNING
         ));
-        
+
         // === ЛИЧНЫЕ ===
         NOTES.add(new NoteTemplate(
                 "С днём рождения!",
@@ -84,7 +84,7 @@ public class RandomNotePool {
                 "Спасибо тому герою, который очистил колодец от пауков! Вы — наше всё!",
                 NoteCategory.PERSONAL
         ));
-        
+
         // === КВЕСТЫ (задел на будущее) ===
         NOTES.add(new NoteTemplate(
                 "Нужен уголь",
@@ -107,118 +107,147 @@ public class RandomNotePool {
                 NoteCategory.QUEST
         ));
     }
-    
+
     public enum NoteCategory {
         ANNOUNCEMENT(0xFFAA00),    // Оранжевый
         WARNING(0xFF5555),          // Красный
         PERSONAL(0x55FFFF),         // Голубой
         QUEST(0x55FF55);            // Зелёный
-        
+
         public final int defaultBadgeColor;
-        
+
         NoteCategory(int defaultBadgeColor) {
             this.defaultBadgeColor = defaultBadgeColor;
         }
     }
-    
+
     public static class NoteTemplate {
         public final String title;
         public final String content;
         public final NoteCategory category;
-        
+
         public NoteTemplate(String title, String content, NoteCategory category) {
             this.title = title;
             this.content = content;
             this.category = category;
         }
     }
-    
+
     /**
      * Генерирует случайную записку из пула.
      * @param random Генератор случайных чисел
+     * @param author Имя автора (если null, будет "Аноним")
+     * @param authorUuid UUID автора (может быть null)
+     * @param hasSeal Есть ли печать
      * @return NoteData с заполненными полями
      */
-    public static NoteData generateRandomNote(Random random) {
+    public static NoteData generateRandomNote(Random random, String author, String authorUuid, boolean hasSeal) {
         NoteTemplate template = NOTES.get(random.nextInt(NOTES.size()));
-        
+
         // Выбираем случайный цвет печати на основе категории
         int badgeColor = getRandomBadgeColorForCategory(template.category, random);
-        
+
+        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+
         NoteData note = new NoteData(
                 template.title,
                 template.content,
-                "Аноним",
+                authorName,
                 badgeColor,
                 System.currentTimeMillis(),
-                true,  // hasSeal = true (с печатью)
-                false  // isSmall = false (обычная записка)
+                hasSeal,
+                false
         );
-        
+
+        // Сохраняем UUID автора в NBT
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
+
         return note;
     }
-    
+
     /**
      * Генерирует случайную записку с маленьким размером.
      */
-    public static NoteData generateRandomSmallNote(Random random) {
+    public static NoteData generateRandomSmallNote(Random random, String author, String authorUuid, boolean hasSeal) {
         NoteTemplate template = NOTES.get(random.nextInt(NOTES.size()));
         int badgeColor = getRandomBadgeColorForCategory(template.category, random);
-        
+
+        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+
+        // Урезаем содержимое для маленькой записки (макс. 100 символов)
+        String content = template.content;
+        if (content.length() > 100) {
+            content = content.substring(0, 100) + "...";
+        }
+
         NoteData note = new NoteData(
                 template.title,
-                template.content.length() > 100 ? 
-                        template.content.substring(0, 100) + "..." : template.content,
-                "Аноним",
+                content,
+                authorName,
                 badgeColor,
                 System.currentTimeMillis(),
-                true,
+                hasSeal,
                 true  // isSmall = true
         );
-        
+
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
+
         return note;
     }
-    
+
     private static int getRandomBadgeColorForCategory(NoteCategory category, Random random) {
         // Возвращаем цвет по умолчанию для категории с шансом 60%
         // Или случайный цвет из палитры с шансом 40%
         if (random.nextFloat() < 0.6f) {
             return category.defaultBadgeColor;
         }
-        
+
         int[] colors = {
                 0x1E1E1E, 0xFF5555, 0x55FF55, 0x8B4513,
                 0x5555FF, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
                 0x555555, 0xFF55FF, 0x55FF55, 0xFFFF55,
                 0x55FFFF, 0xFF55FF, 0xFFAA00, 0xFFFFFF
         };
-        
+
         return colors[random.nextInt(colors.length)];
     }
-    
+
     /**
      * Получение случайной записки только определённой категории.
      */
-    public static NoteData generateNoteByCategory(NoteCategory category, Random random) {
+    public static NoteData generateNoteByCategory(NoteCategory category, Random random, String author, String authorUuid, boolean hasSeal) {
         List<NoteTemplate> filtered = new ArrayList<>();
         for (NoteTemplate t : NOTES) {
             if (t.category == category) {
                 filtered.add(t);
             }
         }
-        
+
         if (filtered.isEmpty()) {
-            return generateRandomNote(random);
+            return generateRandomNote(random, author, authorUuid, hasSeal);
         }
-        
+
         NoteTemplate template = filtered.get(random.nextInt(filtered.size()));
-        return new NoteData(
+        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+
+        NoteData note = new NoteData(
                 template.title,
                 template.content,
-                "Аноним",
+                authorName,
                 category.defaultBadgeColor,
                 System.currentTimeMillis(),
-                true,
+                hasSeal,
                 false
         );
+
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
+
+        return note;
     }
 }

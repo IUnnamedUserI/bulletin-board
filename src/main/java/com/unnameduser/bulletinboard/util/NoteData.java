@@ -10,6 +10,7 @@ public class NoteData {
     private long creationTime;
     private boolean hasSeal;
     private boolean isSmall;
+    private String authorUuid;
 
     public NoteData(String title, String content, String author, boolean isSmall) {
         this(title, content, author, -1, System.currentTimeMillis(), false, false);
@@ -51,6 +52,8 @@ public class NoteData {
 
     public boolean isSmall() { return isSmall; }
 
+    public String getAuthorUuid() { return authorUuid; }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -68,6 +71,8 @@ public class NoteData {
     }
 
     public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
+
+    public void setAuthorUuid(String authorUuid) { this.authorUuid = authorUuid; }
 
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();

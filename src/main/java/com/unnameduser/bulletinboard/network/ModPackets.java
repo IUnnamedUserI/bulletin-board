@@ -138,7 +138,6 @@ public class ModPackets {
         ClientPlayNetworking.registerGlobalReceiver(VillagerNameSyncPacket.ID, (client, handler, buf, responseSender) -> {
             VillagerNameSyncPacket packet = VillagerNameSyncPacket.read(buf);
             client.execute(() -> {
-                System.out.println("[Bulletin Board] Received " + packet.getNames().size() + " villager names on client");
                 VillagerNameClientCache.updateNames(packet.getNames());
             });
         });

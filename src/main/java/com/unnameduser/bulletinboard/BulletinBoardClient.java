@@ -3,21 +3,25 @@ package com.unnameduser.bulletinboard;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
+import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
+import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.renderer.BulletinBoardRenderer;
+import com.unnameduser.bulletinboard.renderer.VillagerNameRenderer;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -35,6 +39,9 @@ public class BulletinBoardClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // Регистрируем клиентские пакеты
+        ModPackets.registerClient();
+
         BlockEntityRendererFactories.register(
                 ModBlockEntities.BULLETIN_BOARD_ENTITY,
                 BulletinBoardRenderer::new
@@ -54,6 +61,20 @@ public class BulletinBoardClient implements ClientModInitializer {
                         }
                     });
                 });
+
+        // Рендер имён над жителями
+        WorldRenderEvents.END.register(context -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player == null || client.world == null) return;
+
+            for (Entity entity : client.world.getEntities()) {
+                if (entity instanceof VillagerEntity villager) {
+                    String name = VillagerNameClientCache.getName(villager.getUuid());
+                    System.out.println("[Bulletin Board] Rendering villager: " + name + " (" + villager.getUuid() + ")");
+                    VillagerNameRenderer.render(villager, name, context.matrixStack(), context.consumers(), context.tickDelta());
+                }
+            }
+        });
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register((context) -> {
             MinecraftClient client = MinecraftClient.getInstance();
@@ -98,7 +119,7 @@ public class BulletinBoardClient implements ClientModInitializer {
     }
 
     private boolean isSignedNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem  // ← Работает для NOTE_PAPER и SMALL_NOTE_PAPER
+        return stack.getItem() instanceof NotePaperItem
                 && stack.hasNbt() && stack.getNbt().contains("NoteData");
     }
 
@@ -120,9 +141,9 @@ public class BulletinBoardClient implements ClientModInitializer {
         double horizontal = (facing == Direction.NORTH || facing == Direction.SOUTH) ? x : z;
 
         if (horizontal < 0.4 && horizontal > 0.15) {
-            if (y < 0.28 && y > 0.12) return 3;  // Между слотами 3 и 2: (0.22 + 0.26) / 2
-            if (y < 0.45 && y > 0.29) return 2;  // Между слотами 2 и 1: (0.44 + 0.48) / 2
-            if (y < 0.63 && y > 0.47) return 1;  // Между слотами 1 и 0: (0.66 + 0.70) / 2
+            if (y < 0.28 && y > 0.12) return 3;
+            if (y < 0.45 && y > 0.29) return 2;
+            if (y < 0.63 && y > 0.47) return 1;
             if (y < 0.81 && y > 0.65) return 0;
             return -1;
         } else if (horizontal > 0.47 && horizontal < 0.83 && y < 0.7 && y > 0.3) {
@@ -146,16 +167,13 @@ public class BulletinBoardClient implements ClientModInitializer {
 
         Box highlightBox = null;
 
-        // 🔧 Логика для МАЛЫХ записок (зелёная подсветка)
         if (hasSmallNote) {
-            // Малые записки можно вешать только в слоты 0-3
             if (slot >= 0 && slot <= 3) {
                 highlightBox = getSlotWorldBox(slot, pos, facing);
             } else {
-                return; // Невалидный слот для малой записки
+                return;
             }
         }
-        // 🔧 Логика для ОБЫЧНЫХ записок
         else if (hasNormalNote) {
             var blockEntity = client.world.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
@@ -176,7 +194,6 @@ public class BulletinBoardClient implements ClientModInitializer {
                 }
             }
         }
-        // 🔧 Пустая рука — жёлтая подсветка для взаимодействия
         else if (hasEmptyHand && tempColor == COLOR_INTERACT) {
             var blockEntity = client.world.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
@@ -199,7 +216,6 @@ public class BulletinBoardClient implements ClientModInitializer {
             return;
         }
 
-        // Отрисовка
         VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
         var cam = client.gameRenderer.getCamera().getPos();
 
@@ -219,10 +235,8 @@ public class BulletinBoardClient implements ClientModInitializer {
 
         double slotX1, slotX2, slotY1, slotY2;
 
-        // Для маленьких слотов (0-3)
         if (slot >= 0 && slot <= 3) {
             slotX1 = 0.14; slotX2 = 0.42;
-            // Высота зависит от слота
             switch (slot) {
                 case 0:
                     slotY1 = 0.64; slotY2 = 0.80;
@@ -239,7 +253,7 @@ public class BulletinBoardClient implements ClientModInitializer {
                 default:
                     slotY1 = 0.04; slotY2 = 0.88;
             }
-        } else { // Большой слот (4)
+        } else {
             slotX1 = 0.47; slotX2 = 0.83;
             slotY1 = 0.3; slotY2 = 0.7;
         }

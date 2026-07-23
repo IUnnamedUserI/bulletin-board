@@ -17,6 +17,9 @@
 		],
 		"client": [
 			"com.unnameduser.bulletinboard.BulletinBoardClient"
+		],
+		"fabric-datagen": [
+			"com.unnameduser.bulletinboard.datagen.DataGenerator"
 		]
 	},
 	"mixins": [],

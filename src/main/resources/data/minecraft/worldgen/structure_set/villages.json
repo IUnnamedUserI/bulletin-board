@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "bulletin-board:bulletin_board",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 1234567,
+    "spacing": 20,
+    "separation": 8,
+    "type": "minecraft:random_spread"
+  }
+}

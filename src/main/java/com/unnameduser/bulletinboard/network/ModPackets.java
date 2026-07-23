@@ -2,12 +2,17 @@ package com.unnameduser.bulletinboard.network;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
+import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
+import com.unnameduser.bulletinboard.server.VillagerNameManager;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -16,6 +21,11 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.util.TypeFilter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ModPackets {
     public static final Identifier TAKE_NOTE = new Identifier(BulletinBoardMod.MOD_ID, "take_note");
@@ -45,13 +55,12 @@ public class ModPackets {
                         boardEntity.removeNote(index);
                     }
 
-                    // 🔧 ИСПРАВЛЕНО: правильный источник предметов + сохраняем isSmall
                     ItemStack noteStack = new ItemStack(
                             note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
                             1
                     );
                     NbtCompound nbt = noteStack.getOrCreateNbt();
-                    nbt.put("NoteData", note.toNbt());  // toNbt() уже содержит isSmall!
+                    nbt.put("NoteData", note.toNbt());
 
                     player.getInventory().offerOrDrop(noteStack);
                 }
@@ -69,14 +78,33 @@ public class ModPackets {
         server.execute(() -> {
             if (slot >= 0 && slot < player.getInventory().size()) {
                 ItemStack stack = player.getInventory().getStack(slot);
-
-                // 🔧 ИСПРАВЛЕНО: проверка через instanceof для обоих типов записок
                 if (stack.getItem() instanceof NotePaperItem) {
-                    stack.setNbt(nbt.copy());  // Копируем ВСЕ поля, включая isSmall
+                    stack.setNbt(nbt.copy());
                     player.getInventory().markDirty();
                 }
             }
         });
+    }
+
+    public static void sendVillagerNames(ServerPlayerEntity player, MinecraftServer server) {
+        VillagerNameManager manager = VillagerNameManager.get(server);
+        Map<String, String> allNames = new HashMap<>();
+
+        var world = server.getWorld(World.OVERWORLD);
+        if (world != null) {
+            for (VillagerEntity villager : world.getEntitiesByType(EntityType.VILLAGER, entity -> entity instanceof VillagerEntity).stream()
+                    .filter(VillagerEntity.class::isInstance)
+                    .map(VillagerEntity.class::cast)
+                    .toList()) {
+                String name = manager.getOrCreateName(villager.getUuid());
+                allNames.put(villager.getUuid().toString(), name);
+            }
+        }
+
+        VillagerNameSyncPacket packet = new VillagerNameSyncPacket(allNames);
+        PacketByteBuf buf = PacketByteBufs.create();
+        packet.write(buf);
+        ServerPlayNetworking.send(player, VillagerNameSyncPacket.ID, buf);
     }
 
     public static void sendTakeNote(BlockPos pos, int noteIndex) {
@@ -104,5 +132,15 @@ public class ModPackets {
         buf.writeBlockPos(pos);
         buf.writeInt(slot);
         ServerPlayNetworking.send(player, new Identifier(BulletinBoardMod.MOD_ID, "open_note"), buf);
+    }
+
+    public static void registerClient() {
+        ClientPlayNetworking.registerGlobalReceiver(VillagerNameSyncPacket.ID, (client, handler, buf, responseSender) -> {
+            VillagerNameSyncPacket packet = VillagerNameSyncPacket.read(buf);
+            client.execute(() -> {
+                System.out.println("[Bulletin Board] Received " + packet.getNames().size() + " villager names on client");
+                VillagerNameClientCache.updateNames(packet.getNames());
+            });
+        });
     }
 }

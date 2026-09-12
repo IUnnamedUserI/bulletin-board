@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 
 public class ModBlockEntities {
     public static BlockEntityType<BulletinBoardBlockEntity> BULLETIN_BOARD_ENTITY;
+    public static BlockEntityType<PlacedNoteBlockEntity> PLACED_NOTE_ENTITY;
 
     public static void register() {
         BULLETIN_BOARD_ENTITY = Registry.register(
@@ -17,6 +18,15 @@ public class ModBlockEntities {
                 FabricBlockEntityTypeBuilder.create(
                         BulletinBoardBlockEntity::new,
                         BulletinBoardMod.BULLETIN_BOARD
+                ).build()
+        );
+
+        PLACED_NOTE_ENTITY = Registry.register(
+                Registries.BLOCK_ENTITY_TYPE,
+                new Identifier(BulletinBoardMod.MOD_ID, "placed_note"),
+                FabricBlockEntityTypeBuilder.create(
+                        PlacedNoteBlockEntity::new,
+                        BulletinBoardMod.PLACED_NOTE
                 ).build()
         );
     }

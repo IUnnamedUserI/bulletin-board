@@ -1,0 +1,132 @@
+[
+  {
+    "id": "shepherd_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling fresh wool",
+      "ru_ru": "Продаю свежую шерсть"
+    },
+    "content": {
+      "en_us": "I have just sheared my sheep. The wool is clean, soft, and of excellent quality. Suitable for spinning and felting. I sell at a reasonable price, depending on the volume. Come see it; I live at the farm by the road. I can show you how to properly care for the wool so it retains its properties for a long time.",
+      "ru_ru": "Я только что постриг своих овец. Шерсть чистая, мягкая, отличного качества. Подходит для пряжи и валяния. Продаю недорого, цена зависит от объёма. Приходите смотреть, я живу на ферме у дороги. Могу показать, как правильно ухаживать за шерстью, чтобы она сохранила свои свойства надолго."
+    }
+  },
+  {
+    "id": "shepherd_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a sheep for breeding",
+      "ru_ru": "Ищу овцу для разведения"
+    },
+    "content": {
+      "en_us": "I need a strong and healthy sheep for breeding. Any breed will do, as long as it eats well and produces offspring. I will pay with emeralds or trade for food. If you have a suitable sheep, come see me and I'll take a look.",
+      "ru_ru": "Мне нужна крепкая и здоровая овца для разведения. Подойдёт любая порода, главное, чтобы она хорошо ела и давала потомство. Я заплачу изумрудами или обменяю на продукты. Если у вас есть подходящая овца, приходите ко мне, я посмотрю."
+    }
+  },
+  {
+    "id": "shepherd_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling lambs",
+      "ru_ru": "Продаю ягнят"
+    },
+    "content": {
+      "en_us": "My sheep have given birth to lambs—healthy and playful. I'm selling them to find them good homes. The lambs are strong and growing well. I'll sell them below market price so they can find a home quickly. If you want to start raising sheep, this is a great start! Contact me, I'll show them to you in the pen.",
+      "ru_ru": "У меня родились ягнята, здоровые и игривые. Продаю их, чтобы найти хорошие руки. Ягнята крепкие, хорошо растут. Отдам по цене ниже рыночной, чтобы они поскорее нашли свой дом. Если хотите завести овец, это отличный старт! Обращайтесь, я покажу вам их в загоне."
+    }
+  },
+  {
+    "id": "shepherd_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a seasonal shepherd",
+      "ru_ru": "Найму пастуха на сезон"
+    },
+    "content": {
+      "en_us": "I need an experienced shepherd for grazing sheep on summer pastures. The work is not difficult, but requires attentiveness. Payment is by the season, and I also provide housing and food. Contact me at the farm on the outskirts of the village. If you know how to handle sheep, come!",
+      "ru_ru": "Мне нужен опытный пастух для выпаса овец на летних пастбищах. Работа не сложная, но требует внимательности. Оплата по сезону, также предоставляю жильё и еду. Обращаться ко мне на ферму, я живу на окраине деревни. Если вы знаете, как обращаться с овцами, приходите!"
+    }
+  },
+  {
+    "id": "shepherd_5",
+    "category": "WARNING",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Wolf problem!",
+      "ru_ru": "Проблемы с волками!"
+    },
+    "content": {
+      "en_us": "The sheep are often falling prey to wolves this year. They come at night and frighten the flock. I'm asking my neighbors for help: does anyone know how to scare away wolves or protect the sheep? I've tried putting up scarecrows, but they don't help. I would be very grateful for any sound advice!",
+      "ru_ru": "Овцы в этом году часто становятся жертвами волков. Они приходят ночью и пугают стадо. Ищу помощи у соседей: кто знает, как отогнать волков или защитить овец? Я уже пробовал ставить пугала, но это не помогает. Буду очень признателен за дельный совет!"
+    }
+  },
+  {
+    "id": "shepherd_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a worker for sheep shearing",
+      "ru_ru": "Ищу работника для стрижки овец"
+    },
+    "content": {
+      "en_us": "Shearing season is coming, and I can't manage it alone. I need an assistant who knows how to handle scissors and isn't afraid of working with wool. I pay by the day and give a share of the wool. Experience isn't required, but steady hands are important. Come to the farm tomorrow!",
+      "ru_ru": "Скоро стрижка, а одному мне не справиться. Нужен помощник, который умеет обращаться с ножницами и не боится работы с шерстью. Плачу за день и даю часть шерсти. Опыт не требуется, главное, чтобы руки не дрожали. Приходите завтра на ферму!"
+    }
+  },
+  {
+    "id": "shepherd_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Need boards for fence",
+      "ru_ru": "Нужны доски для забора"
+    },
+    "content": {
+      "en_us": "I will buy old boards for fence repair. Bring them, I'll pay with food. Urgently!",
+      "ru_ru": "Куплю старые доски для ремонта забора. Принесите, заплачу продуктами. Срочно!"
+    }
+  },
+  {
+    "id": "shepherd_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a sheep for breeding",
+      "ru_ru": "Ищу овцу для разведения"
+    },
+    "content": {
+      "en_us": "I need a sheep for breeding. Any breed will do. I pay with emeralds. Contact me!",
+      "ru_ru": "Нужна овца для разведения. Подойдёт любая порода. Плачу изумрудами. Обращайтесь!"
+    }
+  },
+  {
+    "id": "shepherd_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling sheepskins",
+      "ru_ru": "Продаю овечьи шкуры"
+    },
+    "content": {
+      "en_us": "Sheepskins for sewing clothes. Inexpensive, can be exchanged for food. Come on over!",
+      "ru_ru": "Овечьи шкуры для пошива одежды. Недорого, можно обменять на продукты. Приходите!"
+    }
+  },
+  {
+    "id": "shepherd_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling sheep feed",
+      "ru_ru": "Продаю корм для овец"
+    },
+    "content": {
+      "en_us": "Sheep feed left over. Selling it cheap. Suitable for any livestock. Come see!",
+      "ru_ru": "Остался корм для овец. Продаю дёшево. Подойдёт для любого скота. Приходите смотреть!"
+    }
+  }
+]

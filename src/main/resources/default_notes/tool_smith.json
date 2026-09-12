@@ -1,0 +1,93 @@
+[
+  {
+    "id": "tool_smith_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Old tool repair",
+      "ru_ru": "Ремонт старых инструментов"
+    },
+    "content": {
+      "en_us": "If your tool has broken, bring it to me. I do repairs and restoration. I will sharpen, replace handles and fix. I charge a small amount for the work, but I guarantee the quality. Come in, I will quickly do everything you need!",
+      "ru_ru": "Если у вас сломался инструмент — приносите его мне. Я занимаюсь ремонтом и восстановлением. Наточу, заменю рукоятки и отремонтирую. Беру за работу небольшую сумму, но качество гарантирую. Заходите, я быстро сделаю всё, что нужно!"
+    }
+  },
+  {
+    "id": "tool_smith_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old tools",
+      "ru_ru": "Ищу старые инструменты"
+    },
+    "content": {
+      "en_us": "I need old tools for remaking and repair. If you have any, I will buy them at a good price. Condition does not matter, the main thing is that they are made of good steel. Bring them, I will pay!",
+      "ru_ru": "Мне нужны старые инструменты для переделки и ремонта. Если у вас есть, я куплю их по хорошей цене. Состояние не важно, главное, чтобы они были из хорошей стали. Приносите, я заплачу!"
+    }
+  },
+  {
+    "id": "tool_smith_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old steel for tools",
+      "ru_ru": "Ищу старую сталь для инструментов"
+    },
+    "content": {
+      "en_us": "I need old steel to make new tools. If you have scrap iron or steel, I am ready to buy it. This will help me make high-quality and durable tools. Bring it, I will weigh it and pay!",
+      "ru_ru": "Для изготовления новых инструментов мне нужна старая сталь. Если у вас есть обломки железа или стали, я готов купить их. Это поможет мне делать качественные и долговечные инструменты. Приносите, я взвешу и заплачу!"
+    }
+  },
+  {
+    "id": "tool_smith_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Problems with wood quality",
+      "ru_ru": "Проблемы с качеством дерева"
+    },
+    "content": {
+      "en_us": "It is currently difficult to find good wood for handles. The wood is rotten or cracked. If you know where to get strong wood, let me know. I would be very grateful for your help! A good tool starts with good wood.",
+      "ru_ru": "Сейчас трудно найти хорошее дерево для рукояток. Древесина гнилая или с трещинами. Если вы знаете, где взять прочную древесину, сообщите мне. Буду очень признателен за помощь! Хороший инструмент начинается с хорошего дерева."
+    }
+  },
+  {
+    "id": "tool_smith_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Tool repair",
+      "ru_ru": "Ремонт инструментов"
+    },
+    "content": {
+      "en_us": "I repair any tools. Quickly and cheaply. Bring them, I will assess.",
+      "ru_ru": "Ремонтирую любые инструменты. Быстро и дёшево. Приносите, я оценю."
+    }
+  },
+  {
+    "id": "tool_smith_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Hiring a sharpener",
+      "ru_ru": "Найму заточника"
+    },
+    "content": {
+      "en_us": "I need a person for sharpening. I will teach, I will pay. Come to the forge!",
+      "ru_ru": "Нужен человек для заточки. Научу, заплачу. Приходите в кузницу!"
+    }
+  },
+  {
+    "id": "tool_smith_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling tools",
+      "ru_ru": "Продаю инструменты"
+    },
+    "content": {
+      "en_us": "Picks, shovels, axes. Come! Everything you need is here!",
+      "ru_ru": "Кирки, лопаты, топоры. Приходите! Всё найдётся!"
+    }
+  }
+]

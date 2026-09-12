@@ -1,11 +1,14 @@
 package com.unnameduser.bulletinboard.screen;
 
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
+import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -15,6 +18,8 @@ public class NoteViewScreen extends Screen {
     private final NoteData note;
     private final BulletinBoardBlockEntity boardEntity;
     private final int notePosition;
+    private final BlockPos placedPos;
+
     private static final int TEXT_COLOR = 0x3F3F3F;
     private static final int PARCHMENT_COLOR = 0xFFF5E6D3;
     private static final int BORDER_COLOR = 0xFF8B6B4D;
@@ -28,14 +33,23 @@ public class NoteViewScreen extends Screen {
     private boolean isSmall;
 
     public NoteViewScreen(NoteData note) {
-        this(note, null, -1);
+        this(note, null, -1, null);
     }
 
     public NoteViewScreen(NoteData note, BulletinBoardBlockEntity boardEntity, int notePosition) {
+        this(note, boardEntity, notePosition, null);
+    }
+
+    public NoteViewScreen(NoteData note, BlockPos placedPos) {
+        this(note, null, -1, placedPos);
+    }
+
+    private NoteViewScreen(NoteData note, BulletinBoardBlockEntity boardEntity, int notePosition, BlockPos placedPos) {
         super(Text.translatable("gui.bulletin-board.note_view.title"));
         this.note = note;
         this.boardEntity = boardEntity;
         this.notePosition = notePosition;
+        this.placedPos = placedPos;
         this.isSmall = note.isSmall();
     }
 
@@ -43,6 +57,7 @@ public class NoteViewScreen extends Screen {
     protected void init() {
         super.init();
 
+        // Кнопка "Закрыть"
         this.addDrawableChild(
                 ButtonWidget.builder(
                                 Text.translatable("gui.bulletin-board.note_view.close"),
@@ -52,11 +67,24 @@ public class NoteViewScreen extends Screen {
                         .build()
         );
 
+        // Кнопка "Забрать" для записки на доске
         if (boardEntity != null && notePosition >= 0) {
             this.addDrawableChild(
                     ButtonWidget.builder(
                                     Text.translatable("gui.bulletin-board.note_view.take"),
                                     button -> this.takeNote()
+                            )
+                            .dimensions(this.width / 2 + 60, this.height - 40, 80, 20)
+                            .build()
+            );
+        }
+
+        // Кнопка "Забрать" для записки на блоке
+        if (placedPos != null) {
+            this.addDrawableChild(
+                    ButtonWidget.builder(
+                                    Text.translatable("gui.bulletin-board.note_view.take"),
+                                    button -> this.takePlacedNote()
                             )
                             .dimensions(this.width / 2 + 60, this.height - 40, 80, 20)
                             .build()
@@ -70,7 +98,7 @@ public class NoteViewScreen extends Screen {
         textStartY = parchmentY + 57;
         textEndY = parchmentY + parchmentHeight - 50;
 
-        wrapText(note.getContent());
+        wrapText(note.getTranslatedContent());
         maxScroll = Math.max(0, wrappedLines.size() * 12 - (textEndY - textStartY));
         scrollOffset = MathHelper.clamp(scrollOffset, 0, maxScroll);
     }
@@ -117,14 +145,21 @@ public class NoteViewScreen extends Screen {
 
     private void takeNote() {
         if (boardEntity != null && notePosition >= 0 && this.client != null) {
-            com.unnameduser.bulletinboard.network.ModPackets.sendTakeNote(
-                    boardEntity.getPos(), notePosition);
+            ModPacketsClient.sendTakeNote(boardEntity.getPos(), notePosition);
+            this.close();
+        }
+    }
+
+    private void takePlacedNote() {
+        if (placedPos != null && this.client != null) {
+            ModPacketsClient.sendTakePlacedNote(placedPos);
             this.close();
         }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Проверка актуальности записки на доске
         if (boardEntity != null && notePosition >= 0) {
             NoteData currentNote = boardEntity.getNoteAtPosition(notePosition);
             if (currentNote == null || !currentNote.equals(note)) {
@@ -140,8 +175,9 @@ public class NoteViewScreen extends Screen {
                 PARCHMENT_COLOR);
         context.drawBorder(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
 
+        Text titleText = Text.literal("§l" + note.getTranslatedTitle());
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("§l" + note.getTitle()),
+                titleText,
                 this.width / 2, parchmentY + 20, TITLE_COLOR);
 
         context.fill(parchmentX + 20, parchmentY + 35,
@@ -161,12 +197,14 @@ public class NoteViewScreen extends Screen {
             }
         }
 
+        Text authorText = Text.translatable("gui.bulletin-board.note_view.from",
+                Text.translatable(note.getAuthor()));
         context.drawText(this.textRenderer,
-                Text.translatable("gui.bulletin-board.note_view.from", note.getAuthor()),
+                authorText,
                 parchmentX + parchmentWidth - 100, parchmentY + parchmentHeight - 25,
                 0xFF6B5E4A, false);
 
-        // === СТРЕЛКИ ПРОКРУТКИ ===
+        // Стрелки прокрутки
         boolean canScrollUp = scrollOffset > 0;
         boolean canScrollDown = scrollOffset < maxScroll;
 

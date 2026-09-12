@@ -1,0 +1,132 @@
+[
+  {
+    "id": "mason_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling building stone",
+      "ru_ru": "Продаю камень для строительства"
+    },
+    "content": {
+      "en_us": "I have excellent building stone! Dressed and chipped, different sizes and types. Suitable for foundations, walls and fences. The stone is quarried locally, and I clean and process it. I sell wholesale and retail. If you are planning construction, come, I will help you choose the right material!",
+      "ru_ru": "У меня есть отличный камень для строительства! Тёсаный и колотый, разных размеров и пород. Подходит для фундаментов, стен и заборов. Камень добывается в местной каменоломне, я его очищаю и обрабатываю. Продаю оптом и в розницу. Если вы планируете строительство — заходите, я помогу выбрать подходящий материал!"
+    }
+  },
+  {
+    "id": "mason_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Building stoves and fireplaces",
+      "ru_ru": "Строю печи и камины"
+    },
+    "content": {
+      "en_us": "I build stoves and fireplaces. I make them reliable, durable and beautiful. I work with different materials. The stove in your home will keep you warm for years. I can build a stove of any complexity. I accept orders, come to the workshop. I'm waiting for you!",
+      "ru_ru": "Я занимаюсь кладкой печей и каминов. Делаю надёжные, долговечные и красивые. Работаю с разными материалами. Печь в вашем доме будет согревать долгие годы. Могу построить печь любой сложности. Заказы принимаю, приходите в мастерскую. Жду вас!"
+    }
+  },
+  {
+    "id": "mason_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a construction assistant",
+      "ru_ru": "Ищу помощника на стройку"
+    },
+    "content": {
+      "en_us": "I need an assistant for building a house. The work is simple: carrying stone, mixing mortar, cleaning. Daily pay, meals included. Physical endurance required. If you are looking for work, contact me. The job lasts several weeks, we start tomorrow morning.",
+      "ru_ru": "Нужен помощник для строительства дома. Работа несложная: подносить камень, мешать раствор, убирать. Оплата ежедневная, есть питание. Требуется физическая выносливость. Если вы ищете работу, обращайтесь. Работа на несколько недель, начнём завтра с утра."
+    }
+  },
+  {
+    "id": "mason_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling stone slabs",
+      "ru_ru": "Продаю каменные плиты"
+    },
+    "content": {
+      "en_us": "I make stone slabs for paths and platforms. They are easy to install and require no special maintenance. Suitable for garden paths. Different thicknesses, colors — grey, beige. I can make to order. Come, I will show you samples and tell you how to lay the slabs.",
+      "ru_ru": "Я делаю каменные плиты для дорожек и площадок. Они удобны в укладке и не требуют особого ухода. Подходят для садовых дорожек. Толщина разная, цвет — серый, бежевый. Могу сделать на заказ. Приходите, я покажу вам образцы и расскажу, как укладывать плиты."
+    }
+  },
+  {
+    "id": "mason_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for stone for monuments",
+      "ru_ru": "Ищу камень для памятников"
+    },
+    "content": {
+      "en_us": "I need quality granite and marble for headstone work. If you have access to a quarry or stone supplier, let me know. I need monolithic blocks without cracks. Help me find them! A reward is guaranteed.",
+      "ru_ru": "Для работы с надгробиями мне нужен качественный гранит и мрамор. Если у вас есть доступ к месторождению или поставщику камня — сообщите мне. Нужны монолитные блоки без трещин. Помогите найти! Вознаграждение гарантировано."
+    }
+  },
+  {
+    "id": "mason_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Problems with cement supplies",
+      "ru_ru": "Проблемы с поставками цемента"
+    },
+    "content": {
+      "en_us": "I don't have good cement for work. If you know where to get it, let me know. I need good quality, in bags. This is important for current projects. Contact me, I would be very grateful for the information!",
+      "ru_ru": "У меня нет хорошего цемента для работы. Если вы знаете, где достать его, сообщите мне. Нужен качественный, в мешках. Это важно для текущих проектов. Свяжитесь со мной, я буду очень признателен за информацию!"
+    }
+  },
+  {
+    "id": "mason_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling steps",
+      "ru_ru": "Продаю ступени"
+    },
+    "content": {
+      "en_us": "I sell stone steps for porches. Different sizes. Come on in!",
+      "ru_ru": "Продаю каменные ступени для крыльца. Разные размеры. Заходите!"
+    }
+  },
+  {
+    "id": "mason_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Hiring a finisher",
+      "ru_ru": "Найму отделочника"
+    },
+    "content": {
+      "en_us": "I need someone for stone facade finishing. I pay per square meter!",
+      "ru_ru": "Нужен человек для отделки фасада камнем. Плачу за квадратный метр!"
+    }
+  },
+  {
+    "id": "mason_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling fences",
+      "ru_ru": "Продаю ограды"
+    },
+    "content": {
+      "en_us": "I sell stone fences for plots. Inexpensive, with delivery! Come on in!",
+      "ru_ru": "Продаю каменные ограды для участков. Недорого, с доставкой! Заходите!"
+    }
+  },
+  {
+    "id": "mason_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for stone",
+      "ru_ru": "Ищу камень"
+    },
+    "content": {
+      "en_us": "I'm looking for stone for a foundation. If you have any, respond. I will buy!",
+      "ru_ru": "Ищу камень для фундамента. Если есть, отзовитесь. Куплю!"
+    }
+  }
+]

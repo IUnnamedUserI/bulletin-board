@@ -198,13 +198,11 @@ public class BulletinBoardCommand {
             return 0;
         }
 
-        // Генерируем случайную записку с автором "Команда" и печатью
-        // Используем мир для получения случайного автора (если нет жителей, будет "Аноним")
         NoteData note = RandomNotePool.generateRandomNote(
                 world.getRandom(),
                 "Команда",
                 "command",
-                true
+                false
         );
 
         // Находим свободный слот

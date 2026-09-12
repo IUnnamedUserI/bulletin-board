@@ -1,0 +1,158 @@
+[
+  {
+    "id": "farmer_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling new harvest wheat",
+      "ru_ru": "Продаю пшеницу нового урожая"
+    },
+    "content": {
+      "en_us": "I have an excellent wheat harvest this year! The grain is large, clean, and free of weeds. I sell wholesale and retail, below market price. Suitable for flour, bread and animal feed. Come to the field, I'll show you and measure it out. Bargaining is acceptable if you take a lot. I will be glad to have regular customers!",
+      "ru_ru": "В этом году у меня отличный урожай пшеницы! Зерно крупное, чистое, без сорняков. Продаю оптом и в розницу, цена ниже рыночной. Подходит для муки, хлеба и корма скоту. Заходите на поле, я покажу и отмерю. Торг уместен, если берёте много. Буду рад постоянным покупателям!"
+    }
+  },
+  {
+    "id": "farmer_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring workers for haymaking",
+      "ru_ru": "Найму работников на сенокос"
+    },
+    "content": {
+      "en_us": "Summer is in full swing, and I need strong hands for haymaking. The work is dusty but requires strength and endurance. I promise good pay and a hearty lunch. Contact me at the farm. We work from dawn to dusk, but we rest during the hottest hours.",
+      "ru_ru": "Лето в разгаре, и мне нужны крепкие руки для сенокоса. Работа не пыльная, но требует силы и выносливости. Обещаю хорошую плату и сытный обед. Обращаться ко мне на ферму. Работаем от рассвета до заката, но отдыхаем в самый зной."
+    }
+  },
+  {
+    "id": "farmer_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Calves for sale",
+      "ru_ru": "Объявление о продаже телят"
+    },
+    "content": {
+      "en_us": "My cow has given birth to excellent calves. Two bull calves, strong and healthy, ready for independent life. I'm selling them at a reasonable price so they can find good homes. Suitable for raising or breeding. Come see them in the pen.",
+      "ru_ru": "У моей коровы родились отличные телята. Два бычка, крепкие и здоровые, готовы к самостоятельной жизни. Продаю недорого, чтобы они попали в хорошие руки. Подойдут для выращивания или разведения. Приходите смотреть, я покажу их в загоне."
+    }
+  },
+  {
+    "id": "farmer_4",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Mole problem!",
+      "ru_ru": "Проблемы с кротами!"
+    },
+    "content": {
+      "en_us": "Moles have infested my field this year and ruined part of the harvest. I'm asking my neighbors for advice: does anyone know how to get rid of them? I've tried almost all methods, but they keep coming back. If you have a working solution, please let me know, I would be very grateful! A reward is guaranteed!",
+      "ru_ru": "В этом году на моём поле завелись кроты и испортили часть урожая. Прошу совета у соседей: кто знает, как от них избавиться? Методы перепробовал почти все, но они возвращаются. Если у вас есть рабочий способ, подскажите, буду очень признателен! Вознаграждение гарантирую!"
+    }
+  },
+  {
+    "id": "farmer_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for neighbors for bulk grain purchase",
+      "ru_ru": "Ищу соседей для общей закупки зерна"
+    },
+    "content": {
+      "en_us": "Friends! If we join forces and buy grain in bulk, it will be cheaper for everyone. I'm ready to organize a joint purchase from the merchant. I've already calculated my share. If you're interested, bring your requests to my house by the end of the week and we'll discuss the details.",
+      "ru_ru": "Друзья! Если мы объединимся и закупим зерно оптом, это выйдет дешевле для каждого. Я готов организовать совместную закупку у купца. Свою долю я уже посчитал. Если вы заинтересованы, приносите свои заявки ко мне в дом до конца недели, обсудим детали."
+    }
+  },
+  {
+    "id": "farmer_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling hay for livestock",
+      "ru_ru": "Продаю сено для скота"
+    },
+    "content": {
+      "en_us": "I have a lot of hay left over from last year. It's dry and fragrant, excellent for livestock feed. I'm selling it at a low price since I don't use it myself. Suitable for cows, goats and sheep. Come see the quality. Bargaining is acceptable if you take several cartloads at once.",
+      "ru_ru": "У меня осталось много прошлогоднего сена. Оно сухое и душистое, отлично подходит для корма скоту. Продаю недорого, сам не использую. Подойдёт для коров, коз и овец. Приходите смотреть, я покажу качество. Торг уместен, если берёте сразу несколько возов."
+    }
+  },
+  {
+    "id": "farmer_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling new potatoes",
+      "ru_ru": "Продаю молодой картофель"
+    },
+    "content": {
+      "en_us": "This year's potato harvest is better than ever. Large, clean, perfect for soups and frying. I sell fresh, straight from the garden. Come before the harvest is gone! I can also help with delivery if your house is nearby.",
+      "ru_ru": "В этом году у меня урожай картофеля как никогда. Крупный, чистый, идеален для супов и жарки. Продаю свежий, прямо с грядки. Приходите, пока урожай не разобрали! Также могу помочь с доставкой, если ваш дом недалеко."
+    }
+  },
+  {
+    "id": "farmer_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Helper needed",
+      "ru_ru": "Найму помощника"
+    },
+    "content": {
+      "en_us": "I need help with hay harvesting. I pay with food and emeralds. Come to the farm tomorrow morning.",
+      "ru_ru": "Нужен человек для уборки сена. Плачу продуктами и изумрудами. Приходите на ферму завтра с утра."
+    }
+  },
+  {
+    "id": "farmer_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Need old boards",
+      "ru_ru": "Нужны старые доски"
+    },
+    "content": {
+      "en_us": "I will buy old boards for fence repair. Bring them to my farm, I will thank you with food.",
+      "ru_ru": "Куплю старые доски для ремонта забора. Принесите ко мне на ферму, я отблагодарю продуктами."
+    }
+  },
+  {
+    "id": "farmer_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Worker needed for a day",
+      "ru_ru": "Ищу работника на день"
+    },
+    "content": {
+      "en_us": "I need someone for a day of weeding the garden. I pay with food and a few emeralds. Ask for me in the field.",
+      "ru_ru": "Требуется человек для прополки грядок на день. Плачу едой и немного изумрудами. Спросите меня в поле."
+    }
+  },
+  {
+    "id": "farmer_11",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for an old barrel",
+      "ru_ru": "Ищу старую бочку"
+    },
+    "content": {
+      "en_us": "I will buy an old barrel for water. Condition doesn't matter, as long as it's intact. Bring it, I'll thank you.",
+      "ru_ru": "Куплю старую бочку для воды. Состояние не важно, главное, чтобы целая. Принесите, отблагодарю."
+    }
+  },
+  {
+    "id": "farmer_12",
+    "category": "PERSONAL",
+    "note_type": "small",
+    "title": {
+      "en_us": "Notice to neighbors",
+      "ru_ru": "Объявление для соседей"
+    },
+    "content": {
+      "en_us": "Please do not let your chickens into my garden. The seedlings are suffering. Thank you for understanding!",
+      "ru_ru": "Прошу не выпускать кур в мой огород. Рассада страдает. Спасибо за понимание!"
+    }
+  }
+]

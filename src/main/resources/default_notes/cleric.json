@@ -1,0 +1,158 @@
+[
+  {
+    "id": "cleric_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Help for the poor and sick",
+      "ru_ru": "Помощь бедным и больным"
+    },
+    "content": {
+      "en_us": "We are collecting donations for the poor and sick at the church. Everyone can help with what they can: food, clothing or firewood. We distribute aid to those in need. If you have the opportunity to share, please come and help. Even a small thing can change someone's life for the better.",
+      "ru_ru": "В церкви мы собираем пожертвования для бедных и больных. Каждый может помочь, кто чем может: продуктами, одеждой или дровами. Мы раздаём помощь тем, кто в ней нуждается. Если у вас есть возможность поделиться, прошу вас прийти и помочь. Даже малое может изменить чью-то жизнь к лучшему."
+    }
+  },
+  {
+    "id": "cleric_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a church assistant",
+      "ru_ru": "Ищу помощника для церкви"
+    },
+    "content": {
+      "en_us": "I need a volunteer assistant for the church. The work is simple: cleaning, helping organize services and caring for parishioners. I can offer a small reward and food. If you are ready to help and serve others, come, I'm waiting for you at the church!",
+      "ru_ru": "Мне нужен добровольный помощник для церкви. Работа несложная: уборка, помощь в организации служб и забота о прихожанах. Я могу предложить небольшое вознаграждение и еду. Если вы готовы помогать и служить ближним, приходите, я жду вас в церкви!"
+    }
+  },
+  {
+    "id": "cleric_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Prayer for peace",
+      "ru_ru": "Молитва о мире"
+    },
+    "content": {
+      "en_us": "We invite everyone to a common prayer for peace. In these difficult times, we must be together and ask for protection and prosperity. The service will be held at the church tomorrow morning. Free entrance. Come to support each other and find peace in your soul.",
+      "ru_ru": "Мы приглашаем всех на общую молитву о мире. В эти трудные времена мы должны быть вместе и просить о защите и процветании. Служба пройдёт в церкви завтра утром. Вход свободный. Приходите, чтобы поддержать друг друга и найти покой в душе."
+    }
+  },
+  {
+    "id": "cleric_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Help for the sick and elderly",
+      "ru_ru": "Помощь больным и престарелым"
+    },
+    "content": {
+      "en_us": "We are looking for volunteers to visit the sick and elderly. A little help and attention can greatly ease their lives. If you are ready to give your time, respond! We will meet at the church and discuss how best to organize this work.",
+      "ru_ru": "Мы ищем добровольцев для посещения больных и престарелых людей. Небольшая помощь и внимание могут значительно облегчить их жизнь. Если вы готовы уделить время, откликнитесь! Мы встретимся в церкви и обсудим, как лучше организовать эту работу."
+    }
+  },
+  {
+    "id": "cleric_5",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for an old priest for advice",
+      "ru_ru": "Ищу старого священника для совета"
+    },
+    "content": {
+      "en_us": "I'm looking for an old and wise priest who can give advice on spiritual matters. I respect his experience and knowledge. If you know such a person or are ready to help yourself, contact me through the church. I will be very grateful for your response!",
+      "ru_ru": "Я ищу старого и мудрого священника, который может дать совет по духовным вопросам. Я уважаю его опыт и знания. Если вы знаете такого человека или сами готовы помочь, свяжитесь со мной через церковь. Буду очень признателен за ваш отклик!"
+    }
+  },
+  {
+    "id": "cleric_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling healing potions",
+      "ru_ru": "Продаю зелье исцеления"
+    },
+    "content": {
+      "en_us": "I have prepared several healing potions from the best ingredients. They will help you quickly restore your strength after a battle or accident. The potions have been tested on myself and on parishioners. I sell at a reasonable price. Come to the church, I'll show you how to use them correctly so as not to harm yourself.",
+      "ru_ru": "Я приготовил несколько зелий исцеления из лучших ингредиентов. Они помогут быстро восстановить силы после боя или несчастного случая. Зелья проверены на себе и на прихожанах. Продаю по разумной цене. Заходите в церковь, я покажу, как правильно их использовать, чтобы не навредить себе."
+    }
+  },
+  {
+    "id": "cleric_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Teaching the basics of alchemy",
+      "ru_ru": "Объясняю основы алхимии"
+    },
+    "content": {
+      "en_us": "Every Wednesday I teach the basics of alchemy. I will teach you to distinguish ingredients, brew simple potions and not blow up the cauldron. Classes are free for everyone. Come to the church in the afternoon, I'll show you the basics of the craft. Remember that alchemy is a gift that must be used for good.",
+      "ru_ru": "Каждую среду я провожу занятия по основам алхимии. Научу различать ингредиенты, варить простые зелья и не взрывать котёл. Занятия бесплатные для всех желающих. Приходите в церковь после обеда, я покажу вам основы ремесла. Помните, что алхимия — это дар, который нужно использовать во благо."
+    }
+  },
+  {
+    "id": "cleric_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for glowstone dust",
+      "ru_ru": "Ищу светящуюся пыль"
+    },
+    "content": {
+      "en_us": "I urgently need glowstone dust for a potion of strength. It is rare and I am willing to pay a good price for it. If you have found it in caves or from druids, let me know. Help me find this rare ingredient!",
+      "ru_ru": "Мне срочно нужна светящаяся пыль для зелья силы. Она редко встречается, и я готов заплатить за неё хорошую цену. Если вы нашли её в пещерах или у друидов, сообщите мне. Помогите найти этот редкий ингредиент!"
+    }
+  },
+  {
+    "id": "cleric_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling pickled spider eyes",
+      "ru_ru": "Продаю маринованные глаза пауков"
+    },
+    "content": {
+      "en_us": "I pickled spider eyes according to a special recipe. They are great for potions and alchemical experiments. They are stored for a long time and do not lose their properties. I sell in small batches. Come to the church, I'll show you their quality.",
+      "ru_ru": "Я замариновал глаза пауков по специальному рецепту. Они отлично подходят для зелий и алхимических экспериментов. Хранятся долго и не теряют своих свойств. Продаю небольшими партиями. Заходите в церковь, я покажу вам их качество."
+    }
+  },
+  {
+    "id": "cleric_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for rare mushrooms",
+      "ru_ru": "Ищу редкие грибы"
+    },
+    "content": {
+      "en_us": "I will buy rare mushrooms from caves. I'll pay a good price. Respond!",
+      "ru_ru": "Куплю редкие грибы из пещер. Заплачу хорошую цену. Отзовитесь!"
+    }
+  },
+  {
+    "id": "cleric_11",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Protection from the undead",
+      "ru_ru": "Защита от нежити"
+    },
+    "content": {
+      "en_us": "I perform rituals of protection from zombies and skeletons. Come in, we'll come to an agreement!",
+      "ru_ru": "Провожу обряды защиты от зомби и скелетов. Заходите, договоримся!"
+    }
+  },
+  {
+    "id": "cleric_12",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I will buy rotten flesh",
+      "ru_ru": "Куплю гнилую плоть"
+    },
+    "content": {
+      "en_us": "I will buy rotten flesh for alchemical experiments. We'll agree on the price.",
+      "ru_ru": "Куплю гнилую плоть для алхимических опытов. О цене договоримся."
+    }
+  }
+]

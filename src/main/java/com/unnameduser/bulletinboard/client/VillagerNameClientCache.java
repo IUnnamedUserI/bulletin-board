@@ -5,18 +5,18 @@ import java.util.Map;
 import java.util.UUID;
 
 public class VillagerNameClientCache {
-    private static final Map<String, String> NAMES = new HashMap<>();
+    private static final Map<String, String> NAME_KEYS = new HashMap<>();
 
-    public static void updateNames(Map<String, String> names) {
-        NAMES.clear();
-        NAMES.putAll(names);
+    public static void updateNames(Map<String, String> nameKeys) {
+        NAME_KEYS.clear();
+        NAME_KEYS.putAll(nameKeys);
     }
 
-    public static String getName(UUID villagerUuid) {
-        return NAMES.getOrDefault(villagerUuid.toString(), "Villager");
+    public static String getNameKey(UUID villagerUuid) {
+        return NAME_KEYS.getOrDefault(villagerUuid.toString(), "villager.name.default");
     }
 
-    public static void putName(String uuid, String name) {
-        NAMES.put(uuid, name);
+    public static void putNameKey(String uuid, String nameKey) {
+        NAME_KEYS.put(uuid, nameKey);
     }
 }

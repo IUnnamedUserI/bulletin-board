@@ -13,32 +13,33 @@ import java.util.UUID;
 
 public class VillagerNameManager extends PersistentState {
     private static final String NAME = "bulletin_board_villager_names";
-    private final Map<String, String> villagerNames = new HashMap<>();
+    // Храним UUID → КЛЮЧ перевода (а не само имя)
+    private final Map<String, String> villagerNameKeys = new HashMap<>();
 
-    public String getOrCreateName(UUID villagerUuid) {
+    public String getOrCreateNameKey(UUID villagerUuid) {
         String uuid = villagerUuid.toString();
-        if (villagerNames.containsKey(uuid)) {
-            return villagerNames.get(uuid);
+        if (villagerNameKeys.containsKey(uuid)) {
+            return villagerNameKeys.get(uuid);
         }
 
-        String name = VillagerNameConfig.getRandomName();
-        villagerNames.put(uuid, name);
+        String nameKey = VillagerNameConfig.getRandomNameKey();
+        villagerNameKeys.put(uuid, nameKey);
         markDirty();
-        return name;
+        return nameKey;
     }
 
-    public String getName(UUID villagerUuid) {
-        return villagerNames.getOrDefault(villagerUuid.toString(), "Villager");
+    public String getNameKey(UUID villagerUuid) {
+        return villagerNameKeys.getOrDefault(villagerUuid.toString(), "villager.name.default");
     }
 
-    public Map<String, String> getAllNames() {
-        return new HashMap<>(villagerNames);
+    public Map<String, String> getAllNameKeys() {
+        return new HashMap<>(villagerNameKeys);
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         NbtCompound namesNbt = new NbtCompound();
-        for (Map.Entry<String, String> entry : villagerNames.entrySet()) {
+        for (Map.Entry<String, String> entry : villagerNameKeys.entrySet()) {
             namesNbt.putString(entry.getKey(), entry.getValue());
         }
         nbt.put("VillagerNames", namesNbt);
@@ -49,7 +50,7 @@ public class VillagerNameManager extends PersistentState {
         VillagerNameManager manager = new VillagerNameManager();
         NbtCompound namesNbt = nbt.getCompound("VillagerNames");
         for (String key : namesNbt.getKeys()) {
-            manager.villagerNames.put(key, namesNbt.getString(key));
+            manager.villagerNameKeys.put(key, namesNbt.getString(key));
         }
         return manager;
     }

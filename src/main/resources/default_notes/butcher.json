@@ -1,0 +1,119 @@
+[
+  {
+    "id": "butcher_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling fresh meat!",
+      "ru_ru": "Продаю свежее мясо!"
+    },
+    "content": {
+      "en_us": "I slaughtered a pig today and am selling fresh meat. I have tenderloin, ribs and lard. Everything is fresh, of excellent quality. Prices are below market because I want to sell quickly and free up space in the pantry. If you are planning to cook for the week, come, I will cut as much as you need. Come early in the morning before others take it all!",
+      "ru_ru": "Сегодня я забил свинью и продаю свежее мясо. Есть вырезка, рёбрышки и сало. Всё свежее, отличного качества. Цены ниже рыночных, потому что хочу быстро продать и освободить место в кладовой. Если вы планируете готовить на неделю, заходите, я нарежу вам столько, сколько нужно. Приходите с утра пораньше, пока другие не разобрали!"
+    }
+  },
+  {
+    "id": "butcher_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a butchering assistant",
+      "ru_ru": "Ищу помощника для разделки"
+    },
+    "content": {
+      "en_us": "I urgently need an assistant for butchering carcasses. The work is hard, dirty and requires attention. I am looking for a person who is not afraid of the sight of blood and is ready to work. I pay by the day and give part of the meat as payment. Contact me at the market, I will show you what needs to be done.",
+      "ru_ru": "Мне срочно нужен помощник для разделки туш. Работа тяжёлая, грязная и требует внимательности. Ищу человека, который не боится вида крови и готов работать. Плачу за день и даю часть мяса в качестве оплаты. Обращайтесь ко мне на рынок, я покажу, что нужно делать."
+    }
+  },
+  {
+    "id": "butcher_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling lamb legs",
+      "ru_ru": "Продаю бараньи ноги"
+    },
+    "content": {
+      "en_us": "I have several fresh lamb legs for sale. Excellent meat for roasting or stewing. I can cut into portions or roast. Come, I will show you the quality. The meat is excellent, I don't have much of it, so don't delay!",
+      "ru_ru": "У меня есть несколько свежих бараньих ног, которые я ищу покупателей. Отличное мясо для жарки или тушения. Могу разделять на части или запечь. Приходите, я покажу вам качество. Мясо отличное, у меня его не так много, так что не медлите!"
+    }
+  },
+  {
+    "id": "butcher_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Problems with meat supplies",
+      "ru_ru": "Проблемы с поставками мяса"
+    },
+    "content": {
+      "en_us": "This year there are difficulties with meat supplies, and I have nothing to trade. I am looking for new livestock suppliers. If you know someone who sells pigs or cows, contact me. Help me find honest sellers so I can continue to feed people. Thank you in advance!",
+      "ru_ru": "В этом году трудности с поставками мяса, и мне нечем торговать. Ищу новых поставщиков скота. Если вы знаете кого-то, кто продаёт свиней или коров, свяжитесь со мной. Помогите найти добросовестных продавцов, чтобы я мог продолжать кормить людей. Заранее спасибо!"
+    }
+  },
+  {
+    "id": "butcher_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling meat for guard dogs",
+      "ru_ru": "Продаю мясо для сторожевых собак"
+    },
+    "content": {
+      "en_us": "I have meat trimmings and bones that can be useful for dog food or other pets. I sell at a low price, they are of excellent quality and can even be used for broth. Bring bags!",
+      "ru_ru": "У меня есть мясные обрезки и кости, которые могут пригодиться для корма собакам или другим домашним животным. Отдаю по низкой цене, они отличного качества и даже могут пойти для варки. Приносите мешки!"
+    }
+  },
+  {
+    "id": "butcher_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling fresh steaks",
+      "ru_ru": "Продаю свежие стейки"
+    },
+    "content": {
+      "en_us": "I have large beef steaks. They are fresh, aromatic and perfect for frying. I sell by weight, the price is negotiable. If you love meat, this is a great option for a Sunday dinner. Come, I will cut you steaks of the right size. I'm waiting for you at the market!",
+      "ru_ru": "У меня есть большие стейки из говядины. Они свежие, ароматные и идеальны для жарки. Продаю по весу, цена договорная. Если вы любите мясо, это отличный вариант для воскресного обеда. Приходите, я нарежу вам стейки нужного размера. Жду вас на рынке!"
+    }
+  },
+  {
+    "id": "butcher_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Worker for slaughterhouse",
+      "ru_ru": "Работник на скотобойню"
+    },
+    "content": {
+      "en_us": "I'm looking for a strong worker for the slaughterhouse. Good pay. Waiting at the market!",
+      "ru_ru": "Ищу крепкого работника на скотобойню. Оплата хорошая. Жду на рынке!"
+    }
+  },
+  {
+    "id": "butcher_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a good knife",
+      "ru_ru": "Ищу хороший нож"
+    },
+    "content": {
+      "en_us": "I will buy a knife for butchering. If you have one, respond. Urgently!",
+      "ru_ru": "Куплю нож для разделки. Если есть, отзовитесь. Срочно!"
+    }
+  },
+  {
+    "id": "butcher_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling sausages",
+      "ru_ru": "Продаю колбасы"
+    },
+    "content": {
+      "en_us": "Homemade sausages and smoked meats. Delicious, long shelf life. Try them!",
+      "ru_ru": "Домашние колбасы и копчёности. Вкусные, долго хранятся. Попробуйте!"
+    }
+  }
+]

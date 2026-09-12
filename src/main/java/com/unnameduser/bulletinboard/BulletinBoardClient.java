@@ -5,8 +5,9 @@ import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
 import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
-import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.renderer.BulletinBoardRenderer;
+import com.unnameduser.bulletinboard.renderer.PlacedNoteBlockRenderer;
 import com.unnameduser.bulletinboard.renderer.VillagerNameRenderer;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
@@ -40,11 +41,16 @@ public class BulletinBoardClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // Регистрируем клиентские пакеты
-        ModPackets.registerClient();
+        ModPacketsClient.registerClient();
 
         BlockEntityRendererFactories.register(
                 ModBlockEntities.BULLETIN_BOARD_ENTITY,
                 BulletinBoardRenderer::new
+        );
+
+        BlockEntityRendererFactories.register(
+                ModBlockEntities.PLACED_NOTE_ENTITY,
+                PlacedNoteBlockRenderer::new
         );
 
         ClientPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "open_note"),
@@ -62,15 +68,14 @@ public class BulletinBoardClient implements ClientModInitializer {
                     });
                 });
 
-        // Рендер имён над жителями
         WorldRenderEvents.END.register(context -> {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player == null || client.world == null) return;
 
             for (Entity entity : client.world.getEntities()) {
                 if (entity instanceof VillagerEntity villager) {
-                    String name = VillagerNameClientCache.getName(villager.getUuid());
-                    VillagerNameRenderer.render(villager, name, context.matrixStack(), context.consumers(), context.tickDelta());
+                    String nameKey = VillagerNameClientCache.getNameKey(villager.getUuid());
+                    VillagerNameRenderer.render(villager, nameKey, context.matrixStack(), context.consumers(), context.tickDelta());
                 }
             }
         });
@@ -237,20 +242,11 @@ public class BulletinBoardClient implements ClientModInitializer {
         if (slot >= 0 && slot <= 3) {
             slotX1 = 0.14; slotX2 = 0.42;
             switch (slot) {
-                case 0:
-                    slotY1 = 0.64; slotY2 = 0.80;
-                    break;
-                case 1:
-                    slotY1 = 0.47; slotY2 = 0.63;
-                    break;
-                case 2:
-                    slotY1 = 0.29; slotY2 = 0.45;
-                    break;
-                case 3:
-                    slotY1 = 0.12; slotY2 = 0.28;
-                    break;
-                default:
-                    slotY1 = 0.04; slotY2 = 0.88;
+                case 0: slotY1 = 0.64; slotY2 = 0.80; break;
+                case 1: slotY1 = 0.47; slotY2 = 0.63; break;
+                case 2: slotY1 = 0.29; slotY2 = 0.45; break;
+                case 3: slotY1 = 0.12; slotY2 = 0.28; break;
+                default: slotY1 = 0.04; slotY2 = 0.88;
             }
         } else {
             slotX1 = 0.47; slotX2 = 0.83;
@@ -258,16 +254,11 @@ public class BulletinBoardClient implements ClientModInitializer {
         }
 
         return switch (facing) {
-            case NORTH -> new Box(x + slotX1, y + slotY1, z + 0.93,
-                    x + slotX2, y + slotY2, z + 0.95);
-            case SOUTH -> new Box(x + slotX1, y + slotY1, z + 0.05,
-                    x + slotX2, y + slotY2, z + 0.07);
-            case WEST  -> new Box(x + 0.93, y + slotY1, z + slotX1,
-                    x + 0.95, y + slotY2, z + slotX2);
-            case EAST  -> new Box(x + 0.05, y + slotY1, z + slotX1,
-                    x + 0.07, y + slotY2, z + slotX2);
-            default    -> new Box(x + slotX1, y + slotY1, z + 0.93,
-                    x + slotX2, y + slotY2, z + 0.95);
+            case NORTH -> new Box(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
+            case SOUTH -> new Box(x + slotX1, y + slotY1, z + 0.05, x + slotX2, y + slotY2, z + 0.07);
+            case WEST  -> new Box(x + 0.93, y + slotY1, z + slotX1, x + 0.95, y + slotY2, z + slotX2);
+            case EAST  -> new Box(x + 0.05, y + slotY1, z + slotX1, x + 0.07, y + slotY2, z + slotX2);
+            default    -> new Box(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
         };
     }
 

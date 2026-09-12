@@ -26,14 +26,14 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
     static {
         BADGE_CONFIGS.put(Direction.NORTH, new BadgeConfig(-0.225, -0.35, 0.01, false, 0.25f));
         BADGE_CONFIGS.put(Direction.SOUTH, new BadgeConfig(0.225, -0.35, 0.01, true, 0.25f));
-        BADGE_CONFIGS.put(Direction.WEST,  new BadgeConfig(0.225, -0.35, -0.01, false, 0.25f));
+        BADGE_CONFIGS.put(Direction.WEST,  new BadgeConfig(0.225, -0.35, 0.01, false, 0.25f));
         BADGE_CONFIGS.put(Direction.EAST,  new BadgeConfig(-0.225, -0.35, -0.01, true, 0.25f));
     }
 
     static {
         SMALL_BADGE_CONFIGS.put(Direction.NORTH, new BadgeConfig(-0.225, -0.125, 0.01, false, 0.2f));
         SMALL_BADGE_CONFIGS.put(Direction.SOUTH, new BadgeConfig(0.225, -0.125, 0.01, true, 0.2f));
-        SMALL_BADGE_CONFIGS.put(Direction.WEST,  new BadgeConfig(0.225, -0.125, -0.01, false, 0.2f));
+        SMALL_BADGE_CONFIGS.put(Direction.WEST,  new BadgeConfig(0.225, -0.125, 0.01, false, 0.2f));
         SMALL_BADGE_CONFIGS.put(Direction.EAST,  new BadgeConfig(-0.225, -0.125, -0.01, true, 0.2f));
     }
 

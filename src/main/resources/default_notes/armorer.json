@@ -1,0 +1,119 @@
+[
+  {
+    "id": "armorer_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling chainmail and plate armor",
+      "ru_ru": "Продаю кольчуги и латы"
+    },
+    "content": {
+      "en_us": "I make chainmail and plate armor to order. I work with iron and steel, guaranteeing strength and reliability. Each armor is fitted to the owner's figure so as not to restrict movement. If you are looking for protection for hunting or war, come to my forge. I work on prepayment, the price depends on complexity and materials.",
+      "ru_ru": "Я делаю кольчуги и латы на заказ. Работаю с железом и сталью, гарантирую прочность и надёжность. Каждый доспех подгоняется под фигуру владельца, чтобы не стеснять движений. Если вы ищете защиту для охоты или войны, приходите в мою кузницу. Работаю по предоплате, цена зависит от сложности и материалов."
+    }
+  },
+  {
+    "id": "armorer_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Armor repair!",
+      "ru_ru": "Ремонт доспехов!"
+    },
+    "content": {
+      "en_us": "Do your armor have cracks or abrasions? Bring them to me. I repair and restore armor. I will restore not only the appearance, but also the strength. I work quickly and efficiently. The repair price depends on the complexity of the damage. Come to the forge, I will assess the work on the spot.",
+      "ru_ru": "У ваших доспехов появились трещины или потёртости? Приносите их ко мне. Я занимаюсь ремонтом и реставрацией брони. Восстановлю не только внешний вид, но и прочность. Работаю быстро и качественно. Цена ремонта зависит от сложности повреждений. Заходите в кузницу, я оценю работу на месте."
+    }
+  },
+  {
+    "id": "armorer_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling old armor",
+      "ru_ru": "Продаю старые доспехи"
+    },
+    "content": {
+      "en_us": "I have several old armors that I took off the mannequins. They are still quite usable and can serve as a good start for a beginner. I sell at a low price to free up space. Come see, I'll show you what I have! Bargaining is acceptable.",
+      "ru_ru": "У меня есть несколько старых доспехов, которые я снял с манекенов. Они ещё вполне пригодны для использования и могут послужить хорошим началом для новичка. Продаю по низкой цене, чтобы освободить место. Приходите смотреть, я покажу, что есть! Торг уместен."
+    }
+  },
+  {
+    "id": "armorer_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old armor for smelting",
+      "ru_ru": "Ищу старые доспехи для переплавки"
+    },
+    "content": {
+      "en_us": "I need old armor for smelting to get iron and steel. If you have unnecessary armor, I will buy it by weight. This is a good way to get rid of junk and get some money. Bring it to the forge, I will weigh it and pay!",
+      "ru_ru": "Мне нужны старые доспехи для переплавки, чтобы получить железо и сталь. Если у вас есть ненужная броня, я куплю её по весу. Это хороший способ избавиться от хлама и получить немного денег. Приносите в кузницу, я взвешу и заплачу!"
+    }
+  },
+  {
+    "id": "armorer_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a forge apprentice",
+      "ru_ru": "Найму ученика для кузни"
+    },
+    "content": {
+      "en_us": "I'm looking for an apprentice for the forge. Work for those who want to learn blacksmithing and metalworking. I will teach you how to forge armor and weapons. I pay a little money, but I give invaluable experience. If you are ready to work and learn, come for a trial period!",
+      "ru_ru": "Ищу ученика для кузни. Работа для тех, кто хочет научиться кузнечному делу и работе с металлом. Я научу ковать доспехи и оружие. Плачу небольшие деньги, но даю бесценный опыт. Если вы готовы работать и учиться, приходите на испытательный срок!"
+    }
+  },
+  {
+    "id": "armorer_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling helmets for the squad",
+      "ru_ru": "Продаю шлемы для дружины"
+    },
+    "content": {
+      "en_us": "I have forged a batch of excellent helmets for the squad. They are strong, comfortable and inexpensive. Suitable for regular training and combat. If you are looking for reliable protection for your people, come, I'll show you! I can make additional helmets to order according to your size.",
+      "ru_ru": "Я выковал партию отличных шлемов для дружины. Они крепкие, удобные и недорогие. Подходят для регулярных учений и боевых действий. Если вы ищете надёжную защиту для своих людей, заходите, я покажу! Могу сделать дополнительные шлемы на заказ по вашему размеру."
+    }
+  },
+  {
+    "id": "armorer_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Order overload — I'm falling behind!",
+      "ru_ru": "Проблемы с заказами — не успеваю!"
+    },
+    "content": {
+      "en_us": "There are too many orders and I can't process them all. I apologize to regular customers for the delays. I will soon take an assistant to speed up the work. In the meantime, please wait, all orders will be completed on time!",
+      "ru_ru": "Заказов стало слишком много, и я не успеваю обработать их все. Приношу извинения постоянным клиентам за задержки. В ближайшее время я возьму себе помощника, чтобы ускорить работу. А пока прошу подождать, все заказы будут выполнены в срок!"
+    }
+  },
+  {
+    "id": "armorer_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling shields",
+      "ru_ru": "Продаю щиты"
+    },
+    "content": {
+      "en_us": "Durable shields made of oak and iron. For guards and militia. Come take a look!",
+      "ru_ru": "Прочные щиты из дуба и железа. Для стражи и ополчения. Заходите смотреть!"
+    }
+  },
+  {
+    "id": "armorer_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Metal problems",
+      "ru_ru": "Проблемы с металлом"
+    },
+    "content": {
+      "en_us": "I need a supplier of quality metal. Let me know if you know a good source!",
+      "ru_ru": "Нужен поставщик качественного металла. Сообщите, если знаете хороший источник!"
+    }
+  }
+]

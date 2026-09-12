@@ -1,0 +1,132 @@
+[
+  {
+    "id": "librarian_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling enchanted books",
+      "ru_ru": "Продаю зачарованные книги"
+    },
+    "content": {
+      "en_us": "I have several enchanted books with different effects. I have books on luck, sharpness and protection. They can be useful for upgrading weapons and tools. I sell at a reasonable price. Come to the library, I'll show you the whole collection. The books are tested and safe to use.",
+      "ru_ru": "У меня есть несколько зачарованных книг с разными эффектами. Есть книги на удачу, остроту и защиту. Они могут пригодиться для улучшения оружия и инструментов. Продаю по разумной цене. Заходите в библиотеку, я покажу вам всю коллекцию. Книги проверены и безопасны в использовании."
+    }
+  },
+  {
+    "id": "librarian_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Enchanting books to order",
+      "ru_ru": "Зачаровываю книги на заказ"
+    },
+    "content": {
+      "en_us": "I enchant books to order. Bring me a book and the necessary ingredients, and I will apply any enchantment to it. I work with all types of enchantments. Completion time is one to three days. Come to the library, we'll discuss the details and price.",
+      "ru_ru": "Я занимаюсь зачарованием книг на заказ. Принесите мне книгу и нужные ингредиенты, и я наложу на неё любое зачарование. Работаю со всеми видами зачарований. Срок выполнения — от одного до трёх дней. Заходите в библиотеку, обсудим детали и цену."
+    }
+  },
+  {
+    "id": "librarian_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling bookshelves",
+      "ru_ru": "Продаю книжные полки"
+    },
+    "content": {
+      "en_us": "I make bookshelves from oak and pine. They are sturdy and beautiful, perfect for storing books. I accept orders and can make any size. I sell at an affordable price. Come to the library, I'll show you samples and tell you how best to place them in your home.",
+      "ru_ru": "Я делаю книжные полки из дуба и сосны. Они прочные и красивые, отлично подходят для хранения книг. Заказы принимаю, могу сделать любого размера. Продаю по доступной цене. Заходите в библиотеку, я покажу вам образцы и расскажу, как лучше разместить их в доме."
+    }
+  },
+  {
+    "id": "librarian_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old books for study",
+      "ru_ru": "Ищу старые книги для изучения"
+    },
+    "content": {
+      "en_us": "I collect old books and manuscripts for studying ancient spells. If you have such books, I will buy them at a good price or exchange them for new ones. Even damaged copies are of interest. Bring them to the library, I will assess their historical value.",
+      "ru_ru": "Я собираю старые книги и манускрипты для изучения древних заклинаний. Если у вас есть такие книги, я куплю их по хорошей цене или обменяю на новые. Интересуют даже повреждённые экземпляры. Приносите в библиотеку, я оценю их историческую ценность."
+    }
+  },
+  {
+    "id": "librarian_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring library assistant",
+      "ru_ru": "Найму помощника для библиотеки"
+    },
+    "content": {
+      "en_us": "I'm looking for an assistant for the library. Need help with sorting books, cleaning and serving visitors. The work is simple but requires perseverance. I pay a small amount of money and give access to books. If you love reading and want to work with books, come to the library.",
+      "ru_ru": "Ищу помощника для библиотеки. Нужно помогать с сортировкой книг, уборкой и обслуживанием посетителей. Работа несложная, но требует усидчивости. Плачу небольшими деньгами и даю доступ к книгам. Если вы любите читать и хотите работать с книгами, приходите в библиотеку."
+    }
+  },
+  {
+    "id": "librarian_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling rare manuscripts",
+      "ru_ru": "Продаю редкие манускрипты"
+    },
+    "content": {
+      "en_us": "I have several rare manuscripts on alchemy and magic. They are written in an ancient language and contain unique knowledge. I sell only to those who understand their value. Come to the library, I will show you these treasures.",
+      "ru_ru": "У меня есть несколько редких манускриптов по алхимии и магии. Они написаны на древнем языке и содержат уникальные знания. Продаю только тем, кто понимает их ценность. Заходите в библиотеку, я покажу вам эти сокровища."
+    }
+  },
+  {
+    "id": "librarian_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Enchanting consultations",
+      "ru_ru": "Консультации по зачарованию"
+    },
+    "content": {
+      "en_us": "I consult on enchanting. Free. Come to the library!",
+      "ru_ru": "Консультирую по зачарованию. Бесплатно. Приходите в библиотеку!"
+    }
+  },
+  {
+    "id": "librarian_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling alchemy books",
+      "ru_ru": "Продаю книги по алхимии"
+    },
+    "content": {
+      "en_us": "Alchemy books with potion recipes. Affordable prices. Come on in!",
+      "ru_ru": "Книги по алхимии с рецептами зелий. Доступные цены. Заходите!"
+    }
+  },
+  {
+    "id": "librarian_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for old scrolls",
+      "ru_ru": "Ищу старые свитки"
+    },
+    "content": {
+      "en_us": "I will buy old scrolls and parchments. Bring them, I'll pay!",
+      "ru_ru": "Куплю старые свитки и пергаменты. Приносите, я заплачу!"
+    }
+  },
+  {
+    "id": "librarian_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling history books",
+      "ru_ru": "Продаю книги по истории"
+    },
+    "content": {
+      "en_us": "History books about the world. For students and researchers. Come on in!",
+      "ru_ru": "Книги по истории мира. Для учеников и исследователей. Заходите!"
+    }
+  }
+]

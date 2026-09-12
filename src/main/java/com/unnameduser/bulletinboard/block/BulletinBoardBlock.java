@@ -1,6 +1,5 @@
 package com.unnameduser.bulletinboard.block;
 
-import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
@@ -199,8 +198,6 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
 
         double horizontal = (facing == Direction.NORTH || facing == Direction.SOUTH) ? x : z;
 
-        // 🔧 ТОЧНЫЕ ГРАНИЦЫ (как в BulletinBoardClient.calculateSlot)
-        // Левая колонка: малые слоты 0-3
         if (horizontal > 0.15 && horizontal < 0.4) {
             if (y > 0.12 && y < 0.28) return 3;
             if (y > 0.29 && y < 0.45) return 2;

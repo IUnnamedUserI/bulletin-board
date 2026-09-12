@@ -1,0 +1,132 @@
+[
+  {
+    "id": "fletcher_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling bows and arrows",
+      "ru_ru": "Продаю луки и стрелы"
+    },
+    "content": {
+      "en_us": "I make bows and arrows from the best materials. My bows are reliable, my arrows are accurate. Suitable for hunting and protection. I sell at good prices. Come to the workshop, I'll show you everything I have.",
+      "ru_ru": "Я делаю луки и стрелы из лучших материалов. Мои луки — надёжные, стрелы — точные. Подходят для охоты и защиты. Продаю по хорошим ценам. Заходите в мастерскую, я покажу вам всё, что есть."
+    }
+  },
+  {
+    "id": "fletcher_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Buying feathers and flint",
+      "ru_ru": "Скупаю перья и кремень"
+    },
+    "content": {
+      "en_us": "I need feathers and flint for making arrows. If you've hunted birds or found flint, bring it—I'll pay a good price. Even small batches are of interest. This will help me maintain my supply of arrows in the workshop.",
+      "ru_ru": "Для изготовления стрел мне нужны перья и кремень. Если вы охотились на птиц или находили кремень — приносите, я заплачу хорошую цену. Интересны даже небольшие партии. Это поможет мне поддерживать запас стрел в мастерской."
+    }
+  },
+  {
+    "id": "fletcher_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring workshop assistant",
+      "ru_ru": "Найму помощника для мастерской"
+    },
+    "content": {
+      "en_us": "I'm looking for an assistant for my workshop. Need help making arrows: attaching tips, fletching and sorting. The work is simple but requires care. I pay for each batch and give advice. If you want to learn the craft of fletcher, come!",
+      "ru_ru": "Ищу помощника для моей мастерской. Нужно помогать делать стрелы: прикреплять наконечники, оперять и сортировать. Работа несложная, но требует аккуратности. Плачу за каждую партию и даю советы. Если вы хотите научиться мастерству лучника — приходите!"
+    }
+  },
+  {
+    "id": "fletcher_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling crossbows and bolts",
+      "ru_ru": "Продаю арбалеты и болты"
+    },
+    "content": {
+      "en_us": "I have several crossbows and bolts for them. Crossbows are convenient for close combat and hunting. I make them from durable materials—they are long-lasting and accurate. I sell at a reasonable price and can make them to order. Come, I'll show you my models!",
+      "ru_ru": "У меня есть несколько арбалетов и болты к ним. Арбалеты удобны для ближнего боя и охоты. Я делаю их из прочных материалов, они долговечны и точны. Продаю по разумной цене, могу сделать на заказ. Приходите, я покажу вам свои модели!"
+    }
+  },
+  {
+    "id": "fletcher_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for shafts for arrows",
+      "ru_ru": "Ищу палки для древков"
+    },
+    "content": {
+      "en_us": "I need straight and strong shafts for making arrow shafts. If you're cutting wood and can bring me the blanks, I'll pay. Length: about a meter, without knots or cracks.",
+      "ru_ru": "Мне нужны ровные и крепкие палки для изготовления древков стрел. Если вы рубите лес и можете принести мне нужные заготовки — я заплачу. Длина — примерно метр, без сучков и трещин."
+    }
+  },
+  {
+    "id": "fletcher_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Buying threads and ropes",
+      "ru_ru": "Скупаю нити и верёвки"
+    },
+    "content": {
+      "en_us": "I need strong threads and ropes for making bowstrings. If you have such materials, bring them—I'll pay. This is an important part of my craft, and I'm always looking for good materials.",
+      "ru_ru": "Для изготовления тетив мне нужны прочные нити и верёвки. Если у вас есть такие материалы — приносите, я заплачу. Это важная часть моего ремесла, и я всегда ищу хорошие материалы."
+    }
+  },
+  {
+    "id": "fletcher_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old bows for repair",
+      "ru_ru": "Ищу старые луки для ремонта"
+    },
+    "content": {
+      "en_us": "I repair old bows and crossbows. If you have broken weapons, bring them—I'll fix them. I can also replace the string or tips. The repair cost is small, and the result will be like new. Bring them, I'll assess and tell you the price.",
+      "ru_ru": "Я ремонтирую старые луки и арбалеты. Если у вас есть сломавшееся оружие — приносите, я починю. Заодно могу заменить тетиву или наконечники. Цена ремонта небольшая, а результат будет как новый. Приносите, я оценю и скажу цену."
+    }
+  },
+  {
+    "id": "fletcher_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Materials needed urgently!",
+      "ru_ru": "Нужны материалы!"
+    },
+    "content": {
+      "en_us": "I've run out of feathers and flint! Bring them, I'll pay! Urgently!",
+      "ru_ru": "Закончились перья и кремень! Приносите, заплачу! Срочно!"
+    }
+  },
+  {
+    "id": "fletcher_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling crossbow bolts",
+      "ru_ru": "Продаю болты для арбалетов"
+    },
+    "content": {
+      "en_us": "Crossbow bolts, sharp and accurate. In stock! Come on in!",
+      "ru_ru": "Болты для арбалетов, острые и точные. В наличии! Заходите!"
+    }
+  },
+  {
+    "id": "fletcher_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Starter kits",
+      "ru_ru": "Наборы для начинающих"
+    },
+    "content": {
+      "en_us": "Starter kits for beginners: bow, arrows, instructions. Everything you need to start! Come on in!",
+      "ru_ru": "Наборы для новичков: лук, стрелы, инструкция. Всё для старта! Заходите!"
+    }
+  }
+]

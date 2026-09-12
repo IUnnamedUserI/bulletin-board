@@ -1,8 +1,10 @@
 package com.unnameduser.bulletinboard.util;
 
+import com.unnameduser.bulletinboard.config.NoteConfigLoader;
 import net.minecraft.nbt.NbtCompound;
 
 public class NoteData {
+    private String noteId;
     private String title;
     private String content;
     private String author;
@@ -12,15 +14,22 @@ public class NoteData {
     private boolean isSmall;
     private String authorUuid;
 
+    // ============ КОНСТРУКТОРЫ ============
+
     public NoteData(String title, String content, String author, boolean isSmall) {
-        this(title, content, author, -1, System.currentTimeMillis(), false, false);
+        this(null, title, content, author, -1, System.currentTimeMillis(), false, isSmall);
     }
 
     public NoteData(String title, String content, String author, int tagColor) {
-        this(title, content, author, tagColor, System.currentTimeMillis(), tagColor != -1, false);
+        this(null, title, content, author, tagColor, System.currentTimeMillis(), tagColor != -1, false);
     }
 
     public NoteData(String title, String content, String author, int tagColor, long creationTime, boolean hasSeal, boolean isSmall) {
+        this(null, title, content, author, tagColor, creationTime, hasSeal, isSmall);
+    }
+
+    public NoteData(String noteId, String title, String content, String author, int tagColor, long creationTime, boolean hasSeal, boolean isSmall) {
+        this.noteId = noteId;
         this.title = title;
         this.content = content;
         this.author = author;
@@ -28,6 +37,13 @@ public class NoteData {
         this.creationTime = creationTime;
         this.hasSeal = hasSeal;
         this.isSmall = isSmall;
+        this.authorUuid = null;
+    }
+
+    // ============ ГЕТТЕРЫ ============
+
+    public String getNoteId() {
+        return noteId;
     }
 
     public String getTitle() {
@@ -46,13 +62,45 @@ public class NoteData {
         return tagColor;
     }
 
-    public long getCreationTime() { return creationTime; }
+    public long getCreationTime() {
+        return creationTime;
+    }
 
-    public boolean hasSeal() { return hasSeal; }
+    public boolean hasSeal() {
+        return hasSeal;
+    }
 
-    public boolean isSmall() { return isSmall; }
+    public boolean isSmall() {
+        return isSmall;
+    }
 
-    public String getAuthorUuid() { return authorUuid; }
+    public String getAuthorUuid() {
+        return authorUuid;
+    }
+
+    // ============ ПЕРЕВОДЫ (с учётом языка) ============
+
+    public String getTranslatedTitle() {
+        if (noteId != null && !noteId.isEmpty()) {
+            var template = NoteConfigLoader.getNoteById(noteId);
+            if (template != null) {
+                return template.getTitle();
+            }
+        }
+        return title;
+    }
+
+    public String getTranslatedContent() {
+        if (noteId != null && !noteId.isEmpty()) {
+            var template = NoteConfigLoader.getNoteById(noteId);
+            if (template != null) {
+                return template.getContent();
+            }
+        }
+        return content;
+    }
+
+    // ============ СЕТТЕРЫ ============
 
     public void setTitle(String title) {
         this.title = title;
@@ -70,12 +118,23 @@ public class NoteData {
         this.tagColor = tagColor;
     }
 
-    public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
+    public void setHasSeal(boolean hasSeal) {
+        this.hasSeal = hasSeal;
+    }
 
-    public void setAuthorUuid(String authorUuid) { this.authorUuid = authorUuid; }
+    public void setAuthorUuid(String authorUuid) {
+        this.authorUuid = authorUuid;
+    }
+
+    public void setNoteId(String noteId) {
+        this.noteId = noteId;
+    }
+
+    // ============ NBT ============
 
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
+        nbt.putString("NoteId", noteId != null ? noteId : "");
         nbt.putString("Title", title);
         nbt.putString("Content", content);
         nbt.putString("Author", author);
@@ -83,10 +142,14 @@ public class NoteData {
         nbt.putLong("CreationTime", creationTime);
         nbt.putBoolean("HasSeal", hasSeal);
         nbt.putBoolean("IsSmall", isSmall);
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            nbt.putString("AuthorUuid", authorUuid);
+        }
         return nbt;
     }
 
     public static NoteData fromNbt(NbtCompound nbt) {
+        String noteId = nbt.getString("NoteId");
         String title = nbt.getString("Title");
         String content = nbt.getString("Content");
         String author = nbt.getString("Author");
@@ -95,13 +158,21 @@ public class NoteData {
         boolean hasSeal = nbt.contains("HasSeal") ? nbt.getBoolean("HasSeal") : (tagColor != -1);
         boolean isSmall = nbt.contains("IsSmall") && nbt.getBoolean("IsSmall");
 
-        return new NoteData(title, content, author, tagColor, creationTime, hasSeal, isSmall);
+        NoteData note = new NoteData(noteId, title, content, author, tagColor, creationTime, hasSeal, isSmall);
+
+        if (nbt.contains("AuthorUuid")) {
+            note.setAuthorUuid(nbt.getString("AuthorUuid"));
+        }
+
+        return note;
     }
+
+    // ============ ВСПОМОГАТЕЛЬНЫЕ ============
 
     @Override
     public String toString() {
-        return String.format("NoteData{title='%s', author='%s', tagColor=0x%X}",
-                title, author, tagColor);
+        return String.format("NoteData{id='%s', title='%s', author='%s', tagColor=0x%X, hasSeal=%s, isSmall=%s}",
+                noteId, title, author, tagColor, hasSeal, isSmall);
     }
 
     @Override
@@ -110,6 +181,11 @@ public class NoteData {
         if (!(obj instanceof NoteData)) return false;
 
         NoteData other = (NoteData) obj;
+
+        if (noteId != null && !noteId.isEmpty()) {
+            return noteId.equals(other.noteId);
+        }
+
         return title.equals(other.title) &&
                 content.equals(other.content) &&
                 author.equals(other.author) &&
@@ -118,6 +194,9 @@ public class NoteData {
 
     @Override
     public int hashCode() {
+        if (noteId != null && !noteId.isEmpty()) {
+            return noteId.hashCode();
+        }
         int result = title.hashCode();
         result = 31 * result + content.hashCode();
         result = 31 * result + author.hashCode();

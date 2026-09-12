@@ -1,0 +1,145 @@
+[
+  {
+    "id": "fisherman_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Fresh catch! Selling fish!",
+      "ru_ru": "Свежий улов! Продаю рыбу!"
+    },
+    "content": {
+      "en_us": "I had a great catch this morning. I have cod and salmon. The fish are still alive, kept in cages at the pier. I'm selling at a reasonable price, depending on the size. Come and take what you like. They're predicting rain next week, so stock up!",
+      "ru_ru": "Сегодня с утра я поймал отличный улов. Есть треска, лосось. Рыба ещё живая, хранится в садках у причала. Продаю недорого, цена зависит от размера. Приходите сами и берите, что понравится. На следующей неделе обещают дожди, так что запасайтесь!"
+    }
+  },
+  {
+    "id": "fisherman_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a boat assistant",
+      "ru_ru": "Найму помощника на лодку"
+    },
+    "content": {
+      "en_us": "I need a strong young man to help on the boat. Work for those who are not afraid of water and wind, and ready to get up at dawn. I will teach you the subtleties of fishing and net repair. I pay with money and a share of the catch. I promise it won't be boring. Ask for me at the pier tomorrow morning.",
+      "ru_ru": "Мне нужен крепкий парень в помощь на лодку. Работа для тех, кто не боится воды и ветра, готов вставать с зарей. Буду учить тонкостям рыбалки и ремонта сетей. Плачу деньгами и долей улова. Обещаю, что скучно не будет. Спрашивайте меня у причала завтра утром."
+    }
+  },
+  {
+    "id": "fisherman_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a boat for long voyages",
+      "ru_ru": "Ищу лодку для дальнего плавания"
+    },
+    "content": {
+      "en_us": "I need a large and reliable boat for long voyages. I'm ready to exchange it for several bundles of fish or pay with emeralds. I'd like something sturdy and with good capacity. I would be glad if someone who has such a boat responds. Ask for me at the pier.",
+      "ru_ru": "Мне нужна большая и надёжная лодка для дальнего плавания. Готов обменять её на несколько связок рыбы или заплатить изумрудами. Хотелось бы что-то крепкое и с хорошей вместимостью. Буду рад, если откликнется кто-то, у кого есть такая лодка. Спрашивайте меня на причале."
+    }
+  },
+  {
+    "id": "fisherman_4",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for an old fisherman for advice",
+      "ru_ru": "Ищу старого рыбака для совета"
+    },
+    "content": {
+      "en_us": "I'm a beginner fisherman and I'm looking for advice from an experienced person. Who knows how to set nets properly? I would be grateful for any advice or guidance. I promise to thank you with a treat or help with work. If you're experienced, please respond!",
+      "ru_ru": "Я начинающий рыбак и ищу совета у опытного человека. Кто знает, как правильно ставить сети? Буду рад любому совету или наставлению. Обещаю отблагодарить угощением или помощью в работе. Если вы опытны, откликнитесь!"
+    }
+  },
+  {
+    "id": "fisherman_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a boat repairman",
+      "ru_ru": "Найму человека для ремонта лодки"
+    },
+    "content": {
+      "en_us": "My boat has sprung a leak and I can't repair it myself. I need a craftsman who knows how to work with wood and resin. The work won't be quick, but I'll pay well. Contact me, I'll be at the pier all day. I'm waiting for offers!",
+      "ru_ru": "Моя лодка дала течь, а я сам не могу её починить. Нужен мастер, который умеет работать с деревом и смолой. Работа не быстрая, но я заплачу хорошо. Обращаться ко мне, я буду у причала весь день. Жду предложений!"
+    }
+  },
+  {
+    "id": "fisherman_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I will buy old nets",
+      "ru_ru": "Куплю старые сети"
+    },
+    "content": {
+      "en_us": "I will buy old nets for repair. Condition doesn't matter. Bring them to the pier, I'll pay with food.",
+      "ru_ru": "Куплю старые сети для ремонта. Состояние не важно. Приносите к причалу, заплачу продуктами."
+    }
+  },
+  {
+    "id": "fisherman_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a fishing boat",
+      "ru_ru": "Ищу лодку для рыбалки"
+    },
+    "content": {
+      "en_us": "I'm looking for an old fishing boat. I'll trade it for a catch or pay. Respond if you're selling.",
+      "ru_ru": "Ищу старую лодку для рыбалки. Обменяю на улов или заплачу. Отзовитесь, кто продаёт."
+    }
+  },
+  {
+    "id": "fisherman_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I'll exchange fish for bread",
+      "ru_ru": "Обменяю рыбу на хлеб"
+    },
+    "content": {
+      "en_us": "I'll exchange fresh fish for fresh bread or flour. Reasonable price, I'm at the pier. Come on over!",
+      "ru_ru": "Меняю свежую рыбу на свежий хлеб или муку. Недорого, я у причала. Приходите!"
+    }
+  },
+  {
+    "id": "fisherman_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Hiring a man for the boat",
+      "ru_ru": "Найму человека на лодку"
+    },
+    "content": {
+      "en_us": "I need a person for the boat for a couple of days. I pay well. Ask at the pier tomorrow morning.",
+      "ru_ru": "Нужен человек на лодку на пару дней. Плачу хорошо. Спрашивайте у причала завтра утром."
+    }
+  },
+  {
+    "id": "fisherman_10",
+    "category": "PERSONAL",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a fishing spot",
+      "ru_ru": "Ищу место для рыбалки"
+    },
+    "content": {
+      "en_us": "Can anyone tell me where to catch pufferfish around here? I'd appreciate any advice. I'm at the pier.",
+      "ru_ru": "Подскажите, где можно поймать иглобрюха у нас? Буду благодарен за совет. Я у причала."
+    }
+  },
+  {
+    "id": "fisherman_11",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I'll exchange fish for vegetables",
+      "ru_ru": "Обменяю рыбу на овощи"
+    },
+    "content": {
+      "en_us": "I'll exchange fish for vegetables and fruit. Bring what you have.",
+      "ru_ru": "Меняю рыбу на овощи и фрукты. Приносите, что есть."
+    }
+  }
+]

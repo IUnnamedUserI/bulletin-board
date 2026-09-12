@@ -12,6 +12,14 @@ base {
 
 repositories {
     mavenCentral()
+
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 dependencies {
@@ -24,6 +32,11 @@ dependencies {
 
     // Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    include implementation("blue.endless:jankson:1.2.3")
+
+    modImplementation "maven.modrinth:structure-pool-api:1.0+1.20.1"
+    include "maven.modrinth:structure-pool-api:1.0+1.20.1"
 }
 
 // 🔧 Обработка ресурсов (только fabric.mod.json с заменой версии)

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "weapon_smith_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling swords and axes",
+      "ru_ru": "Продаю мечи и топоры"
+    },
+    "content": {
+      "en_us": "I have forged excellent swords and axes from high-quality steel. They are sharp, durable and comfortable in the hand. Ideal for hunting or combat. If you are looking for reliable weapons, come to my forge. I can fit the handle to your palm and apply a pattern of your choice. I work on pre-order, but there are also ready-made specimens.",
+      "ru_ru": "Я выковал отличные мечи и топоры из высококачественной стали. Они острые, прочные и удобные в руке. Идеальны для охоты или боя. Если вы ищете надёжное оружие, заходите в мою кузницу. Могу подогнать рукоять под вашу ладонь и нанести узор по вашему желанию. Работаю по предзаказу, но есть и готовые экземпляры."
+    }
+  },
+  {
+    "id": "weapon_smith_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Weapon repair",
+      "ru_ru": "Ремонт оружия"
+    },
+    "content": {
+      "en_us": "Has your sword become dull or has the handle broken? Bring it to me. I repair and sharpen all types of weapons. I will restore its former sharpness and strength! I work quickly, the price depends on the complexity of the repair. Come to the forge, I will assess the work on the spot.",
+      "ru_ru": "Ваш меч затупился или сломалась рукоять? Приносите ко мне. Я занимаюсь ремонтом и заточкой всех видов оружия. Верну ему былую остроту и силу! Работаю быстро, цена зависит от сложности ремонта. Заходите в кузницу, я оценю работу на месте."
+    }
+  },
+  {
+    "id": "weapon_smith_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old steel",
+      "ru_ru": "Ищу старую сталь"
+    },
+    "content": {
+      "en_us": "I need old steel for new swords. If you have fragments of swords or other metal objects, I will buy them for smelting. Condition does not matter, as long as it is steel. Bring it, I will weigh it and pay! This will help me create quality weapons.",
+      "ru_ru": "Для новых мечей мне нужна старая сталь. Если у вас есть обломки мечей или другие металлические предметы, я куплю их на переплавку. Состояние не важно, главное, чтобы это была сталь. Приносите, я взвешу и заплачу! Это поможет мне создавать качественное оружие."
+    }
+  },
+  {
+    "id": "weapon_smith_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Problems with coal",
+      "ru_ru": "Проблемы с углём"
+    },
+    "content": {
+      "en_us": "This year the coal for the forge is of poor quality. The flame is weak and the steel does not harden as it should. I'm looking for a supplier of good coal. If you know where to get quality coal, please let me know. I am ready to buy it wholesale and regularly.",
+      "ru_ru": "В этом году уголь для кузницы плохого качества. Пламя слабое, и сталь не закаляется как надо. Ищу поставщика хорошего угля. Если вы знаете, где взять качественный уголь, сообщите мне, пожалуйста. Я готов купить его оптом и регулярно."
+    }
+  },
+  {
+    "id": "weapon_smith_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling battle axes",
+      "ru_ru": "Продаю боевые топоры"
+    },
+    "content": {
+      "en_us": "I have made several battle axes with sharp blades. They chop well and do not dull for a long time. I sell at an affordable price. I can make an additional order with carving or an individual pattern. Come see, I'll show you how to choose the right axe for your needs.",
+      "ru_ru": "Я сделал несколько боевых топоров с острыми лезвиями. Они отлично рубят и не тупятся долго. Продаю по доступной цене. Могу сделать дополнительный заказ с резьбой или индивидуальным узором. Заходите смотреть, я покажу, как выбрать подходящий топор для ваших целей."
+    }
+  },
+  {
+    "id": "weapon_smith_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a good sharpening stone",
+      "ru_ru": "Ищу хороший камень для точила"
+    },
+    "content": {
+      "en_us": "I urgently need a good sharpening stone to sharpen blades. Preferably a dense stone that gives a sharp edge. If you have such a stone, I will buy it or exchange it for a weapon. Contact me, I'm waiting!",
+      "ru_ru": "Мне срочно нужен хороший камень для точила, чтобы затачивать клинки. Желательно, чтобы камень был плотным и давал острую кромку. Если у вас есть такой камень, я куплю его или обменяю на оружие. Обращайтесь, я жду!"
+    }
+  },
+  {
+    "id": "weapon_smith_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Hiring an apprentice",
+      "ru_ru": "Найму ученика"
+    },
+    "content": {
+      "en_us": "I'm looking for an apprentice for the forge. I will teach you everything I know. Come, let's try!",
+      "ru_ru": "Ищу ученика в кузницу. Научу всему, что умею. Приходите, попробуем!"
+    }
+  },
+  {
+    "id": "weapon_smith_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I will buy coal",
+      "ru_ru": "Куплю уголь"
+    },
+    "content": {
+      "en_us": "I need good coal for the forge. If you have it, let me know. I will buy in bulk!",
+      "ru_ru": "Нужен хороший уголь для кузницы. Если есть, сообщите. Куплю оптом!"
+    }
+  },
+  {
+    "id": "weapon_smith_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Hiring a sharpener",
+      "ru_ru": "Найму заточника"
+    },
+    "content": {
+      "en_us": "I need a master for sharpening blades. I pay for each one. Come!",
+      "ru_ru": "Нужен мастер для заточки клинков. Плачу за каждый. Приходите!"
+    }
+  }
+]

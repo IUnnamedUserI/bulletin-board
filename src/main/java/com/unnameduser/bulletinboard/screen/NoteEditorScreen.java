@@ -1,6 +1,7 @@
 package com.unnameduser.bulletinboard.screen;
 
 import com.unnameduser.bulletinboard.network.ModPackets;
+import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.util.NoteConstants;
 import com.unnameduser.bulletinboard.util.NoteData;
 import com.unnameduser.bulletinboard.widget.AdaptiveRoundedTextFieldWidget;
@@ -132,7 +133,7 @@ public class NoteEditorScreen extends Screen {
             this.notePaper.setNbt(nbt);
 
             if (slot >= 0) {
-                ModPackets.sendUpdateNoteNbt(slot, nbt);
+                ModPacketsClient.sendUpdateNoteNbt(slot, nbt);
             }
 
             this.close();

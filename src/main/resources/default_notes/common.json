@@ -1,0 +1,366 @@
+[
+  {
+    "id": "common_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "House for rent",
+      "ru_ru": "Сдаётся дом"
+    },
+    "content": {
+      "en_us": "I'm renting a spacious house with a garden and a normal vegetable plot. There's a well nearby. Ideal for a family or a traveler looking for a quiet place to live. The rent is modest, and monthly groceries can be agreed upon. You can come and see it any day before sunset.",
+      "ru_ru": "Сдаю просторный дом с садом и небольшим огородом. Рядом есть колодец. Идеально для семьи или путника, который ищет тихое место для жизни. Плата скромная, можно договориться о ежемесячной оплате продуктами. Заходите посмотреть в любой день до заката."
+    }
+  },
+  {
+    "id": "common_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Market space for rent",
+      "ru_ru": "Сдаётся место на рынке"
+    },
+    "content": {
+      "en_us": "I'm renting out market space for trade. Suitable for selling food, fabrics, or tools. Inexpensive.",
+      "ru_ru": "Сдаю место на рынке для торговли. Подходит для продажи еды, тканей или инструментов. Недорого."
+    }
+  },
+  {
+    "id": "common_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Gardener wanted",
+      "ru_ru": "Найму садовника"
+    },
+    "content": {
+      "en_us": "I'm looking for an experienced gardener to help me completely transform the style of my park. Trees need to be replanted, new flower beds need to be created, and a cozy atmosphere needs to be created. Competitive pay and accommodations are available. References or examples of work are required. Come in and let's discuss the details.",
+      "ru_ru": "Ищу опытного садовника, который поможет полностью изменить стиль моего парка. Нужно пересадить деревья, разбить новые клумбы и создать уютную атмосферу. Оплата достойная, проживание предоставляется. Требуются рекомендации или примеры работ. Заходите, обсудим детали."
+    }
+  },
+  {
+    "id": "common_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Buy and sell forest resources!",
+      "ru_ru": "Покупайте-продавайте лесные богатства!"
+    },
+    "content": {
+      "en_us": "I have a large selection of dried mushrooms, medicinal herbs, and hops. I can also offer berries and honey. Everything was picked this year and carefully dried. Bargaining is acceptable. Stop by if you need anything for your health or kitchen. Prices are below market!",
+      "ru_ru": "У меня есть большой выбор сушёных грибов, лекарственных трав и хмеля. Также могу предложить ягоды и мёд. Всё собрано в этом году и бережно высушено. Торг уместен. Заходите, если вам нужно что-то для здоровья или для кухни. Цены ниже рыночных!"
+    }
+  },
+  {
+    "id": "common_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for travel companions",
+      "ru_ru": "Ищу попутчиков"
+    },
+    "content": {
+      "en_us": "In a week, I'm heading to a neighboring town on business. It's a long journey, and I'm looking for travel companions to while away the time. If you're also planning a trip or just want to take a stroll, join me. We leave at dawn. Ask the innkeeper; he'll know where to find me.",
+      "ru_ru": "Через неделю я отправляюсь в соседний город по делам. Дорога долгая, и я ищу попутчиков, чтобы вместе коротать время. Если вы тоже планируете поездку или хотите просто прогуляться — присоединяйтесь. Выезд на рассвете. Спрашивайте у трактирщика, он знает, где меня найти."
+    }
+  },
+  {
+    "id": "common_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Beware of wolves!",
+      "ru_ru": "Осторожно: волки!"
+    },
+    "content": {
+      "en_us": "Foresters report that a pack of wild wolves has been spotted near the old road. The animals are hungry and aggressive. Do not approach the forest alone, and keep children away from the edge. If you see tracks or hear howling, return immediately and report to the headman. Take care!",
+      "ru_ru": "Лесники сообщают, что у старой дороги была замечена стая диких волков. Звери голодные и агрессивные, не приближайтесь к лесу в одиночку и держите детей подальше от опушки. Если увидите следы или услышите вой — сразу возвращайтесь и сообщите старосте. Берегите себя!"
+    }
+  },
+  {
+    "id": "common_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Caution: dry grass!",
+      "ru_ru": "Осторожно: сухая трава!"
+    },
+    "content": {
+      "en_us": "Due to the dry weather, everything around the village has dried out. Dry grass is highly flammable, so lighting fires or leaving fires unattended is strictly prohibited. Violators will be fined or prosecuted!",
+      "ru_ru": "Из-за засушливой погоды вокруг деревни всё высохло. Сухая трава очень легко воспламеняется, поэтому категорически запрещено разводить костры или оставлять огонь без присмотра. Нарушители будут оштрафованы или привлечены к ответственности!"
+    }
+  },
+  {
+    "id": "common_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old letters",
+      "ru_ru": "Ищу старые письма"
+    },
+    "content": {
+      "en_us": "I collect old letters to reconstruct the history of our village and preserve the memory of our ancestors. If you have old letters, notes, or diaries you'd be willing to donate, I'd be very grateful. I can also exchange them for books or help around the house. Ask for me at the librarian.",
+      "ru_ru": "Я собираю старые письма, чтобы восстановить историю нашей деревни и сохранить память о предках. Если у вас есть старые письма, заметки или дневники, которые вы готовы отдать, я буду очень благодарен. Также могу обменять на книги или помочь по хозяйству. Спрашивайте меня у библиотекаря."
+    }
+  },
+  {
+    "id": "common_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Lost an earring",
+      "ru_ru": "Потерял серьгу"
+    },
+    "content": {
+      "en_us": "I lost a silver ruby ​​earring that's very dear to me as a keepsake. It's a family heirloom, and I would be eternally grateful to anyone who finds it and returns it. A reward is guaranteed. Help!",
+      "ru_ru": "Я потерял серебряную серьгу с рубином, которая очень дорога мне как память. Это семейная реликвия, и я был бы бесконечно благодарен тому, кто её найдёт и вернёт. Награда гарантирована. Помогите!"
+    }
+  },
+  {
+    "id": "common_10",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Help with moving",
+      "ru_ru": "Помогите с переездом"
+    },
+    "content": {
+      "en_us": "I'm moving into a new house, but I don't have enough hands to move all my stuff. I need help for a couple of days. The job is simple: moving furniture and boxes. I'll buy you lunch and pay you a small fee. Come visit my old house, I'll be waiting!",
+      "ru_ru": "Я переезжаю в новый дом, но у меня не хватает рук, чтобы перевезти все вещи. Нужна помощь на пару дней. Работа несложная: перенести мебель и коробки. Я накормлю вас обедом и заплачу небольшую сумму. Заходите в мой старый дом, буду ждать!"
+    }
+  },
+  {
+    "id": "common_11",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for a fishing companion",
+      "ru_ru": "Ищу компаньона для рыбалки"
+    },
+    "content": {
+      "en_us": "I love fishing, but I get bored alone. I'm looking for a companion to share this activity with me. I have a boat and gear. We could fish together and just have a good time. If you love fishing too, please reach out! Ask at the dock.",
+      "ru_ru": "Я люблю рыбачить, но в одиночку скучно. Ищу компаньона, который разделит со мной это занятие. У меня есть лодка и снасти. Мы могли бы вместе ловить рыбу и просто хорошо проводить время. Если вы тоже любите рыбалку, откликнитесь! Спрашивайте у причала."
+    }
+  },
+  {
+    "id": "common_12",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "I want to get birds",
+      "ru_ru": "Хочу завести птиц"
+    },
+    "content": {
+      "en_us": "I'd like to get some chickens for fresh eggs and meat. If anyone has any extra birds, I'm willing to buy them or trade them for grain or emeralds. Come to my house and we'll discuss the terms. I welcome offers!",
+      "ru_ru": "Я хочу завести кур, чтобы иметь свежие яйца и мясо. Если у кого-то есть лишние птицы, я готов купить их или обменять на зерно или изумруды. Приходите ко мне домой, обсудим условия. Жду предложений!"
+    }
+  },
+  {
+    "id": "common_13",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a good book",
+      "ru_ru": "Ищу хорошую книгу"
+    },
+    "content": {
+      "en_us": "I want to read something interesting. Something about adventure or history. Sell it or lend it to me.",
+      "ru_ru": "Хочу почитать что-нибудь интересное. Про приключения или историю. Продайте или дайте почитать."
+    }
+  },
+  {
+    "id": "common_14",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling old books",
+      "ru_ru": "Продаю старые книги"
+    },
+    "content": {
+      "en_us": "I've amassed a decent collection of old books, mostly on history and natural science. All the books are in good condition, some with illustrations. I'm selling them cheap; I'll trade them for emeralds or groceries. Come take a look if you're interested—bargaining is acceptable. Ask the village elder; he'll show you where I live.",
+      "ru_ru": "У меня собралась приличная коллекция старых книг, в основном по истории и естествознанию. Все книги в хорошем состоянии, некоторые с иллюстрациями. Продаю недорого, отдам за изумруды или обменяю на продукты. Заходите посмотреть, если интересно — торг уместен. Спрашивайте у старосты, он покажет, где я живу."
+    }
+  },
+  {
+    "id": "common_15",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Lost wallet",
+      "ru_ru": "Потерял кошелёк"
+    },
+    "content": {
+      "en_us": "I lost my purse of emeralds in the market square. If anyone has found it, please return it! These were my savings; I've been saving them for months. A reward is guaranteed.",
+      "ru_ru": "Потерял кошелёк с изумрудами на рыночной площади. Если кто-то нашёл его, пожалуйста, верните! Это были мои сбережения, я копил их несколько месяцев. Награда гарантирована."
+    }
+  },
+  {
+    "id": "common_16",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "I'll buy old fabric",
+      "ru_ru": "Куплю старую ткань"
+    },
+    "content": {
+      "en_us": "I buy any old fabric, even with holes or stains. I need it for bandages and rags. I don't pay much, but at least you'll get rid of trash. Come to my warehouse; I accept fabric every day before sunset. Bargaining is acceptable.",
+      "ru_ru": "Покупаю любую старую ткань, даже с дырами или пятнами. Нужна для перевязочных материалов и тряпок. Плачу немного, но зато избавитесь от мусора. Приходите ко мне на склад, я принимаю ткань каждый день до заката. Торг уместен."
+    }
+  },
+  {
+    "id": "common_17",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Boards urgently needed",
+      "ru_ru": "Срочно нужны доски"
+    },
+    "content": {
+      "en_us": "I'm urgently looking for lumber for a house renovation. Any kind of wood will do, as long as it's smooth and dry. If you have extra lumber, I'll buy it for a good price or trade it for groceries.",
+      "ru_ru": "Срочно покупаю доски для ремонта дома. Подойдёт любая древесина, главное, чтобы доски были ровными и сухими. Если у вас есть лишние доски, я куплю их по хорошей цене или обменяю на продукты."
+    }
+  },
+  {
+    "id": "common_18",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Old boat for sale",
+      "ru_ru": "Продам старую лодку"
+    },
+    "content": {
+      "en_us": "Selling an old but sturdy boat. It could still be used for fishing or hauling cargo. It needs some repairs, but overall it's in good condition. Take it for half price or trade it for groceries.",
+      "ru_ru": "Продаю старую, но крепкую лодку. Она ещё послужит для рыбалки или перевозки грузов. Нужен небольшой ремонт, но в целом состоянии хорошая. Забирайте за полцены или обменяю на продукты."
+    }
+  },
+  {
+    "id": "common_19",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Seeking a hunting companion",
+      "ru_ru": "Ищу компаньона для охоты"
+    },
+    "content": {
+      "en_us": "I'm looking for a brave companion for a hunting trip. It's always safer and more fun together. I have a good bow and arrows, and I'll share my catch. If you also love hunting and know the forest, please contact me. Meet by the old oak tree at dawn.",
+      "ru_ru": "Ищу смелого компаньона для совместной охоты. Вместе всегда безопаснее и веселее. У меня есть хороший лук и стрелы, поделюсь добычей. Если вы тоже любите охоту и знаете лес, откликнитесь. Встречаемся у старого дуба на рассвете."
+    }
+  },
+  {
+    "id": "common_20",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling seedlings",
+      "ru_ru": "Продам саженцы"
+    },
+    "content": {
+      "en_us": "I have apple, pear, and cherry seedlings. Grown in the best conditions, they are of excellent quality. I'm selling at a reasonable price; you can pay with emeralds or food. Come visit my garden, and I'll show you the best specimens. The seedlings will take root quickly, I guarantee!",
+      "ru_ru": "У меня есть саженцы яблонь, груш и вишен. Выращены в лучших условиях, отличного качества. Продаю по сходной цене, можно оплатить изумрудами или продуктами. Приходите в мой сад, я покажу вам лучшие экземпляры. Саженцы быстро приживутся, гарантирую!"
+    }
+  },
+  {
+    "id": "common_21",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Weaver wanted",
+      "ru_ru": "Требуется ткач"
+    },
+    "content": {
+      "en_us": "Experienced weaver needed to work on a rustic loom. Weaving canvas, wool, and fine rugs. This is a permanent job, with pay negotiable. Ask the weaver; he'll show you what needs to be done. I look forward to a long-term partnership.",
+      "ru_ru": "Требуется опытный ткач для работы на деревенском станке. Нужно ткать холсты, шерстяные ткани и тонкие половики. Работа постоянная, плата по договорённости. Спрашивайте у мастера, он покажет, что нужно сделать. Надеюсь на долгосрочное сотрудничество."
+    }
+  },
+  {
+    "id": "common_22",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Beware of the mad fox!",
+      "ru_ru": "Остерегайтесь бешеной лисы!"
+    },
+    "content": {
+      "en_us": "A rabid fox has been spotted near the village. It's not afraid of people and is acting strangely. It has already bitten two dogs. If you see it, don't approach and run home immediately. The hunter promised to catch it tomorrow. Be careful and don't take any risks!",
+      "ru_ru": "В окрестностях деревни видели бешеную лису. Она не боится людей и ведёт себя странно. Лиса уже покусала двух собак. Если вы увидите её, не приближайтесь и сразу бегите домой. Охотник пообещал поймать её завтра. Берегитесь и не рискуйте!"
+    }
+  },
+  {
+    "id": "common_23",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "The smell of a corpse!",
+      "ru_ru": "Трупный запах!"
+    },
+    "content": {
+      "en_us": "Villagers are complaining about a rotting corpse smell coming from the forest. Apparently, a decomposing carcass is there. The smell could be dangerous. Until the cause is determined, avoid that part of the forest and keep your windows closed. We'll send out scouts tomorrow.",
+      "ru_ru": "Жители деревни жалуются на трупный запах из леса. Там, видимо, разложилась туша. Запах может быть опасен. Пока не выясните причину, не ходите в ту часть леса и держите окна закрытыми. Мы отправим разведчиков завтра."
+    }
+  },
+  {
+    "id": "common_24",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Beware of robbers!",
+      "ru_ru": "Остерегайтесь грабителей!"
+    },
+    "content": {
+      "en_us": "Robberies have become more frequent in neighboring villages. A gang of bandits is attacking lone travelers. Don't travel alone and try not to carry many valuables. If you spot suspicious people, report them to the village headman or the guard. Be careful!",
+      "ru_ru": "В соседних деревнях участились случаи грабежей. Банда разбойников нападает на одиноких путников. Не путешествуйте в одиночку и старайтесь не носить с собой много ценностей. Если вы заметили подозрительных людей — сообщите старосте или страже. Будьте осторожны!"
+    }
+  },
+  {
+    "id": "common_25",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old maps",
+      "ru_ru": "Ищу старые карты"
+    },
+    "content": {
+      "en_us": "I collect old maps and site plans. If anyone has any unwanted maps, even tattered ones, I'd be happy to buy them or trade them for food. I'm especially interested in maps of local areas and abandoned places. Help me find old maps!",
+      "ru_ru": "Я коллекционирую старые карты и планы местности. Если у кого-то есть ненужные карты, даже потрёпанные, я с радостью их куплю или обменяю на продукты. Особенно интересуют карты окрестностей и заброшенных мест. Помогите найти старые планы!"
+    }
+  },
+  {
+    "id": "common_26",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Help me find an old book",
+      "ru_ru": "Помогите найти старую книгу"
+    },
+    "content": {
+      "en_us": "I'm looking for an old book on the history of our region. They say a merchant had it, but he moved away. If you know where I can find it, or if you have similar books, I'd be very grateful. I'm willing to pay for information or purchase.",
+      "ru_ru": "Я ищу одну старую книгу по истории нашего края. Говорят, она была у одного торговца, но он уехал. Если вы знаете, где её можно найти, или у вас есть подобные книги, я буду очень благодарен. Я готов заплатить за информацию или покупку."
+    }
+  },
+  {
+    "id": "common_27",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for an old blacksmith",
+      "ru_ru": "Ищу старого кузнеца"
+    },
+    "content": {
+      "en_us": "I'm looking for an experienced blacksmith who still remembers the old forging techniques. I need to forge a small part for an old mechanism. If you know such a craftsman or are skilled in this field yourself, please contact me. I'll pay for the work, the price is negotiable.",
+      "ru_ru": "Я ищу старого кузнеца, который ещё помнит старые техники ковки. Мне нужно отковать небольшую деталь для старого механизма. Если вы знаете такого мастера или сами умеете, пожалуйста, откликнитесь. Плачу за работу, цена договорная."
+    }
+  },
+  {
+    "id": "common_28",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Help restore an old stove",
+      "ru_ru": "Помогите восстановить старую печь"
+    },
+    "content": {
+      "en_us": "I have an old stove in my house that needs repair. It's almost falling apart, but I want to restore it. If anyone knows how to install stoves, please contact me. I'll pay for the work and provide the materials. Thank you!",
+      "ru_ru": "В моём доме старая печь, которая нуждается в ремонте. Она почти развалилась, но я хочу её восстановить. Если есть специалист, который умеет класть печи, откликнитесь, пожалуйста. Я заплачу за работу, а также предоставлю материалы. Спасибо!"
+    }
+  }
+]

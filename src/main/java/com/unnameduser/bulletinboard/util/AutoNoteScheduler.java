@@ -11,16 +11,13 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.random.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.unnameduser.bulletinboard.config.ModConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-/**
- * Автоматический планировщик записок на досках объявлений.
- * Раз в заданный интервал размещает случайную записку от имени реального жителя.
- */
 public class AutoNoteScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoNoteScheduler.class);
 
@@ -31,37 +28,25 @@ public class AutoNoteScheduler {
     private long lastRunTime = 0;
     private boolean enabled = true;
 
-    // Кэш досок — обновляется только при загрузке чанков
     private static final List<BlockPos> CACHED_BOARDS = new CopyOnWriteArrayList<>();
-
-    // Конфигурируемые параметры
-    private static final long DEFAULT_INTERVAL_TICKS = 12000; // 15 секунд (20 тиков/сек)
-    private static final int VILLAGER_SEARCH_RADIUS = 50; // Блоков
+    private static final int VILLAGER_SEARCH_RADIUS = 50;
 
     private AutoNoteScheduler(MinecraftServer server, long intervalTicks) {
         this.server = server;
         this.intervalTicks = intervalTicks;
     }
 
-    /**
-     * Возвращает экземпляр планировщика.
-     */
     public static AutoNoteScheduler getInstance() {
         return instance;
     }
 
-    /**
-     * Инициализирует планировщик.
-     */
     public static void init(MinecraftServer server) {
-        instance = new AutoNoteScheduler(server, DEFAULT_INTERVAL_TICKS);
+        int interval = ModConfig.getIntervalTicks();
+        instance = new AutoNoteScheduler(server, interval);
         LOGGER.info("AutoNoteScheduler initialized with {} ticks interval ({} seconds)",
-                DEFAULT_INTERVAL_TICKS, DEFAULT_INTERVAL_TICKS / 20);
+                interval, interval / 20);
     }
 
-    /**
-     * Вызывается каждый тик сервера.
-     */
     public static void tick() {
         if (instance == null || !instance.enabled) {
             return;
@@ -86,65 +71,73 @@ public class AutoNoteScheduler {
             return;
         }
 
-        BlockPos boardPos = CACHED_BOARDS.get(random.nextInt(CACHED_BOARDS.size()));
+        int totalBoards = CACHED_BOARDS.size();
+        int checkedBoards = 0;
+        int placedNotes = 0;
 
-        var blockEntity = world.getBlockEntity(boardPos);
+        for (BlockPos boardPos : CACHED_BOARDS) {
+            if (random.nextFloat() > 0.3f) {
+                continue;
+            }
 
-        if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
-            return;
+            List<VillagerEntity> villagers = getNearbyVillagers(world, boardPos, VILLAGER_SEARCH_RADIUS);
+            if (villagers.isEmpty()) {
+                LOGGER.debug("No villagers near board at {}, skipping", boardPos.toShortString());
+                continue;
+            }
+
+            List<VillagerEntity> aliveVillagers = villagers.stream()
+                    .filter(entity -> entity.isAlive() && !entity.isRemoved())
+                    .collect(Collectors.toList());
+
+            if (aliveVillagers.isEmpty()) {
+                LOGGER.debug("No alive villagers near board at {}, skipping", boardPos.toShortString());
+                continue;
+            }
+
+            var blockEntity = world.getBlockEntity(boardPos);
+            if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
+                continue;
+            }
+
+            List<Integer> freeSlots = findFreeSlots(boardEntity);
+            if (freeSlots.isEmpty()) {
+                LOGGER.debug("Board at {} is full", boardPos.toShortString());
+                continue;
+            }
+
+            checkedBoards++;
+
+            VillagerEntity author = aliveVillagers.get(random.nextInt(aliveVillagers.size()));
+            String authorUuid = author.getUuid().toString();
+            String authorNameKey = VillagerNameManager.get(server).getNameKey(author.getUuid());
+            String professionId = author.getVillagerData().getProfession().toString();
+
+            int targetSlot = freeSlots.get(random.nextInt(freeSlots.size()));
+
+            // Генерируем записку из JSON-конфига (БЕЗ инициализации досок)
+            NoteData note = RandomNotePool.generateRandomNoteForProfession(
+                    random,
+                    authorNameKey,
+                    authorUuid,
+                    professionId,
+                    false
+            );
+
+            if (boardEntity.addNoteAtPosition(note, targetSlot)) {
+                placedNotes++;
+                LOGGER.info("Auto-placed note '{}' by {} ({}) on board at {}",
+                        note.getTitle(), authorNameKey, professionId, boardPos.toShortString());
+            }
         }
 
-        List<Integer> freeSlots = findFreeSlots(boardEntity);
-
-        if (freeSlots.isEmpty()) {
-            LOGGER.debug("Board at {} is full", boardPos.toShortString());
-            return;
-        }
-
-        // Получаем живых жителей
-        List<VillagerEntity> villagers = getNearbyVillagers(world, boardPos, VILLAGER_SEARCH_RADIUS);
-
-        // Если жителей нет — выходим, не создаём записку
-        if (villagers.isEmpty()) {
-            LOGGER.debug("No villagers found near board at {}, skipping", boardPos.toShortString());
-            return;
-        }
-
-        // Фильтруем живых
-        List<VillagerEntity> aliveVillagers = villagers.stream()
-                .filter(entity -> entity.isAlive() && !entity.isRemoved())
-                .collect(Collectors.toList());
-
-        if (aliveVillagers.isEmpty()) {
-            LOGGER.debug("No alive villagers found near board at {}, skipping", boardPos.toShortString());
-            return;
-        }
-
-        // Выбираем случайного жителя
-        VillagerEntity author = aliveVillagers.get(random.nextInt(aliveVillagers.size()));
-        String authorUuid = author.getUuid().toString();
-
-        // Получаем имя из кэша
-        String authorName = VillagerNameManager.get(server).getName(author.getUuid());
-        if (authorName == null || authorName.equals("Villager") || authorName.equals("Аноним")) {
-            authorName = "Житель-" + authorUuid.substring(0, 8);
-        }
-
-        // Выбираем слот
-        int targetSlot = freeSlots.get(random.nextInt(freeSlots.size()));
-
-        // Создаём записку с именем жителя (без печати)
-        NoteData note = RandomNotePool.generateRandomNote(random, authorName, authorUuid, false);
-
-        if (boardEntity.addNoteAtPosition(note, targetSlot)) {
-            LOGGER.info("Auto-placed note '{}' by villager {} (UUID: {}) on board at {}",
-                    note.getTitle(), authorName, authorUuid, boardPos.toShortString());
+        if (placedNotes > 0) {
+            LOGGER.info("Auto-placed {} notes on {} boards (out of {} total)", placedNotes, checkedBoards, totalBoards);
+        } else {
+            LOGGER.debug("No notes placed this tick (checked {} boards)", checkedBoards);
         }
     }
 
-    /**
-     * Находит всех живых жителей в радиусе от заданной позиции.
-     */
     private List<VillagerEntity> getNearbyVillagers(ServerWorld world, BlockPos pos, int radius) {
         Box area = new Box(pos).expand(radius);
         return world.getEntitiesByClass(VillagerEntity.class, area, entity ->
@@ -152,20 +145,15 @@ public class AutoNoteScheduler {
         );
     }
 
-    /**
-     * Обновляет кэш досок из загруженных чанков.
-     * Проверяет только чанки вокруг игроков — это быстро.
-     */
     private void updateBoardCache(ServerWorld world) {
         CACHED_BOARDS.clear();
 
-        // Сканируем только загруженные чанки вокруг игроков
         var players = world.getPlayers();
         if (players.isEmpty()) {
             return;
         }
 
-        int scanRadius = 10; // Чанков (160 блоков)
+        int scanRadius = 10;
 
         for (var player : players) {
             int playerChunkX = player.getBlockX() >> 4;
@@ -176,13 +164,11 @@ public class AutoNoteScheduler {
                     int chunkX = playerChunkX + cx;
                     int chunkZ = playerChunkZ + cz;
 
-                    // Проверяем, загружен ли чанк
                     var chunk = world.getChunk(chunkX, chunkZ);
                     if (chunk.isEmpty()) {
                         continue;
                     }
 
-                    // Сканируем блоки в чанке
                     for (int x = 0; x < 16; x++) {
                         for (int z = 0; z < 16; z++) {
                             int worldX = (chunkX << 4) + x;
@@ -200,24 +186,16 @@ public class AutoNoteScheduler {
         }
     }
 
-    /**
-     * Находит свободные слоты на доске.
-     */
     private List<Integer> findFreeSlots(BulletinBoardBlockEntity boardEntity) {
         List<Integer> freeSlots = new ArrayList<>();
-
         for (int i = 0; i < 5; i++) {
             if (boardEntity.isPositionFree(i)) {
                 freeSlots.add(i);
             }
         }
-
         return freeSlots;
     }
 
-    /**
-     * Включает или выключает планировщик.
-     */
     public static void setEnabled(boolean enabled) {
         if (instance != null) {
             instance.enabled = enabled;
@@ -225,20 +203,23 @@ public class AutoNoteScheduler {
         }
     }
 
-    /**
-     * Проверяет, включён ли планировщик.
-     */
     public static boolean isEnabled() {
         return instance != null && instance.enabled;
     }
 
-    /**
-     * Принудительно запускает размещение записки (для тестов).
-     */
     public static void triggerNow() {
         if (instance != null) {
             instance.tryPlaceRandomNote();
             instance.lastRunTime = instance.server.getOverworld().getTime();
+        }
+    }
+
+    public static void reset() {
+        if (instance != null) {
+            instance.enabled = false;
+            instance = null;
+            CACHED_BOARDS.clear();
+            LOGGER.info("AutoNoteScheduler reset");
         }
     }
 }

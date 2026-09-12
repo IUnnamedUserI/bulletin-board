@@ -1,0 +1,119 @@
+[
+  {
+    "id": "cartographer_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling maps of the area",
+      "ru_ru": "Продаю карты окрестностей"
+    },
+    "content": {
+      "en_us": "I have compiled detailed maps of the area with marked roads, rivers and villages. The maps can be useful for travelers and traders. Price is negotiable, I can show samples. If you travel frequently, this is a great way not to get lost on the way. Come to the workshop, I'll show you all the details.",
+      "ru_ru": "Я составил подробные карты окрестностей с отмеченными дорогами, реками и деревнями. Карты могут пригодиться путешественникам и торговцам. Цена договорная, могу показать образцы. Если вы часто путешествуете, это отличный способ не заблудиться в пути. Заходите в мастерскую, я покажу вам все детали."
+    }
+  },
+  {
+    "id": "cartographer_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old maps to study",
+      "ru_ru": "Ищу старые карты для изучения"
+    },
+    "content": {
+      "en_us": "I collect old maps to study the terrain. If you have maps you don't need, I'll gladly buy them or exchange them for new ones. I'm particularly interested in maps that can tell the history of the region. Contact me at the workshop, I'm waiting!",
+      "ru_ru": "Я коллекционирую старые карты для изучения местности. Если у вас есть карты, которые вам не нужны, я с радостью их куплю или обменяю на новые. Особенно интересуют карты, которые могут рассказать об истории края. Обращайтесь ко мне в мастерскую, я жду!"
+    }
+  },
+  {
+    "id": "cartographer_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring a cartography assistant",
+      "ru_ru": "Найму помощника для картографии"
+    },
+    "content": {
+      "en_us": "I need an assistant to collect terrain data. The work is simple but requires attention. You will need to record landmarks and make sketches. I pay by the day and provide food. If you can look carefully and remember, come to me!",
+      "ru_ru": "Мне нужен помощник для сбора данных о местности. Работа несложная, но требует внимательности. Нужно будет записывать ориентиры и делать наброски. Плачу за день и предоставляю еду. Если вы умеете внимательно смотреть и запоминать, приходите ко мне!"
+    }
+  },
+  {
+    "id": "cartographer_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling maps for travelers",
+      "ru_ru": "Продаю карты для путешественников"
+    },
+    "content": {
+      "en_us": "I have maps of all the main routes for travelers. They include information on camping sites, water sources and dangerous areas. I sell at affordable prices to help you on your journey. Come to my workshop, I'll show you the selection.",
+      "ru_ru": "У меня есть карты всех основных маршрутов для путешественников. Они включают информацию о местах стоянок, водных источниках и опасных участках. Продаю по доступным ценам, чтобы помочь вам в дороге. Заходите в мою мастерскую, я покажу выбор."
+    }
+  },
+  {
+    "id": "cartographer_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling boundary maps",
+      "ru_ru": "Продаю карты с указанием границ"
+    },
+    "content": {
+      "en_us": "I have detailed maps showing property and land boundaries. They can be useful for landowners and farmers. I sell at moderate prices and can make copies to order. Contact me if you need to sort out boundaries.",
+      "ru_ru": "У меня есть подробные карты с указанием границ владений и участков. Они могут быть полезны для владельцев земли и фермеров. Продаю по умеренным ценам, могу сделать копии на заказ. Обращайтесь ко мне, если вам нужно разобраться в границах."
+    }
+  },
+  {
+    "id": "cartographer_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old city plans",
+      "ru_ru": "Ищу старые планы городов"
+    },
+    "content": {
+      "en_us": "I'm looking for old plans of cities and settlements for my collection. If you have such plans, I'm ready to buy them or exchange them for new maps. This is valuable material for studying the history of development. Help me find them!",
+      "ru_ru": "Я ищу старые планы городов и поселений для своей коллекции. Если у вас есть такие планы, я готов их купить или обменять на новые карты. Это ценный материал для изучения истории застройки. Помогите мне найти их!"
+    }
+  },
+  {
+    "id": "cartographer_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling nautical maps",
+      "ru_ru": "Продаю карты для мореплавателей"
+    },
+    "content": {
+      "en_us": "Maps for sailors with currents and reefs. Come to the workshop!",
+      "ru_ru": "Карты для моряков с течениями и рифами. Заходите в мастерскую!"
+    }
+  },
+  {
+    "id": "cartographer_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a guide",
+      "ru_ru": "Ищу проводника"
+    },
+    "content": {
+      "en_us": "I need a guide for terrain reconnaissance. Payment and meals provided. Contact me!",
+      "ru_ru": "Нужен проводник для разведки местности. Оплата и питание. Обращайтесь ко мне!"
+    }
+  },
+  {
+    "id": "cartographer_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Guided tours with maps",
+      "ru_ru": "Экскурсии с картами"
+    },
+    "content": {
+      "en_us": "I conduct excursions around the area. You'll learn a lot of new things. Join us!",
+      "ru_ru": "Провожу экскурсии по окрестностям. Узнаете много нового. Присоединяйтесь!"
+    }
+  }
+]

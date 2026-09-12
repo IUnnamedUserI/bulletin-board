@@ -1,118 +1,20 @@
 package com.unnameduser.bulletinboard.util;
 
+import com.unnameduser.bulletinboard.config.ModConfig;
+import com.unnameduser.bulletinboard.config.NoteConfigLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.random.Random;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Пул случайных записок для генерации на досках объявлений.
- * В будущем может быть расширено для квестов и взаимодействия жителей.
- */
 public class RandomNotePool {
 
-    private static final List<NoteTemplate> NOTES = new ArrayList<>();
-
-    static {
-        // === ОБЪЯВЛЕНИЯ ===
-        NOTES.add(new NoteTemplate(
-                "Пропала курица!",
-                "Пропала рябая курица. Откликается на \"Кво-кво\". Нашедшему — 3 изумруда!",
-                NoteCategory.ANNOUNCEMENT
-        ));
-        NOTES.add(new NoteTemplate(
-                "Ищу шахтёров",
-                "Требуются рабочие в новую шахту. Плата сдельная, изумрудами. Обращаться к старосте.",
-                NoteCategory.ANNOUNCEMENT
-        ));
-        NOTES.add(new NoteTemplate(
-                "Продам урожай",
-                "Свежая пшеница и картофель. Урожай этого года. Цена договорная.",
-                NoteCategory.ANNOUNCEMENT
-        ));
-        NOTES.add(new NoteTemplate(
-                "Обмен вещей",
-                "Поменяю книгу записок на изумруды или еду. Интересуют только целые книги.",
-                NoteCategory.ANNOUNCEMENT
-        ));
-        NOTES.add(new NoteTemplate(
-                "Потерялся кот",
-                "Чёрный кот, отзывается на \"Уголёк\". Видели последний раз у колодца.",
-                NoteCategory.ANNOUNCEMENT
-        ));
-
-        // === ПРЕДУПРЕЖДЕНИЯ ===
-        NOTES.add(new NoteTemplate(
-                "Осторожно, криперы!",
-                "В последнее время участились случаи появления криперов near деревней. Будьте бдительны!",
-                NoteCategory.WARNING
-        ));
-        NOTES.add(new NoteTemplate(
-                "Шахта затоплена",
-                "Вход в старую шахту затоплен. Не спускаться до особого распоряжения.",
-                NoteCategory.WARNING
-        ));
-        NOTES.add(new NoteTemplate(
-                "Карантин!",
-                "Деревня на карантине. Не входить и не выходить без разрешения лекаря.",
-                NoteCategory.WARNING
-        ));
-        NOTES.add(new NoteTemplate(
-                "Ночная тревога",
-                "Прошлой ночью были замечены зомби у стен. Усильте охрану!",
-                NoteCategory.WARNING
-        ));
-
-        // === ЛИЧНЫЕ ===
-        NOTES.add(new NoteTemplate(
-                "С днём рождения!",
-                "Дорогой Стив! Поздравляем с 30-летием! Ждём тебя на празднике у ратуши.",
-                NoteCategory.PERSONAL
-        ));
-        NOTES.add(new NoteTemplate(
-                "Кто видел моего кота?",
-                "Рыжий, с белым пятном на груди. Очень скучаю...",
-                NoteCategory.PERSONAL
-        ));
-        NOTES.add(new NoteTemplate(
-                "Ищу друга",
-                "Новенький в деревне. Не против пообщаться за кружкой эля.",
-                NoteCategory.PERSONAL
-        ));
-        NOTES.add(new NoteTemplate(
-                "Благодарность",
-                "Спасибо тому герою, который очистил колодец от пауков! Вы — наше всё!",
-                NoteCategory.PERSONAL
-        ));
-
-        // === КВЕСТЫ (задел на будущее) ===
-        NOTES.add(new NoteTemplate(
-                "Нужен уголь",
-                "Срочно требуется 10 угля для кузницы. Награда: 5 изумрудов.",
-                NoteCategory.QUEST
-        ));
-        NOTES.add(new NoteTemplate(
-                "Защита деревни",
-                "Требуется доброволец для охраны стен ночью. Плата: 3 изумруда за ночь.",
-                NoteCategory.QUEST
-        ));
-        NOTES.add(new NoteTemplate(
-                "Сбор трав",
-                "Нужны лекарственные травы: 5 папоротников, 3 одуванчика. Для лекаря.",
-                NoteCategory.QUEST
-        ));
-        NOTES.add(new NoteTemplate(
-                "Доставка еды",
-                "Отнести корзину с едой на ферму северо-восток. Награда на месте.",
-                NoteCategory.QUEST
-        ));
-    }
-
     public enum NoteCategory {
-        ANNOUNCEMENT(0xFFAA00),    // Оранжевый
-        WARNING(0xFF5555),          // Красный
-        PERSONAL(0x55FFFF),         // Голубой
-        QUEST(0x55FF55);            // Зелёный
+        ANNOUNCEMENT(0xFFAA00),
+        WARNING(0xFF5555),
+        PERSONAL(0x55FFFF),
+        QUEST(0x55FF55);
 
         public final int defaultBadgeColor;
 
@@ -121,75 +23,143 @@ public class RandomNotePool {
         }
     }
 
-    public static class NoteTemplate {
-        public final String title;
-        public final String content;
-        public final NoteCategory category;
-
-        public NoteTemplate(String title, String content, NoteCategory category) {
-            this.title = title;
-            this.content = content;
-            this.category = category;
-        }
-    }
-
     /**
-     * Генерирует случайную записку из пула.
-     * @param random Генератор случайных чисел
-     * @param author Имя автора (если null, будет "Аноним")
-     * @param authorUuid UUID автора (может быть null)
-     * @param hasSeal Есть ли печать
-     * @return NoteData с заполненными полями
+     * Генерирует случайную записку из конфига (без учёта профессии).
      */
     public static NoteData generateRandomNote(Random random, String author, String authorUuid, boolean hasSeal) {
-        NoteTemplate template = NOTES.get(random.nextInt(NOTES.size()));
+        var notes = NoteConfigLoader.getNotes();
+        if (notes.isEmpty()) {
+            return createFallbackNote(author, authorUuid, hasSeal);
+        }
 
-        // Выбираем случайный цвет печати на основе категории
-        int badgeColor = getRandomBadgeColorForCategory(template.category, random);
-
-        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+        var template = notes.get(random.nextInt(notes.size()));
+        int badgeColor = -1;
 
         NoteData note = new NoteData(
-                template.title,
-                template.content,
-                authorName,
+                template.id,
+                template.getTitle(),
+                template.getContent(),
+                author != null ? author : "Аноним",
                 badgeColor,
                 System.currentTimeMillis(),
                 hasSeal,
                 false
         );
 
-        // Сохраняем UUID автора в NBT
         if (authorUuid != null && !authorUuid.isEmpty()) {
             note.setAuthorUuid(authorUuid);
         }
 
         return note;
+    }
+
+    /**
+     * Генерирует случайную записку с учётом профессии жителя.
+     */
+    public static NoteData generateRandomNoteForProfession(Random random, String author, String authorUuid,
+                                                           String professionId, boolean hasSeal) {
+        var notes = NoteConfigLoader.getNotesForProfession(professionId);
+
+        if (notes.isEmpty()) {
+            notes = NoteConfigLoader.getNotesForProfession(null);
+        }
+
+        if (notes.isEmpty()) {
+            return createFallbackNote(author, authorUuid, hasSeal);
+        }
+
+        var template = notes.get(random.nextInt(notes.size()));
+        int badgeColor = -1;
+
+        // Определяем тип записки
+        boolean isSmall = template.isSmall();
+
+        // Если это маленькая записка — урезаем содержимое, если оно слишком длинное
+        String content = template.getContent();
+        if (isSmall && content.length() > 150) {
+            content = content.substring(0, 150) + "...";
+        }
+
+        NoteData note = new NoteData(
+                template.id,
+                template.getTitle(),
+                content,
+                author != null ? author : "Аноним",
+                badgeColor,
+                System.currentTimeMillis(),
+                hasSeal,
+                isSmall  // ← передаём тип
+        );
+
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
+
+        return note;
+    }
+
+    /**
+     * Создаёт записку-заглушку, если конфиг не загружен.
+     */
+    private static NoteData createFallbackNote(String author, String authorUuid, boolean hasSeal) {
+        String lang = getCurrentLanguage();
+        String title = lang.equals("ru_ru") ? "Нет объявлений" : "No announcements";
+        String content = lang.equals("ru_ru")
+                ? "Администратор ещё не добавил объявления в config/bulletin-board/notes/"
+                : "Admin has not added announcements to config/bulletin-board/notes/";
+
+        NoteData note = new NoteData(
+                null,
+                title,
+                content,
+                author != null ? author : "Аноним",
+                -1,
+                System.currentTimeMillis(),
+                hasSeal,
+                false
+        );
+
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
+
+        return note;
+    }
+
+    private static String getCurrentLanguage() {
+        try {
+            return MinecraftClient.getInstance().getLanguageManager().getLanguage();
+        } catch (Exception e) {
+            return "en_us";
+        }
     }
 
     /**
      * Генерирует случайную записку с маленьким размером.
      */
     public static NoteData generateRandomSmallNote(Random random, String author, String authorUuid, boolean hasSeal) {
-        NoteTemplate template = NOTES.get(random.nextInt(NOTES.size()));
-        int badgeColor = getRandomBadgeColorForCategory(template.category, random);
+        var notes = NoteConfigLoader.getNotes();
+        if (notes.isEmpty()) {
+            return createFallbackNote(author, authorUuid, hasSeal);
+        }
 
-        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+        var template = notes.get(random.nextInt(notes.size()));
+        int badgeColor = -1;
 
-        // Урезаем содержимое для маленькой записки (макс. 100 символов)
-        String content = template.content;
+        String content = template.getContent();
         if (content.length() > 100) {
             content = content.substring(0, 100) + "...";
         }
 
         NoteData note = new NoteData(
-                template.title,
+                template.id,
+                template.getTitle(),
                 content,
-                authorName,
+                author != null ? author : "Аноним",
                 badgeColor,
                 System.currentTimeMillis(),
                 hasSeal,
-                true  // isSmall = true
+                true
         );
 
         if (authorUuid != null && !authorUuid.isEmpty()) {
@@ -199,46 +169,24 @@ public class RandomNotePool {
         return note;
     }
 
-    private static int getRandomBadgeColorForCategory(NoteCategory category, Random random) {
-        // Возвращаем цвет по умолчанию для категории с шансом 60%
-        // Или случайный цвет из палитры с шансом 40%
-        if (random.nextFloat() < 0.6f) {
-            return category.defaultBadgeColor;
-        }
-
-        int[] colors = {
-                0x1E1E1E, 0xFF5555, 0x55FF55, 0x8B4513,
-                0x5555FF, 0xAA00AA, 0x00AAAA, 0xAAAAAA,
-                0x555555, 0xFF55FF, 0x55FF55, 0xFFFF55,
-                0x55FFFF, 0xFF55FF, 0xFFAA00, 0xFFFFFF
-        };
-
-        return colors[random.nextInt(colors.length)];
-    }
-
     /**
      * Получение случайной записки только определённой категории.
      */
     public static NoteData generateNoteByCategory(NoteCategory category, Random random, String author, String authorUuid, boolean hasSeal) {
-        List<NoteTemplate> filtered = new ArrayList<>();
-        for (NoteTemplate t : NOTES) {
-            if (t.category == category) {
-                filtered.add(t);
-            }
-        }
-
-        if (filtered.isEmpty()) {
+        var notes = NoteConfigLoader.getNotesByCategory(category);
+        if (notes.isEmpty()) {
             return generateRandomNote(random, author, authorUuid, hasSeal);
         }
 
-        NoteTemplate template = filtered.get(random.nextInt(filtered.size()));
-        String authorName = (author != null && !author.isEmpty()) ? author : "Аноним";
+        var template = notes.get(random.nextInt(notes.size()));
+        int badgeColor = -1;
 
         NoteData note = new NoteData(
-                template.title,
-                template.content,
-                authorName,
-                category.defaultBadgeColor,
+                template.id,
+                template.getTitle(),
+                template.getContent(),
+                author != null ? author : "Аноним",
+                badgeColor,
                 System.currentTimeMillis(),
                 hasSeal,
                 false
@@ -248,6 +196,56 @@ public class RandomNotePool {
             note.setAuthorUuid(authorUuid);
         }
 
+        return note;
+    }
+
+    public static NoteData generateRandomSmallNoteForProfession(Random random, String author, String authorUuid,
+                                                                String professionId, boolean hasSeal) {
+        var notes = NoteConfigLoader.getNotesForProfession(professionId);
+
+        if (notes.isEmpty()) {
+            notes = NoteConfigLoader.getNotesForProfession(null);
+        }
+
+        if (notes.isEmpty()) {
+            return createFallbackNote(author, authorUuid, hasSeal);
+        }
+
+        // Фильтруем только маленькие записки
+        var smallNotes = notes.stream()
+                .filter(NoteConfigLoader.NoteTemplate::isSmall)
+                .collect(Collectors.toList());
+
+        if (smallNotes.isEmpty()) {
+            // Если нет маленьких — берём обычную, но урезаем
+            var template = notes.get(random.nextInt(notes.size()));
+            String content = template.getContent();
+            if (content.length() > ModConfig.getSmallContentMax()) {
+                content = content.substring(0, ModConfig.getSmallContentMax()) + "...";
+            }
+            return createNoteFromTemplate(template, content, author, authorUuid, true, hasSeal);
+        }
+
+        var template = smallNotes.get(random.nextInt(smallNotes.size()));
+        return createNoteFromTemplate(template, template.getContent(), author, authorUuid, true, hasSeal);
+    }
+
+    private static NoteData createNoteFromTemplate(NoteConfigLoader.NoteTemplate template, String content,
+                                                   String author, String authorUuid, boolean isSmall, boolean hasSeal) {
+        int badgeColor = -1;
+        NoteData note = new NoteData(
+                template.id,
+                template.getTitle(),
+                content,
+                author != null ? author : "Аноним",
+                badgeColor,
+                System.currentTimeMillis(),
+                hasSeal,
+                isSmall
+        );
+        if (authorUuid != null && !authorUuid.isEmpty()) {
+            note.setAuthorUuid(authorUuid);
+        }
         return note;
     }
 }

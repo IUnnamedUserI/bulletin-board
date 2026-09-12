@@ -1,0 +1,132 @@
+[
+  {
+    "id": "leatherworker_1",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling tanned leather",
+      "ru_ru": "Продаю выделанную кожу"
+    },
+    "content": {
+      "en_us": "I tan leather of the best quality. Thick, soft, durable — perfect for belts, bags and armor. I buy hides from hunters and process them using ancient technology. The leather does not crack and lasts a long time. I sell wholesale and retail, the price depends on thickness and size. Come to the workshop, I'll show you samples!",
+      "ru_ru": "Я выделываю кожу лучшего качества. Толстая, мягкая, прочная — идеально подходит для ремней, сумок и доспехов. Закупаю шкуры у охотников и обрабатываю их по старинной технологии. Кожа не трескается и долго служит. Продаю оптом и в розницу, цена зависит от толщины и размера. Заходите в мастерскую, я покажу образцы!"
+    }
+  },
+  {
+    "id": "leatherworker_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Leather goods repair",
+      "ru_ru": "Ремонт кожаных изделий"
+    },
+    "content": {
+      "en_us": "If your bag, clothes or shoes are torn, bring them to me. I repair any leather goods, put patches and replace worn parts. I work quickly and efficiently. The price depends on the complexity of the work, but I try to keep it inexpensive. Come, I'll assess the damage and tell you the price right away.",
+      "ru_ru": "Если у вас порвалась сумка, одежда или обувь — приносите ко мне. Я ремонтирую любые кожаные изделия, ставлю заплатки и заменяю изношенные части. Работаю быстро и качественно. Цена зависит от сложности работы, но я стараюсь делать недорого. Заходите, я оценю поломку и скажу цену сразу."
+    }
+  },
+  {
+    "id": "leatherworker_3",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Hiring an apprentice for the workshop",
+      "ru_ru": "Найму ученика для мастерской"
+    },
+    "content": {
+      "en_us": "I'm looking for an apprentice to work with leather. I will teach you how to tan hides, sew and repair. The work is painstaking but interesting. I pay a small amount of money and give part of the finished products. If you want to learn leatherworking, come to the workshop, I will teach you everything!",
+      "ru_ru": "Ищу ученика для работы с кожей. Научу выделывать шкуры, шить и ремонтировать. Работа кропотливая, но интересная. Плачу небольшие деньги и даю часть готовых изделий. Если вы хотите научиться кожевенному делу, приходите в мастерскую, я всему научу!"
+    }
+  },
+  {
+    "id": "leatherworker_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for old leather items",
+      "ru_ru": "Ищу старые кожаные вещи"
+    },
+    "content": {
+      "en_us": "I need old leather items: belts, bags, boots — anything that is no longer worn. I use them for patches and crafting. I will pay for each item or exchange for new products. Bring them to the workshop, I will gladly buy everything you don't need!",
+      "ru_ru": "Мне нужны старые кожаные вещи: ремни, сумки, сапоги — всё, что уже не носят. Я использую их для заплаток и ремесла. Заплачу за каждую вещь или обменяю на новые изделия. Приносите в мастерскую, я с радостью куплю у вас всё, что не пригодится!"
+    }
+  },
+  {
+    "id": "leatherworker_5",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Problems with hide tanning",
+      "ru_ru": "Проблемы с выделкой шкур"
+    },
+    "content": {
+      "en_us": "This year the hides are poor, with holes and defects. I'm asking for advice from senior craftsmen. How best to process such hides? If you have experience, share it! It is important for me to maintain quality. I would be grateful for any advice.",
+      "ru_ru": "В этом году шкуры попадаются плохие, с дырами и дефектами. Ищу совета у старших мастеров. Как лучше обрабатывать такие шкуры? Если у вас есть опыт, поделитесь! Мне важно сохранить качество. Буду благодарен за любой совет."
+    }
+  },
+  {
+    "id": "leatherworker_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for customers for horse harnesses",
+      "ru_ru": "Ищу заказчиков на конские упряжи"
+    },
+    "content": {
+      "en_us": "I make reliable horse harnesses and bridles. I use only high-quality leather and copper rivets. The harnesses last a long time, do not chafe or tear. If you keep horses, this work is for you. Come to the workshop, I will make a harness for your horse!",
+      "ru_ru": "Я делаю надёжные конские упряжи и сбруи. Использую только качественную кожу и медные клёпки. Упряжи служат долго, не протираются и не рвутся. Если вы содержите лошадей, эта работа для вас. Заходите в мастерскую, я сделаю упряжь под вашу лошадь!"
+    }
+  },
+  {
+    "id": "leatherworker_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling leather armor",
+      "ru_ru": "Продаю кожаные доспехи"
+    },
+    "content": {
+      "en_us": "Light leather armor for hunting and training. Protects from scratches and minor wounds. Affordable price. Come in!",
+      "ru_ru": "Лёгкие кожаные доспехи для охоты и тренировок. Защищают от царапин и мелких ран. Цена доступная. Заходите!"
+    }
+  },
+  {
+    "id": "leatherworker_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling leather bags",
+      "ru_ru": "Продаю кожаные сумки"
+    },
+    "content": {
+      "en_us": "Leather bags for everyday use. Durable and beautiful. Come take a look!",
+      "ru_ru": "Кожаные сумки на каждый день. Прочные и красивые. Заходите смотреть!"
+    }
+  },
+  {
+    "id": "leatherworker_9",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling armor",
+      "ru_ru": "Продаю доспехи"
+    },
+    "content": {
+      "en_us": "Light leather armor for hunting. Inexpensive. Come take a look!",
+      "ru_ru": "Лёгкие кожаные доспехи для охоты. Недорого. Заходите смотреть!"
+    }
+  },
+  {
+    "id": "leatherworker_10",
+    "category": "PERSONAL",
+    "note_type": "small",
+    "title": {
+      "en_us": "Advice on tanning",
+      "ru_ru": "Совет по выделке"
+    },
+    "content": {
+      "en_us": "I'm looking for advice on hide tanning. If you have experience, share it! I would be grateful.",
+      "ru_ru": "Ищу совет по выделке шкур. Если есть опыт, поделитесь! Буду признателен."
+    }
+  }
+]

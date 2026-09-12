@@ -1,8 +1,19 @@
 package com.unnameduser.bulletinboard.util;
 
+import com.unnameduser.bulletinboard.config.ModConfig;
+
 public class NoteConstants {
-    public static final int FULL_TITLE_MAX = 48;
-    public static final int FULL_CONTENT_MAX = 386;
-    public static final int SMALL_TITLE_MAX = 24;
-    public static final int SMALL_CONTENT_MAX = 256;
+    public static int FULL_TITLE_MAX = ModConfig.getFullTitleMax();
+    public static int FULL_CONTENT_MAX = ModConfig.getFullContentMax();
+    public static int SMALL_TITLE_MAX = ModConfig.getSmallTitleMax();
+    public static int SMALL_CONTENT_MAX = ModConfig.getSmallContentMax();
+
+    // Перезагрузить лимиты из конфига (вызывать после изменения config.json)
+    public static void reload() {
+        ModConfig.load();
+        FULL_TITLE_MAX = ModConfig.getFullTitleMax();
+        FULL_CONTENT_MAX = ModConfig.getFullContentMax();
+        SMALL_TITLE_MAX = ModConfig.getSmallTitleMax();
+        SMALL_CONTENT_MAX = ModConfig.getSmallContentMax();
+    }
 }

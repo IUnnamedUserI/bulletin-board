@@ -2,7 +2,10 @@ package com.unnameduser.bulletinboard;
 
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
+import com.unnameduser.bulletinboard.block.PlacedNoteBlock;
 import com.unnameduser.bulletinboard.command.BulletinBoardCommand;
+import com.unnameduser.bulletinboard.config.ModConfig;
+import com.unnameduser.bulletinboard.config.NoteConfigLoader;
 import com.unnameduser.bulletinboard.config.VillagerNameConfig;
 import com.unnameduser.bulletinboard.event.VillageDiscountEvent;
 import com.unnameduser.bulletinboard.integration.TradeOverhaulIntegration;
@@ -14,6 +17,7 @@ import com.unnameduser.bulletinboard.util.AutoNoteScheduler;
 import com.unnameduser.bulletinboard.world.StructureRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -21,7 +25,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.BlockItem;
@@ -31,9 +34,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.structure.pool.SinglePoolElement;
-import net.minecraft.structure.pool.StructurePool;
-import net.minecraft.structure.pool.StructurePools;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -41,13 +41,8 @@ import net.minecraft.world.World;
 public class BulletinBoardMod implements ModInitializer {
 	public static final String MOD_ID = "bulletin-board";
 
-	public static final Item NOTE_PAPER = new NotePaperItem(
-			new FabricItemSettings().maxCount(1), false
-	);
-
-	public static final Item SMALL_NOTE_PAPER = new NotePaperItem(
-			new FabricItemSettings().maxCount(1), true
-	);
+	public static final Item NOTE_PAPER = new NotePaperItem(new FabricItemSettings().maxCount(1), false);
+	public static final Item SMALL_NOTE_PAPER = new NotePaperItem(new FabricItemSettings().maxCount(1), true);
 
 	public static final Item BLACK_BADGE = new BadgeItem(new FabricItemSettings().maxCount(16), 0x1E1E1E);
 	public static final Item RED_BADGE = new BadgeItem(new FabricItemSettings().maxCount(16), 0xFF5555);
@@ -68,6 +63,10 @@ public class BulletinBoardMod implements ModInitializer {
 
 	public static final Block BULLETIN_BOARD = new BulletinBoardBlock(
 			FabricBlockSettings.copyOf(Blocks.OAK_PLANKS).nonOpaque()
+	);
+
+	public static final Block PLACED_NOTE = new PlacedNoteBlock(
+			FabricBlockSettings.copyOf(Blocks.OAK_PLANKS).nonOpaque().noCollision().breakInstantly()
 	);
 
 	public static final ItemGroup BULLETIN_BOARD_GROUP = FabricItemGroup.builder()
@@ -98,6 +97,7 @@ public class BulletinBoardMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		// Регистрация предметов
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "note_paper"), NOTE_PAPER);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "small_note_paper"), SMALL_NOTE_PAPER);
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "black_badge"), BLACK_BADGE);
@@ -118,19 +118,25 @@ public class BulletinBoardMod implements ModInitializer {
 		Registry.register(Registries.ITEM, new Identifier(MOD_ID, "white_badge"), WHITE_BADGE);
 
 		registerBlock("bulletin_board", BULLETIN_BOARD);
+		registerBlock("placed_note", PLACED_NOTE);
 
 		ModBlockEntities.register();
 		ModPackets.register();
+
+		ModConfig.load();
+		NoteConfigLoader.load();
+		VillagerNameConfig.load();
+		StructureRegistry.register();
+
+		Registry.register(Registries.ITEM_GROUP, new Identifier(MOD_ID, "general"), BULLETIN_BOARD_GROUP);
+
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+			AutoNoteScheduler.reset();
+		});
+
 		registerCommands();
 		registerServerTickEvents();
 		registerServerEvents();
-
-		Registry.register(Registries.ITEM_GROUP,
-				new Identifier(MOD_ID, "general"),
-				BULLETIN_BOARD_GROUP);
-
-		VillagerNameConfig.load();
-		StructureRegistry.register();
 	}
 
 	private void registerCommands() {
@@ -139,46 +145,40 @@ public class BulletinBoardMod implements ModInitializer {
 
 	private void registerServerTickEvents() {
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
-			if (AutoNoteScheduler.getInstance() == null) {
+			if (AutoNoteScheduler.getInstance() == null && server.getTicks() > 200) {
 				AutoNoteScheduler.init(server);
 			}
-			AutoNoteScheduler.tick();
-
+			if (AutoNoteScheduler.getInstance() != null) {
+				AutoNoteScheduler.tick();
+			}
 			if (VillageDiscountEvent.getInstance() == null) {
 				VillageDiscountEvent.init(server);
 			}
 			VillageDiscountEvent.getInstance().tick();
-
 			TradeOverhaulIntegration.tick();
 		});
 	}
 
 	private void registerServerEvents() {
-		// Отправка имён при подключении игрока
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			ModPackets.sendVillagerNames(handler.player, server);
 		});
 
-		// Обновление имён при появлении новых жителей (раз в 20 тиков)
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			if (!server.isRunning()) return;
-			// Проверяем раз в 20 тиков (1 секунда)
 			if (server.getTicks() % 20 == 0) {
 				VillagerNameManager manager = VillagerNameManager.get(server);
 				var world = server.getWorld(World.OVERWORLD);
 				if (world == null) return;
 
 				boolean hasNewNames = false;
-				// Используем правильный метод для получения жителей в 1.20.1
 				for (VillagerEntity villager : world.getEntitiesByType(EntityType.VILLAGER, entity -> true)) {
-					// Получаем имя — если его не было, оно создаётся
-					String name = manager.getOrCreateName(villager.getUuid());
-					if (name != null) {
+					String nameKey = manager.getOrCreateNameKey(villager.getUuid());
+					if (nameKey != null) {
 						hasNewNames = true;
 					}
 				}
 
-				// Если появились новые имена — отправляем всем игрокам
 				if (hasNewNames) {
 					for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 						ModPackets.sendVillagerNames(player, server);

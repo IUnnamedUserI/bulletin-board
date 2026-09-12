@@ -13,7 +13,7 @@ public class VillagerNameConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Map<String, String> NAMES = new HashMap<>();
-    private static final List<String> RANDOM_NAMES = new ArrayList<>();
+    private static final List<String> RANDOM_NAME_KEYS = new ArrayList<>();
     private static int DISPLAY_RADIUS = 8;
     private static float NAME_SIZE = 1.0f;
     private static float PROFESSION_SIZE = 0.8f;
@@ -21,11 +21,28 @@ public class VillagerNameConfig {
     private static int PROFESSION_COLOR = 0x55AAFF;
 
     static {
-        RANDOM_NAMES.addAll(Arrays.asList(
-                "Aethelred", "Beowulf", "Cedric", "Dunstan", "Eadric",
-                "Godric", "Hrothgar", "Leofric", "Osric", "Wulfstan",
-                "Ethelbert", "Aldric", "Baldwin", "Cuthbert", "Edmund",
-                "Geoffrey", "Harold", "Leofwine", "Ordric", "Siward"
+        // Ключи перевода для имён (будут использоваться в lang-файлах)
+        RANDOM_NAME_KEYS.addAll(Arrays.asList(
+                "villager.name.aethelred",
+                "villager.name.beowulf",
+                "villager.name.cedric",
+                "villager.name.dunstan",
+                "villager.name.eadric",
+                "villager.name.godric",
+                "villager.name.hrothgar",
+                "villager.name.leofric",
+                "villager.name.osric",
+                "villager.name.wulfstan",
+                "villager.name.ethelbert",
+                "villager.name.aldric",
+                "villager.name.baldwin",
+                "villager.name.cuthbert",
+                "villager.name.edmund",
+                "villager.name.geoffrey",
+                "villager.name.harold",
+                "villager.name.leofwine",
+                "villager.name.ordric",
+                "villager.name.siward"
         ));
     }
 
@@ -46,8 +63,8 @@ public class VillagerNameConfig {
 
             if (data.containsKey("random_names")) {
                 List<String> randomNames = (List<String>) data.get("random_names");
-                RANDOM_NAMES.clear();
-                RANDOM_NAMES.addAll(randomNames);
+                RANDOM_NAME_KEYS.clear();
+                RANDOM_NAME_KEYS.addAll(randomNames);
             }
 
             if (data.containsKey("display_radius")) {
@@ -93,13 +110,34 @@ public class VillagerNameConfig {
             names.put("minecraft:nitwit", "Nitwit");
             config.put("names", names);
 
-            List<String> randomNames = Arrays.asList(
-                    "Aethelred", "Beowulf", "Cedric", "Dunstan", "Eadric",
-                    "Godric", "Hrothgar", "Leofric", "Osric", "Wulfstan",
-                    "Ethelbert", "Aldric", "Baldwin", "Cuthbert", "Edmund",
-                    "Geoffrey", "Harold", "Leofwine", "Ordric", "Siward"
+            // НОВЫЙ СПИСОК ИМЁН (70 штук)
+            List<String> randomNameKeys = Arrays.asList(
+                    "villager.name.william", "villager.name.richard", "villager.name.robert",
+                    "villager.name.john", "villager.name.thomas", "villager.name.henry",
+                    "villager.name.walter", "villager.name.ralph", "villager.name.hugh",
+                    "villager.name.roger", "villager.name.geoffrey", "villager.name.adam",
+                    "villager.name.simon", "villager.name.nicholas", "villager.name.peter",
+                    "villager.name.alan", "villager.name.gilbert", "villager.name.edmund",
+                    "villager.name.godfrey", "villager.name.aldric", "villager.name.osric",
+                    "villager.name.wulfstan", "villager.name.leofric", "villager.name.earl",
+                    "villager.name.martin", "villager.name.philip", "villager.name.stephen",
+                    "villager.name.david", "villager.name.alexander", "villager.name.andrew",
+                    "villager.name.benedict", "villager.name.christopher", "villager.name.constantin",
+                    "villager.name.gregory", "villager.name.leonard", "villager.name.norman",
+                    "villager.name.ranulf", "villager.name.reynold", "villager.name.reginald",
+                    "villager.name.ambrose", "villager.name.archibald", "villager.name.barnaby",
+                    "villager.name.bartholomew", "villager.name.cyril", "villager.name.dominic",
+                    "villager.name.edgar", "villager.name.eric", "villager.name.everard",
+                    "villager.name.frederick", "villager.name.giles", "villager.name.guy",
+                    "villager.name.harold", "villager.name.herbert", "villager.name.horace",
+                    "villager.name.humphrey", "villager.name.ivor", "villager.name.jasper",
+                    "villager.name.jerome", "villager.name.jocelyn", "villager.name.julian",
+                    "villager.name.lawrence", "villager.name.leander", "villager.name.leopold",
+                    "villager.name.lionel", "villager.name.lucian", "villager.name.malcolm",
+                    "villager.name.maurice", "villager.name.maximilian", "villager.name.miles",
+                    "villager.name.morris", "villager.name.oliver"
             );
-            config.put("random_names", randomNames);
+            config.put("random_names", randomNameKeys);
 
             config.put("display_name_color", "#E8D0A0");
             config.put("display_profession_color", "#55AAFF");
@@ -130,11 +168,23 @@ public class VillagerNameConfig {
         return NAMES.getOrDefault(professionId, professionId);
     }
 
+    /**
+     * Возвращает случайный КЛЮЧ перевода для имени жителя.
+     */
+    public static String getRandomNameKey() {
+        if (RANDOM_NAME_KEYS.isEmpty()) {
+            return "villager.name.default";
+        }
+        return RANDOM_NAME_KEYS.get(new Random().nextInt(RANDOM_NAME_KEYS.size()));
+    }
+
+    @Deprecated
     public static String getRandomName() {
-        if (RANDOM_NAMES.isEmpty()) {
+        if (RANDOM_NAME_KEYS.isEmpty()) {
             return "Villager";
         }
-        return RANDOM_NAMES.get(new Random().nextInt(RANDOM_NAMES.size()));
+        // Просто возвращаем ключ, который потом будет переведён
+        return RANDOM_NAME_KEYS.get(new Random().nextInt(RANDOM_NAME_KEYS.size()));
     }
 
     public static int getDisplayRadius() {

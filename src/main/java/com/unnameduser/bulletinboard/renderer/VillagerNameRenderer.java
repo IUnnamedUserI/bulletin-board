@@ -1,5 +1,6 @@
 package com.unnameduser.bulletinboard.renderer;
 
+import com.unnameduser.bulletinboard.config.ModConfig;
 import com.unnameduser.bulletinboard.config.VillagerNameConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -13,9 +14,13 @@ import net.minecraft.util.math.Vec3d;
 public class VillagerNameRenderer {
     private static final float BASE_SCALE = 0.02f;
 
-    public static void render(VillagerEntity villager, String name, MatrixStack matrices, VertexConsumerProvider vertexConsumers, float tickDelta) {
+    public static void render(VillagerEntity villager, String nameKey, MatrixStack matrices, VertexConsumerProvider vertexConsumers, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
+
+        if (!ModConfig.isShowVillagerNames()) {
+            return;
+        }
 
         if (!client.player.canSee(villager)) return;
 
@@ -39,8 +44,8 @@ public class VillagerNameRenderer {
         float scale = BASE_SCALE * 0.8f;
         matrices.scale(-scale, -scale, scale);
 
-        // --- ИМЯ ---
-        Text nameText = Text.literal(name);
+        // --- ИМЯ (переводим через Text.translatable) ---
+        Text nameText = Text.translatable(nameKey);
         float nameWidth = textRenderer.getWidth(nameText) / 2f;
 
         float nameSize = VillagerNameConfig.getNameSize() * 0.8f;
@@ -64,9 +69,9 @@ public class VillagerNameRenderer {
 
         // --- ПРОФЕССИЯ ---
         String professionRaw = villager.getVillagerData().getProfession().toString();
-        String profession = capitalizeProfession(professionRaw);
+        String professionKey = "villager.profession." + professionRaw.replace("minecraft:", "");
 
-        Text professionText = Text.literal(profession);
+        Text professionText = Text.translatable(professionKey);
         float professionWidth = textRenderer.getWidth(professionText) / 2f;
 
         float professionSize = VillagerNameConfig.getProfessionSize() * 0.8f;

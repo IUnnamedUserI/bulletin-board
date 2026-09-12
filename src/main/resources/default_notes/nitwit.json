@@ -1,0 +1,132 @@
+[
+  {
+    "id": "nitwit_1",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for someone to teach me to fly",
+      "ru_ru": "Ищу того, кто научит меня летать"
+    },
+    "content": {
+      "en_us": "I've been trying to learn to fly for several years now. I jumped off roofs, waved my arms, tied on feathers — nothing helps. Maybe you know the secret? If so, write to me. I promise to pay generously if I succeed!",
+      "ru_ru": "Я уже несколько лет пытаюсь научиться летать. Прыгал с крыши, махал руками, привязывал перья — ничего не помогает. Может, вы знаете секрет? Если да, напишите мне. Обещаю щедро заплатить, если у меня получится!"
+    }
+  },
+  {
+    "id": "nitwit_2",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Selling invisible hats",
+      "ru_ru": "Продаю невидимые шапки"
+    },
+    "content": {
+      "en_us": "I have several hats that make you invisible. I wove them myself from moonlight and spiderwebs. The hats come in different sizes. But there is one condition: you can only see them if you buy them. Come tomorrow at noon under the bridge, I'll show you the goods!",
+      "ru_ru": "У меня есть несколько шапок, которые делают вас невидимым. Я сам их соткал из лунного света и паутины. Шапки есть разных размеров. Но есть одно условие: вы сможете их увидеть, только если купите. Заходите завтра в полдень под мост, я покажу вам товар!"
+    }
+  },
+  {
+    "id": "nitwit_3",
+    "category": "PERSONAL",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Looking for someone to change my memory",
+      "ru_ru": "Ищу того, кто поменяет мне память"
+    },
+    "content": {
+      "en_us": "I'm tired of my memories. I need someone to erase them and replace them with others. Anything fun or boring will do, I don't care. If you know magic or know someone who does, contact me. I'll pay well.",
+      "ru_ru": "Я устал от своих воспоминаний. Мне нужно, чтобы кто-то их стёр и заменил на другие. Можно на что-нибудь весёлое или скучное, мне всё равно. Если вы умеете колдовать или знаете того, кто умеет, — свяжитесь со мной. Заплачу хорошо."
+    }
+  },
+  {
+    "id": "nitwit_4",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Breakfast announcement",
+      "ru_ru": "Объявление о завтраке"
+    },
+    "content": {
+      "en_us": "I invite everyone to breakfast! There will be sawdust porridge, nettle tea and air sandwiches. Come tomorrow morning to the meadow by the river. I promise: it will be unforgettable. Bring spoons and a good mood!",
+      "ru_ru": "Я приглашаю всех на завтрак! Будет каша из опилок, чай из крапивы и бутерброды с воздухом. Приходите завтра утром на поляну у реки. Я обещаю: это будет незабываемо. Приносите с собой ложки и хорошее настроение!"
+    }
+  },
+  {
+    "id": "nitwit_5",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Building a house from clouds",
+      "ru_ru": "Строю дом из облаков"
+    },
+    "content": {
+      "en_us": "I'm building a house from clouds. It will be light, fluffy and a little wet. I need helpers who can catch clouds. If you've seen a cloud of unusual shape, let me know! I'll reward you with a couple of sunbeams.",
+      "ru_ru": "Я строю дом из облаков. Он будет лёгким, пушистым и немного мокрым. Мне нужны помощники, которые умеют ловить облака. Если вы видели облако необычной формы, сообщите мне! Я отблагодарю вас парой солнечных зайчиков."
+    }
+  },
+  {
+    "id": "nitwit_6",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Inventing a perpetual motion machine",
+      "ru_ru": "Изобретаю вечный двигатель"
+    },
+    "content": {
+      "en_us": "I have invented a perpetual motion machine! It runs on the buzzing of flies and the rattling of an old pot. But it's not finished yet, I need someone to bring me a couple more beetles. If you also love science, come to me, I'll show you my blueprints!",
+      "ru_ru": "Я изобрёл вечный двигатель! Он работает на жужжании мух и дребезжании старой кастрюли. Но он ещё не доработан, мне нужен кто-то, кто принесёт мне ещё пару жуков. Если вы тоже любите науку, приходите ко мне, я покажу вам свои чертежи!"
+    }
+  },
+  {
+    "id": "nitwit_7",
+    "category": "ANNOUNCEMENT",
+    "note_type": "normal",
+    "title": {
+      "en_us": "Creating a dreamers club",
+      "ru_ru": "Создаю клуб мечтателей"
+    },
+    "content": {
+      "en_us": "I'm creating a dreamers club. We gather at sunset by the stream and dream about non-existent worlds, flying cows and fish that speak in verse. If you're also tired of reality, come to us. Membership is free, but you need to bring a dream with you.",
+      "ru_ru": "Я создаю клуб мечтателей. Мы собираемся на закате у ручья и мечтаем о несуществующих мирах, летающих коровах и рыбах, которые говорят стихами. Если вы тоже устали от реальности — приходите к нам. Членство бесплатное, но нужно принести с собой мечту."
+    }
+  },
+  {
+    "id": "nitwit_8",
+    "category": "ANNOUNCEMENT",
+    "note_type": "small",
+    "title": {
+      "en_us": "Selling a dream",
+      "ru_ru": "Продаю мечту"
+    },
+    "content": {
+      "en_us": "Selling my dream. I need a new one. Price: one idea.",
+      "ru_ru": "Продаю свою мечту. Новая нужна. Цена: идея."
+    }
+  },
+  {
+    "id": "nitwit_9",
+    "category": "PERSONAL",
+    "note_type": "small",
+    "title": {
+      "en_us": "Looking for a ghost",
+      "ru_ru": "Ищу призрака"
+    },
+    "content": {
+      "en_us": "I'm looking for a ghost to befriend. If you've seen one, write to me. I'll pay!",
+      "ru_ru": "Ищу призрака для дружбы. Если видели — напишите. Заплачу!"
+    }
+  },
+  {
+    "id": "nitwit_10",
+    "category": "PERSONAL",
+    "note_type": "small",
+    "title": {
+      "en_us": "The laziest person",
+      "ru_ru": "Самый ленивый человек"
+    },
+    "content": {
+      "en_us": "I am the laziest person in the village. Want to challenge me? I'm waiting for you!",
+      "ru_ru": "Я самый ленивый человек в деревне. Хотите оспорить? Жду встречи!"
+    }
+  }
+]

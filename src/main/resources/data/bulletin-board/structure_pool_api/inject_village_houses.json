@@ -1,0 +1,14 @@
+{
+  "target_pool": "minecraft:village/plains/houses",
+  "elements": [
+    {
+      "weight": 3,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "bulletin-board:bulletin_board",
+        "projection": "rigid",
+        "processors": "minecraft:empty"
+      }
+    }
+  ]
+}

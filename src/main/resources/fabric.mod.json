@@ -31,6 +31,5 @@
 	},
 	"suggests": {
 		"tradeoverhaul": "*"
-	},
-	"accessWidener" : "bulletin-board.accesswidener"
+	}
 }

@@ -2,12 +2,17 @@ package com.unnameduser.bulletinboard.world;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.config.ModConfig;
-import net.fabric_extras.structure_pool.api.FabricStructurePoolRegistry;
+import net.fabric_extras.structure_pool.api.StructurePoolAPI;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 
 public class StructureRegistry {
-
     public static void register() {
+        ServerLifecycleEvents.SERVER_STARTING.register(StructureRegistry::onServerStarting);
+    }
+
+    private static void onServerStarting(MinecraftServer server) {
         if (!ModConfig.isGenerateBulletinBoard()) {
             System.out.println("[Bulletin Board] Bulletin board generation disabled in config");
             return;
@@ -15,32 +20,21 @@ public class StructureRegistry {
 
         Identifier nbtId = new Identifier(BulletinBoardMod.MOD_ID, "bulletin_board");
 
-        FabricStructurePoolRegistry.registerSimple(
-                new Identifier("minecraft:village/plains/houses"),
-                nbtId,
-                1
-        );
-        FabricStructurePoolRegistry.registerSimple(
-                new Identifier("minecraft:village/snowy/houses"),
-                nbtId,
-                1
-        );
-        FabricStructurePoolRegistry.registerSimple(
-                new Identifier("minecraft:village/savanna/houses"),
-                nbtId,
-                1
-        );
-        FabricStructurePoolRegistry.registerSimple(
-                new Identifier("minecraft:village/taiga/houses"),
-                nbtId,
-                1
-        );
-        FabricStructurePoolRegistry.registerSimple(
-                new Identifier("minecraft:village/desert/houses"),
-                nbtId,
-                1
-        );
+        inject(server, nbtId, "minecraft:village/plains/houses", 3);
+        inject(server, nbtId, "minecraft:village/snowy/houses", 3);
+        inject(server, nbtId, "minecraft:village/savanna/houses", 3);
+        inject(server, nbtId, "minecraft:village/taiga/houses", 3);
+        inject(server, nbtId, "minecraft:village/desert/houses", 3);
 
-        System.out.println("[Bulletin Board] Bulletin board registered in village pools");
+        System.out.println("[Bulletin Board] Structures registered via Structure Pool API");
+    }
+
+    private static void inject(MinecraftServer server, Identifier nbtId, String pool, int weight) {
+        StructurePoolAPI.injectIntoStructurePool(
+                server,
+                new Identifier(pool),
+                nbtId,
+                weight
+        );
     }
 }

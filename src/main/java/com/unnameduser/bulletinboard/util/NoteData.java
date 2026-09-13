@@ -1,6 +1,8 @@
 package com.unnameduser.bulletinboard.util;
 
 import com.unnameduser.bulletinboard.config.NoteConfigLoader;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.nbt.NbtCompound;
 
 public class NoteData {
@@ -14,7 +16,7 @@ public class NoteData {
     private boolean isSmall;
     private String authorUuid;
 
-    // ============ КОНСТРУКТОРЫ ============
+    // ============ КОНСТРУКТОРЫ (без изменений) ============
 
     public NoteData(String title, String content, String author, boolean isSmall) {
         this(null, title, content, author, -1, System.currentTimeMillis(), false, isSmall);
@@ -40,51 +42,32 @@ public class NoteData {
         this.authorUuid = null;
     }
 
-    // ============ ГЕТТЕРЫ ============
+    // ============ ГЕТТЕРЫ (сырые данные, безопасны для сервера) ============
 
-    public String getNoteId() {
-        return noteId;
-    }
+    public String getNoteId() { return noteId; }
+    public String getTitle() { return title; }
+    public String getContent() { return content; }
+    public String getAuthor() { return author; }
+    public int getTagColor() { return tagColor; }
+    public long getCreationTime() { return creationTime; }
+    public boolean hasSeal() { return hasSeal; }
+    public boolean isSmall() { return isSmall; }
+    public String getAuthorUuid() { return authorUuid; }
 
-    public String getTitle() {
-        return title;
-    }
+    // ============ ПЕРЕВОДЫ (ТОЛЬКО ДЛЯ КЛИЕНТА) ============
 
-    public String getContent() {
-        return content;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public int getTagColor() {
-        return tagColor;
-    }
-
-    public long getCreationTime() {
-        return creationTime;
-    }
-
-    public boolean hasSeal() {
-        return hasSeal;
-    }
-
-    public boolean isSmall() {
-        return isSmall;
-    }
-
-    public String getAuthorUuid() {
-        return authorUuid;
-    }
-
-    // ============ ПЕРЕВОДЫ (с учётом языка) ============
-
+    /**
+     * Вызывается ТОЛЬКО из клиентского кода (Screen, Renderer).
+     * На сервере этот метод никогда не должен вызываться.
+     */
     public String getTranslatedTitle() {
         if (noteId != null && !noteId.isEmpty()) {
-            var template = NoteConfigLoader.getNoteById(noteId);
+            NoteConfigLoader.NoteTemplate template = NoteConfigLoader.getNoteById(noteId);
             if (template != null) {
-                return template.getTitle();
+                // Безопасно: этот метод вызывается только из NoteViewScreen (клиент)
+                String lang = net.minecraft.client.MinecraftClient.getInstance()
+                        .getLanguageManager().getLanguage();
+                return template.getTitle(lang);
             }
         }
         return title;
@@ -92,45 +75,27 @@ public class NoteData {
 
     public String getTranslatedContent() {
         if (noteId != null && !noteId.isEmpty()) {
-            var template = NoteConfigLoader.getNoteById(noteId);
+            NoteConfigLoader.NoteTemplate template = NoteConfigLoader.getNoteById(noteId);
             if (template != null) {
-                return template.getContent();
+                String lang = net.minecraft.client.MinecraftClient.getInstance()
+                        .getLanguageManager().getLanguage();
+                return template.getContent(lang);
             }
         }
         return content;
     }
 
-    // ============ СЕТТЕРЫ ============
+    // ============ СЕТТЕРЫ (без изменений) ============
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setTitle(String title) { this.title = title; }
+    public void setContent(String content) { this.content = content; }
+    public void setAuthor(String author) { this.author = author; }
+    public void setTagColor(int tagColor) { this.tagColor = tagColor; }
+    public void setHasSeal(boolean hasSeal) { this.hasSeal = hasSeal; }
+    public void setAuthorUuid(String authorUuid) { this.authorUuid = authorUuid; }
+    public void setNoteId(String noteId) { this.noteId = noteId; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setTagColor(int tagColor) {
-        this.tagColor = tagColor;
-    }
-
-    public void setHasSeal(boolean hasSeal) {
-        this.hasSeal = hasSeal;
-    }
-
-    public void setAuthorUuid(String authorUuid) {
-        this.authorUuid = authorUuid;
-    }
-
-    public void setNoteId(String noteId) {
-        this.noteId = noteId;
-    }
-
-    // ============ NBT ============
+    // ============ NBT (без изменений) ============
 
     public NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
@@ -159,15 +124,13 @@ public class NoteData {
         boolean isSmall = nbt.contains("IsSmall") && nbt.getBoolean("IsSmall");
 
         NoteData note = new NoteData(noteId, title, content, author, tagColor, creationTime, hasSeal, isSmall);
-
         if (nbt.contains("AuthorUuid")) {
             note.setAuthorUuid(nbt.getString("AuthorUuid"));
         }
-
         return note;
     }
 
-    // ============ ВСПОМОГАТЕЛЬНЫЕ ============
+    // ============ ВСПОМОГАТЕЛЬНЫЕ (без изменений) ============
 
     @Override
     public String toString() {
@@ -179,24 +142,15 @@ public class NoteData {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof NoteData)) return false;
-
         NoteData other = (NoteData) obj;
-
-        if (noteId != null && !noteId.isEmpty()) {
-            return noteId.equals(other.noteId);
-        }
-
-        return title.equals(other.title) &&
-                content.equals(other.content) &&
-                author.equals(other.author) &&
-                tagColor == other.tagColor;
+        if (noteId != null && !noteId.isEmpty()) return noteId.equals(other.noteId);
+        return title.equals(other.title) && content.equals(other.content)
+                && author.equals(other.author) && tagColor == other.tagColor;
     }
 
     @Override
     public int hashCode() {
-        if (noteId != null && !noteId.isEmpty()) {
-            return noteId.hashCode();
-        }
+        if (noteId != null && !noteId.isEmpty()) return noteId.hashCode();
         int result = title.hashCode();
         result = 31 * result + content.hashCode();
         result = 31 * result + author.hashCode();

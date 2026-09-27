@@ -266,18 +266,37 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         int charCount = 0;
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
-            if (cursorPos <= charCount + line.length()) {
+            int lineEnd = charCount + line.length();
+
+            if (cursorPos <= lineEnd) {
                 return i;
             }
-            charCount += line.length() + 1;
+
+            // Проверяем, есть ли после этой строки разделитель в исходном тексте
+            // Если следующий символ в оригинальном тексте — \n или пробел, то +1
+            // Если слово было разбито посимвольно, разделителя нет
+            charCount = lineEnd;
+            if (charCount < text.length()) {
+                char nextChar = text.charAt(charCount);
+                if (nextChar == '\n' || nextChar == ' ') {
+                    charCount++; // учитываем разделитель
+                }
+                // иначе: принудительный перенос внутри слова, разделителя нет
+            }
         }
-        return lines.size() - 1;
+        return Math.max(0, lines.size() - 1);
     }
 
     private int getPositionInLineForCursor(int lineIndex, List<String> lines) {
         int charCount = 0;
         for (int i = 0; i < lineIndex; i++) {
-            charCount += lines.get(i).length() + 1;
+            charCount += lines.get(i).length();
+            if (charCount < text.length()) {
+                char nextChar = text.charAt(charCount);
+                if (nextChar == '\n' || nextChar == ' ') {
+                    charCount++;
+                }
+            }
         }
         return Math.min(cursorPos - charCount, lines.get(lineIndex).length());
     }

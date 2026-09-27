@@ -106,6 +106,7 @@ public class NoteViewScreen extends Screen {
     private void wrapText(String text) {
         wrappedLines.clear();
         String[] paragraphs = text.split("\n", -1);
+        int maxWidth = parchmentWidth - 40;
 
         for (String paragraph : paragraphs) {
             if (paragraph.isEmpty()) {
@@ -115,14 +116,44 @@ public class NoteViewScreen extends Screen {
 
             String[] words = paragraph.split(" ", -1);
             StringBuilder currentLine = new StringBuilder();
-            int maxWidth = parchmentWidth - 40;
 
             for (String word : words) {
                 if (word.isEmpty()) {
-                    currentLine.append(" ");
+                    // Пустое слово = лишний пробел, добавляем как есть
+                    if (currentLine.length() > 0) {
+                        currentLine.append(" ");
+                    }
                     continue;
                 }
 
+                int wordWidth = this.textRenderer.getWidth(word);
+
+                // СЛОВО ШИРЕ МАКСИМАЛЬНОЙ ДОПУСТИМОЙ ШИРИНЫ — разбиваем посимвольно
+                if (wordWidth > maxWidth) {
+                    // Сначала сохраняем текущую накопленную строку (если есть)
+                    if (currentLine.length() > 0) {
+                        wrappedLines.add(currentLine.toString());
+                        currentLine.setLength(0);
+                    }
+
+                    // Разбиваем длинное слово на части по пикселям
+                    StringBuilder chunk = new StringBuilder();
+                    for (int i = 0; i < word.length(); i++) {
+                        char c = word.charAt(i);
+                        String testChunk = chunk.toString() + c;
+                        if (this.textRenderer.getWidth(testChunk) > maxWidth) {
+                            // Текущий кусок заполнен, сохраняем и начинаем новый
+                            wrappedLines.add(chunk.toString());
+                            chunk.setLength(0);
+                        }
+                        chunk.append(c);
+                    }
+                    // Остаток слова становится началом следующей строки
+                    currentLine = chunk;
+                    continue;
+                }
+
+                // Обычная логика: слово помещается или нет
                 String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
                 int lineWidth = this.textRenderer.getWidth(testLine);
 
@@ -133,10 +164,12 @@ public class NoteViewScreen extends Screen {
                         currentLine.append(" ").append(word);
                     }
                 } else {
+                    // Слово не влезает в текущую строку, но само по себе короче maxWidth
                     wrappedLines.add(currentLine.toString());
                     currentLine = new StringBuilder(word);
                 }
             }
+
             if (currentLine.length() > 0) {
                 wrappedLines.add(currentLine.toString());
             }
@@ -175,15 +208,88 @@ public class NoteViewScreen extends Screen {
                 PARCHMENT_COLOR);
         context.drawBorder(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
 
-        Text titleText = Text.literal("§l" + note.getTranslatedTitle());
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                titleText,
-                this.width / 2, parchmentY + 20, TITLE_COLOR);
+        // === ОТРИСОВКА ЗАГОЛОВКА С ГИБРИДНЫМ ПЕРЕНОСОМ ===
+        String rawTitle = "§l" + note.getTranslatedTitle();
+        int titleMaxWidth = parchmentWidth - 40;
+        List<String> titleLines = new ArrayList<>();
 
+        String[] words = rawTitle.split(" ", -1);
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : words) {
+            if (word.isEmpty()) {
+                if (currentLine.length() > 0) {
+                    currentLine.append(" ");
+                }
+                continue;
+            }
+
+            int wordWidth = this.textRenderer.getWidth(word);
+
+            // Слово шире максимальной ширины — разбиваем посимвольно
+            if (wordWidth > titleMaxWidth) {
+                if (currentLine.length() > 0) {
+                    titleLines.add(currentLine.toString());
+                    currentLine.setLength(0);
+                }
+
+                StringBuilder chunk = new StringBuilder();
+                for (int i = 0; i < word.length(); i++) {
+                    char c = word.charAt(i);
+                    String testChunk = chunk.toString() + c;
+                    if (this.textRenderer.getWidth(testChunk) > titleMaxWidth) {
+                        titleLines.add(chunk.toString());
+                        chunk.setLength(0);
+                    }
+                    chunk.append(c);
+                }
+                currentLine = chunk;
+                continue;
+            }
+
+            // Обычная логика: проверяем, влезает ли слово с пробелом
+            String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+            int lineWidth = this.textRenderer.getWidth(testLine);
+
+            if (lineWidth <= titleMaxWidth) {
+                if (currentLine.length() == 0) {
+                    currentLine = new StringBuilder(word);
+                } else {
+                    currentLine.append(" ").append(word);
+                }
+            } else {
+                // Слово не влезает в текущую строку, но само короче maxWidth
+                // Переносим целое слово на следующую строку
+                titleLines.add(currentLine.toString());
+                currentLine = new StringBuilder(word);
+            }
+        }
+
+        if (currentLine.length() > 0) {
+            titleLines.add(currentLine.toString());
+        }
+
+        // Отрисовываем каждую строку заголовка по центру
+        int titleLineHeight = 12;
+        int totalTitleHeight = titleLines.size() * titleLineHeight;
+        int titleStartY = parchmentY + 20 - (totalTitleHeight / 2) + (titleLineHeight / 2);
+
+        for (int i = 0; i < titleLines.size(); i++) {
+            context.drawCenteredTextWithShadow(
+                    this.textRenderer,
+                    Text.literal(titleLines.get(i)),
+                    this.width / 2,
+                    titleStartY + i * titleLineHeight,
+                    TITLE_COLOR
+            );
+        }
+
+        // Разделительная линия под заголовком
         context.fill(parchmentX + 20, parchmentY + 35,
                 parchmentX + parchmentWidth - 20, parchmentY + 36,
                 BORDER_COLOR);
 
+        // === ОТРИСОВКА КОНТЕНТА ===
         int textY = textStartY - scrollOffset;
         int visibleStart = Math.max(0, (parchmentY + 57 - textY) / 12);
         int visibleEnd = Math.min(wrappedLines.size(), (parchmentY + parchmentHeight - 50 - textY) / 12 + 1);
@@ -197,6 +303,7 @@ public class NoteViewScreen extends Screen {
             }
         }
 
+        // Автор
         Text authorText = Text.translatable("gui.bulletin-board.note_view.from",
                 Text.translatable(note.getAuthor()));
         context.drawText(this.textRenderer,

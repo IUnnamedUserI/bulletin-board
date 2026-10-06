@@ -20,11 +20,11 @@ public class StructureRegistry {
 
         Identifier nbtId = new Identifier(BulletinBoardMod.MOD_ID, "bulletin_board");
 
-        inject(server, nbtId, "minecraft:village/plains/houses", 3);
-        inject(server, nbtId, "minecraft:village/snowy/houses", 3);
-        inject(server, nbtId, "minecraft:village/savanna/houses", 3);
-        inject(server, nbtId, "minecraft:village/taiga/houses", 3);
-        inject(server, nbtId, "minecraft:village/desert/houses", 3);
+        inject(server, nbtId, "minecraft:village/plains/houses", 1);
+        inject(server, nbtId, "minecraft:village/snowy/houses", 1);
+        inject(server, nbtId, "minecraft:village/savanna/houses", 1);
+        inject(server, nbtId, "minecraft:village/taiga/houses", 1);
+        inject(server, nbtId, "minecraft:village/desert/houses", 1);
 
         System.out.println("[Bulletin Board] Structures registered via Structure Pool API");
     }

@@ -1,13 +1,13 @@
 package com.unnameduser.bulletinboard.block;
 
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class PlacedNoteBlockEntity extends BlockEntity {
@@ -27,9 +27,9 @@ public class PlacedNoteBlockEntity extends BlockEntity {
 
     public void setNoteData(NoteData noteData) {
         this.noteData = noteData;
-        markDirty();
-        if (world != null && !world.isClient) {
-            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
@@ -44,13 +44,13 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     // ============ ТИК ============
 
     public void tick() {
-        if (world == null || world.isClient) return;
+        if (level == null || level.isClientSide) return;
 
-        if (world.isRaining() || world.isThundering()) {
-            if (world.isSkyVisible(pos.up())) {
+        if (level.isRaining() || level.isThundering()) {
+            if (level.canSeeSky(worldPosition.above())) {
                 // Помечаем, что дроп не нужен
                 this.takenByPlayer = true;
-                world.removeBlock(pos, false);
+                level.removeBlock(worldPosition, false);
             }
         }
     }
@@ -58,8 +58,8 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     // ============ NBT ============
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+    protected void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
         if (noteData != null) {
             nbt.put("NoteData", noteData.toNbt());
         }
@@ -67,8 +67,8 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void load(CompoundTag nbt) {
+        super.load(nbt);
         if (nbt.contains("NoteData")) {
             this.noteData = NoteData.fromNbt(nbt.getCompound("NoteData"));
         }
@@ -77,12 +77,12 @@ public class PlacedNoteBlockEntity extends BlockEntity {
 
     @Nullable
     @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 }

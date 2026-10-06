@@ -2,14 +2,14 @@ package com.unnameduser.bulletinboard.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
 public class VillagerNameConfig {
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("bulletin-board/villager_names.json");
+    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve("bulletin-board/villager_names.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Map<String, String> NAMES = new HashMap<>();

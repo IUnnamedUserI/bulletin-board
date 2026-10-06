@@ -2,7 +2,7 @@ package com.unnameduser.bulletinboard.util;
 
 import com.unnameduser.bulletinboard.config.ModConfig;
 import com.unnameduser.bulletinboard.config.NoteConfigLoader;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.RandomSource;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,14 +15,14 @@ public class RandomNotePool {
         NoteCategory(int defaultBadgeColor) { this.defaultBadgeColor = defaultBadgeColor; }
     }
 
-    public static NoteData generateRandomNote(Random random, String author, String authorUuid, boolean hasSeal) {
+    public static NoteData generateRandomNote(RandomSource random, String author, String authorUuid, boolean hasSeal) {
         var notes = NoteConfigLoader.getNotes();
         if (notes.isEmpty()) return createFallbackNote(author, authorUuid, hasSeal);
         var template = notes.get(random.nextInt(notes.size()));
         return createNoteFromTemplate(template, template.getDefaultContent(), author, authorUuid, template.isSmall(), hasSeal);
     }
 
-    public static NoteData generateRandomNoteForProfession(Random random, String author, String authorUuid,
+    public static NoteData generateRandomNoteForProfession(RandomSource random, String author, String authorUuid,
                                                            String professionId, boolean hasSeal) {
         var notes = NoteConfigLoader.getNotesForProfession(professionId);
         if (notes.isEmpty()) notes = NoteConfigLoader.getNotesForProfession(null);
@@ -46,7 +46,7 @@ public class RandomNotePool {
         return note;
     }
 
-    public static NoteData generateRandomSmallNote(Random random, String author, String authorUuid, boolean hasSeal) {
+    public static NoteData generateRandomSmallNote(RandomSource random, String author, String authorUuid, boolean hasSeal) {
         var notes = NoteConfigLoader.getNotes();
         if (notes.isEmpty()) return createFallbackNote(author, authorUuid, hasSeal);
         var template = notes.get(random.nextInt(notes.size()));
@@ -55,14 +55,14 @@ public class RandomNotePool {
         return createNoteFromTemplate(template, content, author, authorUuid, true, hasSeal);
     }
 
-    public static NoteData generateNoteByCategory(NoteCategory category, Random random, String author, String authorUuid, boolean hasSeal) {
+    public static NoteData generateNoteByCategory(NoteCategory category, RandomSource random, String author, String authorUuid, boolean hasSeal) {
         var notes = NoteConfigLoader.getNotesByCategory(category);
         if (notes.isEmpty()) return generateRandomNote(random, author, authorUuid, hasSeal);
         var template = notes.get(random.nextInt(notes.size()));
         return createNoteFromTemplate(template, template.getDefaultContent(), author, authorUuid, template.isSmall(), hasSeal);
     }
 
-    public static NoteData generateRandomSmallNoteForProfession(Random random, String author, String authorUuid,
+    public static NoteData generateRandomSmallNoteForProfession(RandomSource random, String author, String authorUuid,
                                                                 String professionId, boolean hasSeal) {
         var notes = NoteConfigLoader.getNotesForProfession(professionId);
         if (notes.isEmpty()) notes = NoteConfigLoader.getNotesForProfession(null);

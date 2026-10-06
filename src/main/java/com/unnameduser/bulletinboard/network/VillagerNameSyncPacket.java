@@ -1,15 +1,11 @@
 package com.unnameduser.bulletinboard.network;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.unnameduser.bulletinboard.BulletinBoardMod.MOD_ID;
-
 public class VillagerNameSyncPacket {
-    public static final Identifier ID = new Identifier(MOD_ID, "villager_name_sync");
 
     private final Map<String, String> names;
 
@@ -17,22 +13,26 @@ public class VillagerNameSyncPacket {
         this.names = names;
     }
 
-    public static VillagerNameSyncPacket read(PacketByteBuf buf) {
+    public VillagerNameSyncPacket(FriendlyByteBuf buf) {
         int size = buf.readInt();
-        Map<String, String> names = new HashMap<>();
+        Map<String, String> read = new HashMap<>();
         for (int i = 0; i < size; i++) {
-            String uuid = buf.readString();
-            String name = buf.readString();
-            names.put(uuid, name);
+            String uuid = buf.readUtf();
+            String name = buf.readUtf();
+            read.put(uuid, name);
         }
-        return new VillagerNameSyncPacket(names);
+        this.names = read;
     }
 
-    public void write(PacketByteBuf buf) {
+    public static VillagerNameSyncPacket read(FriendlyByteBuf buf) {
+        return new VillagerNameSyncPacket(buf);
+    }
+
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(names.size());
         for (Map.Entry<String, String> entry : names.entrySet()) {
-            buf.writeString(entry.getKey());
-            buf.writeString(entry.getValue());
+            buf.writeUtf(entry.getKey());
+            buf.writeUtf(entry.getValue());
         }
     }
 

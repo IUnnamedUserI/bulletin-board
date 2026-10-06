@@ -1,134 +1,132 @@
 package com.unnameduser.bulletinboard;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
 import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
-import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.renderer.BulletinBoardRenderer;
 import com.unnameduser.bulletinboard.renderer.PlacedNoteBlockRenderer;
 import com.unnameduser.bulletinboard.renderer.VillagerNameRenderer;
-import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-import static com.unnameduser.bulletinboard.BulletinBoardMod.MOD_ID;
-
-public class BulletinBoardClient implements ClientModInitializer {
+@Mod.EventBusSubscriber(modid = BulletinBoardMod.FORGE_MOD_ID,
+        bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public class BulletinBoardClient {
 
     private static final int COLOR_FREE = 0x00FF00;
     private static final int COLOR_OCCUPIED = 0xFF0000;
     private static final int COLOR_INTERACT = 0xFFFF00;
 
-    @Override
-    public void onInitializeClient() {
-        // Регистрируем клиентские пакеты
-        ModPacketsClient.registerClient();
-
-        BlockEntityRendererFactories.register(
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        BlockEntityRenderers.register(
                 ModBlockEntities.BULLETIN_BOARD_ENTITY,
                 BulletinBoardRenderer::new
         );
 
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 ModBlockEntities.PLACED_NOTE_ENTITY,
                 PlacedNoteBlockRenderer::new
         );
 
-        ClientPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "open_note"),
-                (client, handler, buf, responseSender) -> {
-                    BlockPos pos = buf.readBlockPos();
-                    int slot = buf.readInt();
-                    client.execute(() -> {
-                        if (client.world != null &&
-                                client.world.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity) {
-                            NoteData note = boardEntity.getNoteAtPosition(slot);
-                            if (note != null) {
-                                client.setScreen(new NoteViewScreen(note, boardEntity, slot));
-                            }
-                        }
-                    });
-                });
+        // Аналог Fabric WorldRenderEvents: имена жителей и подсветка слотов
+        MinecraftForge.EVENT_BUS.addListener(BulletinBoardClient::onRenderLevelStage);
+    }
 
-        WorldRenderEvents.END.register(context -> {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null || client.world == null) return;
+    private static void onRenderLevelStage(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
+            renderVillagerNames(event);
+        } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+            renderBlockHighlight(event);
+        }
+    }
 
-            for (Entity entity : client.world.getEntities()) {
-                if (entity instanceof VillagerEntity villager) {
-                    String nameKey = VillagerNameClientCache.getNameKey(villager.getUuid());
-                    VillagerNameRenderer.render(villager, nameKey, context.matrixStack(), context.consumers(), context.tickDelta());
-                }
+    private static void renderVillagerNames(RenderLevelStageEvent event) {
+        Minecraft client = Minecraft.getInstance();
+        ClientLevel level = client.level;
+        if (client.player == null || level == null) return;
+
+        MultiBufferSource.BufferSource buffers = client.renderBuffers().bufferSource();
+
+        for (Entity entity : level.entitiesForRendering()) {
+            if (entity instanceof Villager villager) {
+                String nameKey = VillagerNameClientCache.getNameKey(villager.getUUID());
+                VillagerNameRenderer.render(villager, nameKey, event.getPoseStack(), buffers, event.getPartialTick());
             }
-        });
+        }
+    }
 
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register((context) -> {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player == null || client.world == null) return;
+    private static void renderBlockHighlight(RenderLevelStageEvent event) {
+        Minecraft client = Minecraft.getInstance();
+        ClientLevel level = client.level;
+        if (client.player == null || level == null) return;
 
-            ItemStack mainHand = client.player.getMainHandStack();
-            ItemStack offHand = client.player.getOffHandStack();
+        ItemStack mainHand = client.player.getMainHandItem();
+        ItemStack offHand = client.player.getOffhandItem();
 
-            boolean hasNote = isSignedNote(mainHand) || isSignedNote(offHand);
-            boolean hasEmptyHand = mainHand.isEmpty() && offHand.isEmpty();
-            if (!hasNote && !hasEmptyHand) return;
+        boolean hasNote = isSignedNote(mainHand) || isSignedNote(offHand);
+        boolean hasEmptyHand = mainHand.isEmpty() && offHand.isEmpty();
+        if (!hasNote && !hasEmptyHand) return;
 
-            if (client.crosshairTarget instanceof BlockHitResult hitResult) {
-                BlockPos pos = hitResult.getBlockPos();
-                BlockState state = client.world.getBlockState(pos);
+        if (client.hitResult instanceof BlockHitResult hitResult) {
+            BlockPos pos = hitResult.getBlockPos();
+            BlockState state = level.getBlockState(pos);
 
-                if (state.getBlock() instanceof BulletinBoardBlock) {
-                    var blockEntity = client.world.getBlockEntity(pos);
-                    if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
-                        Direction facing = state.get(BulletinBoardBlock.FACING);
+            if (state.getBlock() instanceof BulletinBoardBlock) {
+                var blockEntity = level.getBlockEntity(pos);
+                if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
+                    Direction facing = state.getValue(BulletinBoardBlock.FACING);
 
-                        int slot = calculateSlot(hitResult, pos, facing);
-                        if (slot < 0) return;
+                    int slot = calculateSlot(hitResult, pos, facing);
+                    if (slot < 0) return;
 
-                        int color;
-                        if (hasNote) {
-                            color = boardEntity.isPositionFree(slot) ? COLOR_FREE : COLOR_OCCUPIED;
-                        } else if (hasEmptyHand) {
-                            color = !boardEntity.isPositionFree(slot) ? COLOR_INTERACT : -1;
-                        } else {
-                            color = -1;
-                        }
+                    int color;
+                    if (hasNote) {
+                        color = boardEntity.isPositionFree(slot) ? COLOR_FREE : COLOR_OCCUPIED;
+                    } else if (hasEmptyHand) {
+                        color = !boardEntity.isPositionFree(slot) ? COLOR_INTERACT : -1;
+                    } else {
+                        color = -1;
+                    }
 
-                        if (color != -1) {
-                            renderHighlight(context.matrixStack(), context.consumers(),
-                                    pos, slot, facing, color, 0.7f);
-                        }
+                    if (color != -1) {
+                        renderHighlight(event, pos, slot, facing, color, 0.7f);
                     }
                 }
             }
-        });
+        }
     }
 
-    private boolean isSignedNote(ItemStack stack) {
+    private static boolean isSignedNote(ItemStack stack) {
         return stack.getItem() instanceof NotePaperItem
-                && stack.hasNbt() && stack.getNbt().contains("NoteData");
+                && stack.hasTag() && stack.getTag().contains("NoteData");
     }
 
-    private int calculateSlot(BlockHitResult hit, BlockPos pos, Direction facing) {
-        var local = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
+    private static int calculateSlot(BlockHitResult hit, BlockPos pos, Direction facing) {
+        Vec3 local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
         double x = local.x, y = local.y, z = local.z;
 
         boolean hitFront = switch (facing) {
@@ -155,13 +153,18 @@ public class BulletinBoardClient implements ClientModInitializer {
         } else { return -1; }
     }
 
-    private void renderHighlight(MatrixStack matrices, VertexConsumerProvider consumers,
-                                 BlockPos pos, int slot, Direction facing,
-                                 int color, float alpha) {
+    private static void renderHighlight(RenderLevelStageEvent event, BlockPos pos, int slot,
+                                        Direction facing, int color, float alpha) {
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        ItemStack mainHand = client.player.getMainHandStack();
-        ItemStack offHand = client.player.getOffHandStack();
+        Minecraft client = Minecraft.getInstance();
+        ClientLevel level = client.level;
+        if (client.player == null || level == null) return;
+
+        PoseStack matrices = event.getPoseStack();
+        MultiBufferSource.BufferSource consumers = client.renderBuffers().bufferSource();
+
+        ItemStack mainHand = client.player.getMainHandItem();
+        ItemStack offHand = client.player.getOffhandItem();
 
         int tempColor = color;
 
@@ -169,7 +172,7 @@ public class BulletinBoardClient implements ClientModInitializer {
         boolean hasNormalNote = isNormalNote(mainHand) || isNormalNote(offHand);
         boolean hasEmptyHand = mainHand.isEmpty() && offHand.isEmpty();
 
-        Box highlightBox = null;
+        AABB highlightBox;
 
         if (hasSmallNote) {
             if (slot >= 0 && slot <= 3) {
@@ -177,9 +180,8 @@ public class BulletinBoardClient implements ClientModInitializer {
             } else {
                 return;
             }
-        }
-        else if (hasNormalNote) {
-            var blockEntity = client.world.getBlockEntity(pos);
+        } else if (hasNormalNote) {
+            var blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
                 if (slot == 0 || slot == 1) {
                     highlightBox = getCombinedSlotWorldBox(0, 1, pos, facing);
@@ -196,10 +198,11 @@ public class BulletinBoardClient implements ClientModInitializer {
                 } else {
                     return;
                 }
+            } else {
+                return;
             }
-        }
-        else if (hasEmptyHand && tempColor == COLOR_INTERACT) {
-            var blockEntity = client.world.getBlockEntity(pos);
+        } else if (hasEmptyHand && tempColor == COLOR_INTERACT) {
+            var blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
                 NoteData note = boardEntity.getNoteAtPosition(slot);
                 if (note != null && !note.isSmall()) {
@@ -220,19 +223,19 @@ public class BulletinBoardClient implements ClientModInitializer {
             return;
         }
 
-        VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
-        var cam = client.gameRenderer.getCamera().getPos();
+        VertexConsumer lines = consumers.getBuffer(RenderType.lines());
+        Vec3 cam = client.gameRenderer.getMainCamera().getPosition();
 
-        matrices.push();
+        matrices.pushPose();
         matrices.translate(-cam.x, -cam.y, -cam.z);
         float r = ((tempColor >> 16) & 0xFF) / 255f;
         float g = ((tempColor >> 8) & 0xFF) / 255f;
         float b = (tempColor & 0xFF) / 255f;
         drawBox(lines, matrices, highlightBox, r, g, b, alpha);
-        matrices.pop();
+        matrices.popPose();
     }
 
-    private Box getSlotWorldBox(int slot, BlockPos pos, Direction facing) {
+    private static AABB getSlotWorldBox(int slot, BlockPos pos, Direction facing) {
         double x = pos.getX();
         double y = pos.getY();
         double z = pos.getZ();
@@ -254,16 +257,16 @@ public class BulletinBoardClient implements ClientModInitializer {
         }
 
         return switch (facing) {
-            case NORTH -> new Box(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
-            case SOUTH -> new Box(x + slotX1, y + slotY1, z + 0.05, x + slotX2, y + slotY2, z + 0.07);
-            case WEST  -> new Box(x + 0.93, y + slotY1, z + slotX1, x + 0.95, y + slotY2, z + slotX2);
-            case EAST  -> new Box(x + 0.05, y + slotY1, z + slotX1, x + 0.07, y + slotY2, z + slotX2);
-            default    -> new Box(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
+            case NORTH -> new AABB(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
+            case SOUTH -> new AABB(x + slotX1, y + slotY1, z + 0.05, x + slotX2, y + slotY2, z + 0.07);
+            case WEST  -> new AABB(x + 0.93, y + slotY1, z + slotX1, x + 0.95, y + slotY2, z + slotX2);
+            case EAST  -> new AABB(x + 0.05, y + slotY1, z + slotX1, x + 0.07, y + slotY2, z + slotX2);
+            default    -> new AABB(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
         };
     }
 
-    private void drawBox(VertexConsumer lines, MatrixStack matrices, Box box,
-                         float r, float g, float b, float a) {
+    private static void drawBox(VertexConsumer lines, PoseStack matrices, AABB box,
+                                float r, float g, float b, float a) {
         double minX = box.minX, maxX = box.maxX;
         double minY = box.minY, maxY = box.maxY;
         double minZ = box.minZ, maxZ = box.maxZ;
@@ -281,32 +284,32 @@ public class BulletinBoardClient implements ClientModInitializer {
         line(lines, matrices, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a, 1, 0, 0);
     }
 
-    private void line(VertexConsumer lines, MatrixStack matrices,
-                      double x1, double y1, double z1, double x2, double y2, double z2,
-                      float r, float g, float b, float a, int nx, int ny, int nz) {
-        lines.vertex(matrices.peek().getPositionMatrix(), (float)x1, (float)y1, (float)z1)
-                .color(r, g, b, a).normal(nx, ny, nz).next();
-        lines.vertex(matrices.peek().getPositionMatrix(), (float)x2, (float)y2, (float)z2)
-                .color(r, g, b, a).normal(nx, ny, nz).next();
+    private static void line(VertexConsumer lines, PoseStack matrices,
+                             double x1, double y1, double z1, double x2, double y2, double z2,
+                             float r, float g, float b, float a, int nx, int ny, int nz) {
+        lines.vertex(matrices.last().pose(), (float) x1, (float) y1, (float) z1)
+                .color(r, g, b, a).normal(nx, ny, nz).endVertex();
+        lines.vertex(matrices.last().pose(), (float) x2, (float) y2, (float) z2)
+                .color(r, g, b, a).normal(nx, ny, nz).endVertex();
     }
 
-    private boolean isSmallNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem &&
-                ((NotePaperItem) stack.getItem()).isSmall() &&
-                stack.hasNbt() && stack.getNbt().contains("NoteData");
+    private static boolean isSmallNote(ItemStack stack) {
+        return stack.getItem() instanceof NotePaperItem notePaper &&
+                notePaper.isSmall() &&
+                stack.hasTag() && stack.getTag().contains("NoteData");
     }
 
-    private boolean isNormalNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem &&
-                !((NotePaperItem) stack.getItem()).isSmall() &&
-                stack.hasNbt() && stack.getNbt().contains("NoteData");
+    private static boolean isNormalNote(ItemStack stack) {
+        return stack.getItem() instanceof NotePaperItem notePaper &&
+                !notePaper.isSmall() &&
+                stack.hasTag() && stack.getTag().contains("NoteData");
     }
 
-    private Box getCombinedSlotWorldBox(int slot1, int slot2, BlockPos pos, Direction facing) {
-        Box box1 = getSlotWorldBox(slot1, pos, facing);
-        Box box2 = getSlotWorldBox(slot2, pos, facing);
+    private static AABB getCombinedSlotWorldBox(int slot1, int slot2, BlockPos pos, Direction facing) {
+        AABB box1 = getSlotWorldBox(slot1, pos, facing);
+        AABB box2 = getSlotWorldBox(slot2, pos, facing);
 
-        return new Box(
+        return new AABB(
                 Math.min(box1.minX, box2.minX),
                 Math.min(box1.minY, box2.minY),
                 Math.min(box1.minZ, box2.minZ),

@@ -1,16 +1,30 @@
 package com.unnameduser.bulletinboard.config;
 
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonObject;
-import net.fabricmc.loader.api.FabricLoader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Конфиг мода (config.json5).
+ * <p>
+ * В Fabric-версии для разбора JSON5 с комментариями использовалась библиотека Jankson.
+ * В Forge-порте внешняя зависимость убрана: файл конфига — это обычный JSON с комментариями
+ * вида {@code // ...}, поэтому комментарии снимаются собственный разбором, а разбор JSON
+ * выполняет Gson, который уже входит в состав Minecraft.
+ */
 public class ModConfig {
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir()
+    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
             .resolve("bulletin-board/config.json5");
-    private static final Jankson JANKSON = Jankson.builder().build();
+
+    private static final Gson GSON = new GsonBuilder()
+            .setLenient()
+            .setPrettyPrinting()
+            .create();
 
     // ============ СТРУКТУРА КОНФИГА ============
 
@@ -60,8 +74,11 @@ public class ModConfig {
                 return;
             }
 
-            JsonObject json = JANKSON.load(CONFIG_PATH.toFile());
-            INSTANCE = JANKSON.fromJson(json, ModConfig.class);
+            String raw = Files.readString(CONFIG_PATH, StandardCharsets.UTF_8);
+            String json = stripTrailingCommas(stripComments(raw));
+
+            ModConfig parsed = GSON.fromJson(json, ModConfig.class);
+            INSTANCE = parsed != null ? parsed : new ModConfig();
             System.out.println("[Bulletin Board] Loaded config.json5");
         } catch (Exception e) {
             System.err.println("[Bulletin Board] Failed to load config: " + e.getMessage());
@@ -71,8 +88,7 @@ public class ModConfig {
 
     public static void save() {
         try (Writer writer = new FileWriter(CONFIG_PATH.toFile())) {
-            JsonObject json = (JsonObject) JANKSON.toJson(INSTANCE);
-            String output = json.toJson(true, true);
+            String output = GSON.toJson(INSTANCE);
 
             // Вставляем комментарии на английском
             output = output.replace("\"full_title_max\"",
@@ -96,6 +112,66 @@ public class ModConfig {
         } catch (IOException e) {
             System.err.println("[Bulletin Board] Failed to save config: " + e.getMessage());
         }
+    }
+
+    // ============ РАЗБОР JSON5-СОВМЕСТИМОГО ТЕКСТА ============
+
+    /** Убирает комментарии {@code // ...} и {@code /* ... *}{@code /}, не трогая строковые литералы. */
+    private static String stripComments(String text) {
+        StringBuilder out = new StringBuilder(text.length());
+        boolean inString = false;
+        boolean escaped = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (inString) {
+                out.append(c);
+                if (escaped) {
+                    escaped = false;
+                } else if (c == '\\') {
+                    escaped = true;
+                } else if (c == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (c == '"') {
+                inString = true;
+                out.append(c);
+                continue;
+            }
+
+            if (c == '/' && i + 1 < text.length()) {
+                char next = text.charAt(i + 1);
+                if (next == '/') {
+                    while (i < text.length() && text.charAt(i) != '\n') {
+                        i++;
+                    }
+                    out.append('\n');
+                    continue;
+                }
+                if (next == '*') {
+                    i += 2;
+                    while (i + 1 < text.length()
+                            && !(text.charAt(i) == '*' && text.charAt(i + 1) == '/')) {
+                        i++;
+                    }
+                    i++;
+                    continue;
+                }
+            }
+
+            out.append(c);
+        }
+
+        return out.toString();
+    }
+
+    /** JSON5 допускает запятые перед закрывающей скобкой, Gson — нет. */
+    private static String stripTrailingCommas(String text) {
+        return text.replaceAll(",(\\s*[}\\]])", "$1");
     }
 
     // ============ ГЕТТЕРЫ ============

@@ -1,60 +1,68 @@
 package com.unnameduser.bulletinboard.network;
 
+import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlockEntity;
 import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@Environment(EnvType.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ModPacketsClient {
 
-    public static void registerClient() {
-        ClientPlayNetworking.registerGlobalReceiver(VillagerNameSyncPacket.ID, (client, handler, buf, responseSender) -> {
-            VillagerNameSyncPacket packet = VillagerNameSyncPacket.read(buf);
-            client.execute(() -> {
-                VillagerNameClientCache.updateNames(packet.getNames());
-            });
-        });
+    // ============ ОБРАБОТЧИКИ КЛИЕНТСКИХ ПАКЕТОВ ============
 
-        ClientPlayNetworking.registerGlobalReceiver(ModPackets.OPEN_PLACED_NOTE, (client, handler, buf, responseSender) -> {
-            BlockPos pos = buf.readBlockPos();
-            client.execute(() -> {
-                if (client.world != null
-                        && client.world.getBlockEntity(pos) instanceof PlacedNoteBlockEntity noteEntity) {
-                    NoteData note = noteEntity.getNoteData();
-                    if (note != null) {
-                        client.setScreen(new NoteViewScreen(note, pos));
-                    }
-                }
-            });
+    public static void handleVillagerNames(VillagerNameSyncPacket packet) {
+        Minecraft client = Minecraft.getInstance();
+        client.execute(() -> {
+            VillagerNameClientCache.updateNames(packet.getNames());
         });
     }
+
+    public static void handleOpenPlacedNote(OpenPlacedNoteS2CPacket packet) {
+        Minecraft client = Minecraft.getInstance();
+        final BlockPos pos = packet.pos();
+        client.execute(() -> {
+            if (client.level != null
+                    && client.level.getBlockEntity(pos) instanceof PlacedNoteBlockEntity noteEntity) {
+                NoteData note = noteEntity.getNoteData();
+                if (note != null) {
+                    client.setScreen(new NoteViewScreen(note, pos));
+                }
+            }
+        });
+    }
+
+    public static void handleOpenNote(OpenNoteS2CPacket packet) {
+        Minecraft client = Minecraft.getInstance();
+        final BlockPos pos = packet.pos();
+        final int slot = packet.slot();
+        client.execute(() -> {
+            if (client.level != null
+                    && client.level.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity) {
+                NoteData note = boardEntity.getNoteAtPosition(slot);
+                if (note != null) {
+                    client.setScreen(new NoteViewScreen(note, boardEntity, slot));
+                }
+            }
+        });
+    }
+
+    // ============ ОТПРАВКА ПАКЕТОВ НА СЕРВЕР ============
 
     public static void sendTakeNote(BlockPos pos, int noteIndex) {
-        if (!ClientPlayNetworking.canSend(ModPackets.TAKE_NOTE)) return;
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeInt(noteIndex);
-        ClientPlayNetworking.send(ModPackets.TAKE_NOTE, buf);
+        ModPackets.CHANNEL.sendToServer(new TakeNoteC2SPacket(pos, noteIndex));
     }
 
-    public static void sendUpdateNoteNbt(int slot, net.minecraft.nbt.NbtCompound nbt) {
-        if (!ClientPlayNetworking.canSend(ModPackets.UPDATE_NOTE_NBT)) return;
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeInt(slot);
-        buf.writeNbt(nbt);
-        ClientPlayNetworking.send(ModPackets.UPDATE_NOTE_NBT, buf);
+    public static void sendUpdateNoteNbt(int slot, CompoundTag nbt) {
+        ModPackets.CHANNEL.sendToServer(new UpdateNoteNbtC2SPacket(slot, nbt));
     }
 
     public static void sendTakePlacedNote(BlockPos pos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        ClientPlayNetworking.send(ModPackets.TAKE_PLACED_NOTE, buf);
+        ModPackets.CHANNEL.sendToServer(new TakePlacedNoteC2SPacket(pos));
     }
 }

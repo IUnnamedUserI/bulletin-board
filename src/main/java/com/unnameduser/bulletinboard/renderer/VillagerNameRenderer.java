@@ -1,98 +1,99 @@
 package com.unnameduser.bulletinboard.renderer;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.unnameduser.bulletinboard.config.ModConfig;
 import com.unnameduser.bulletinboard.config.VillagerNameConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.phys.Vec3;
 
 public class VillagerNameRenderer {
     private static final float BASE_SCALE = 0.02f;
 
-    public static void render(VillagerEntity villager, String nameKey, MatrixStack matrices, VertexConsumerProvider vertexConsumers, float tickDelta) {
-        MinecraftClient client = MinecraftClient.getInstance();
+    public static void render(Villager villager, String nameKey, PoseStack matrices, MultiBufferSource vertexConsumers, float tickDelta) {
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
         if (!ModConfig.isShowVillagerNames()) {
             return;
         }
 
-        if (!client.player.canSee(villager)) return;
+        if (!client.player.hasLineOfSight(villager)) return;
 
-        double distance = client.player.squaredDistanceTo(villager);
+        double distance = client.player.distanceToSqr(villager);
         int radius = VillagerNameConfig.getDisplayRadius();
         if (distance > radius * radius) return;
 
-        TextRenderer textRenderer = client.textRenderer;
+        Font textRenderer = client.font;
         EntityRenderDispatcher dispatcher = client.getEntityRenderDispatcher();
 
-        Vec3d pos = villager.getLerpedPos(tickDelta).add(0, villager.getHeight() * 1.2, 0);
+        Vec3 pos = villager.getPosition(tickDelta).add(0, villager.getBbHeight() * 1.2, 0);
 
-        matrices.push();
+        matrices.pushPose();
         matrices.translate(
-                pos.x - dispatcher.camera.getPos().x,
-                pos.y - dispatcher.camera.getPos().y,
-                pos.z - dispatcher.camera.getPos().z
+                pos.x - dispatcher.camera.getPosition().x,
+                pos.y - dispatcher.camera.getPosition().y,
+                pos.z - dispatcher.camera.getPosition().z
         );
-        matrices.multiply(dispatcher.camera.getRotation());
+        matrices.mulPose(dispatcher.camera.rotation());
 
         float scale = BASE_SCALE * 0.8f;
         matrices.scale(-scale, -scale, scale);
 
         // --- ИМЯ (переводим через Text.translatable) ---
-        Text nameText = Text.translatable(nameKey);
-        float nameWidth = textRenderer.getWidth(nameText) / 2f;
+        Component nameText = Component.translatable(nameKey);
+        float nameWidth = textRenderer.width(nameText) / 2f;
 
         float nameSize = VillagerNameConfig.getNameSize() * 0.8f;
-        matrices.push();
+        matrices.pushPose();
         matrices.scale(nameSize, nameSize, nameSize);
 
-        textRenderer.draw(
+        textRenderer.drawInBatch(
                 nameText,
                 -nameWidth,
                 -6,
                 VillagerNameConfig.getNameColor(),
                 false,
-                matrices.peek().getPositionMatrix(),
+                matrices.last().pose(),
                 vertexConsumers,
-                TextRenderer.TextLayerType.NORMAL,
+                Font.DisplayMode.NORMAL,
                 0,
                 15728880
         );
 
-        matrices.pop();
+        matrices.popPose();
 
         // --- ПРОФЕССИЯ ---
-        String professionRaw = villager.getVillagerData().getProfession().toString();
+        String professionRaw = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villager.getVillagerData().getProfession()).toString();
         String professionKey = "villager.profession." + professionRaw.replace("minecraft:", "");
 
-        Text professionText = Text.translatable(professionKey);
-        float professionWidth = textRenderer.getWidth(professionText) / 2f;
+        Component professionText = Component.translatable(professionKey);
+        float professionWidth = textRenderer.width(professionText) / 2f;
 
         float professionSize = VillagerNameConfig.getProfessionSize() * 0.8f;
-        matrices.push();
+        matrices.pushPose();
         matrices.scale(professionSize, professionSize, professionSize);
 
-        textRenderer.draw(
+        textRenderer.drawInBatch(
                 professionText,
                 -professionWidth,
                 10,
                 VillagerNameConfig.getProfessionColor(),
                 false,
-                matrices.peek().getPositionMatrix(),
+                matrices.last().pose(),
                 vertexConsumers,
-                TextRenderer.TextLayerType.NORMAL,
+                Font.DisplayMode.NORMAL,
                 0,
                 15728880
         );
 
-        matrices.pop();
-        matrices.pop();
+        matrices.popPose();
+        matrices.popPose();
     }
 
     private static String capitalizeProfession(String profession) {

@@ -1,17 +1,15 @@
 package com.unnameduser.bulletinboard.server;
 
 import com.unnameduser.bulletinboard.config.VillagerNameConfig;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
+import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class VillagerNameManager extends PersistentState {
+public class VillagerNameManager extends SavedData {
     private static final String NAME = "bulletin_board_villager_names";
     // Храним UUID → КЛЮЧ перевода (а не само имя)
     private final Map<String, String> villagerNameKeys = new HashMap<>();
@@ -24,7 +22,7 @@ public class VillagerNameManager extends PersistentState {
 
         String nameKey = VillagerNameConfig.getRandomNameKey();
         villagerNameKeys.put(uuid, nameKey);
-        markDirty();
+        setDirty();
         return nameKey;
     }
 
@@ -37,8 +35,8 @@ public class VillagerNameManager extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        NbtCompound namesNbt = new NbtCompound();
+    public CompoundTag save(CompoundTag nbt) {
+        CompoundTag namesNbt = new CompoundTag();
         for (Map.Entry<String, String> entry : villagerNameKeys.entrySet()) {
             namesNbt.putString(entry.getKey(), entry.getValue());
         }
@@ -46,18 +44,17 @@ public class VillagerNameManager extends PersistentState {
         return nbt;
     }
 
-    public static VillagerNameManager fromNbt(NbtCompound nbt) {
+    public static VillagerNameManager fromNbt(CompoundTag nbt) {
         VillagerNameManager manager = new VillagerNameManager();
-        NbtCompound namesNbt = nbt.getCompound("VillagerNames");
-        for (String key : namesNbt.getKeys()) {
+        CompoundTag namesNbt = nbt.getCompound("VillagerNames");
+        for (String key : namesNbt.getAllKeys()) {
             manager.villagerNameKeys.put(key, namesNbt.getString(key));
         }
         return manager;
     }
 
     public static VillagerNameManager get(MinecraftServer server) {
-        PersistentStateManager manager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
-        return manager.getOrCreate(
+        return server.overworld().getDataStorage().computeIfAbsent(
                 VillagerNameManager::fromNbt,
                 VillagerNameManager::new,
                 NAME

@@ -1,6 +1,6 @@
 package com.unnameduser.bulletinboard.widget;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public class AdaptiveRoundedTextFieldWidget extends RoundedTextFieldWidget {
     private final int maxHeight;
     private final int lineHeight = 10;
 
-    public AdaptiveRoundedTextFieldWidget(int x, int y, int width, int minHeight, int maxHeight, int maxLength, Text placeholder) {
+    public AdaptiveRoundedTextFieldWidget(int x, int y, int width, int minHeight, int maxHeight, int maxLength, Component placeholder) {
         super(x, y, width, minHeight, maxLength, placeholder);
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;

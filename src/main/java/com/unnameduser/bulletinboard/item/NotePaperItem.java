@@ -3,27 +3,27 @@ package com.unnameduser.bulletinboard.item;
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlock;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlockEntity;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.screen.NoteEditorScreen;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.List;
 public class NotePaperItem extends Item {
     private final boolean isSmall;
 
-    public NotePaperItem(Settings settings, boolean isSmall) {
+    public NotePaperItem(Item.Properties settings, boolean isSmall) {
         super(settings);
         this.isSmall = isSmall;
     }
@@ -41,115 +41,115 @@ public class NotePaperItem extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
 
         // Если записка уже подписана (есть NoteData) и игрок зажимает Shift — кладём на блок
-        if (user.isSneaking() && hasNoteData(stack)) {
-            HitResult hit = user.raycast(5.0, 0.0f, false);
+        if (user.isShiftKeyDown() && hasNoteData(stack)) {
+            HitResult hit = user.pick(5.0, 0.0f, false);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult blockHit = (BlockHitResult) hit;
 
                 // Проверяем, что клик по верхней грани
-                if (blockHit.getSide() == Direction.UP) {
+                if (blockHit.getDirection() == Direction.UP) {
                     BlockPos belowPos = blockHit.getBlockPos();
-                    BlockPos placePos = belowPos.up();
+                    BlockPos placePos = belowPos.above();
 
                     // Проверяем, можно ли поставить записку
                     if (world.getBlockState(placePos).isAir()
-                            && BulletinBoardMod.PLACED_NOTE.getDefaultState()
-                            .canPlaceAt(world, placePos)) {
+                            && BulletinBoardMod.PLACED_NOTE.defaultBlockState()
+                            .canSurvive(world, placePos)) {
 
-                        if (!world.isClient) {
+                        if (!world.isClientSide) {
                             // Ставим блок
-                            world.setBlockState(placePos,
-                                    BulletinBoardMod.PLACED_NOTE.getDefaultState()
-                                            .with(PlacedNoteBlock.ROTATION, getRotation(user)));
+                            world.setBlockAndUpdate(placePos,
+                                    BulletinBoardMod.PLACED_NOTE.defaultBlockState()
+                                            .setValue(PlacedNoteBlock.ROTATION, getRotation(user)));
 
                             // Сохраняем данные записки в BlockEntity
                             BlockEntity blockEntity = world.getBlockEntity(placePos);
                             if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
-                                NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
+                                NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
                                 noteEntity.setNoteData(note);
                             }
 
                             // Уменьшаем стак
-                            stack.decrement(1);
+                            stack.shrink(1);
                         }
 
-                        user.swingHand(hand);
-                        return TypedActionResult.success(stack);
+                        user.swing(hand);
+                        return InteractionResultHolder.success(stack);
                     }
                 }
             }
         }
 
         // Обычное поведение (открытие редактора/просмотра)
-        HitResult hit = user.raycast(5.0, 0.0f, false);
+        HitResult hit = user.pick(5.0, 0.0f, false);
         if (hit.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = ((BlockHitResult) hit).getBlockPos();
             if (world.getBlockState(pos).getBlock() instanceof BulletinBoardBlock) {
-                return TypedActionResult.pass(stack);
+                return InteractionResultHolder.pass(stack);
             }
         }
 
-        if (world.isClient) {
+        if (world.isClientSide) {
             openScreen(stack, hasNoteData(stack));
         }
 
-        return TypedActionResult.success(stack);
+        return InteractionResultHolder.success(stack);
     }
 
-    private int getRotation(PlayerEntity player) {
-        float yaw = player.getYaw();
+    private int getRotation(Player player) {
+        float yaw = player.getYRot();
         yaw = ((yaw % 360) + 360) % 360;
         // Инвертируем yaw: 360 - yaw
         float invertedYaw = 360 - yaw;
         return Math.round(invertedYaw / 45.0f) & 7;
     }
 
-    @Environment(EnvType.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private void openScreen(ItemStack stack, boolean hasNote) {
         if (hasNote) {
-            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
-            MinecraftClient.getInstance().setScreen(new NoteViewScreen(note));
+            NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
+            Minecraft.getInstance().setScreen(new NoteViewScreen(note));
         } else {
             // Передаём тип записки через NBT
-            if (!stack.hasNbt()) {
-                stack.setNbt(new net.minecraft.nbt.NbtCompound());
+            if (!stack.hasTag()) {
+                stack.setTag(new net.minecraft.nbt.CompoundTag());
             }
-            stack.getNbt().putBoolean("IsSmall", isSmall);
-            MinecraftClient.getInstance().setScreen(new NoteEditorScreen(stack));
+            stack.getTag().putBoolean("IsSmall", isSmall);
+            Minecraft.getInstance().setScreen(new NoteEditorScreen(stack));
         }
     }
 
     private boolean hasNoteData(ItemStack stack) {
-        return stack.hasNbt() && stack.getNbt().contains("NoteData");
+        return stack.hasTag() && stack.getTag().contains("NoteData");
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
         if (hasNoteData(stack)) {
-            NoteData note = NoteData.fromNbt(stack.getNbt().getCompound("NoteData"));
+            NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
 
             // Используем переведённый заголовок
             String translatedTitle = note.getTranslatedTitle();
-            tooltip.add(Text.literal("§6" + translatedTitle).formatted(Formatting.GOLD));
+            tooltip.add(Component.literal("§6" + translatedTitle).withStyle(ChatFormatting.GOLD));
 
             // Автор уже переводится
-            tooltip.add(Text.translatable("item.bulletin-board.note_paper.tooltip.author",
-                    Text.translatable(note.getAuthor())).formatted(Formatting.GRAY));
+            tooltip.add(Component.translatable("item.bulletin-board.note_paper.tooltip.author",
+                    Component.translatable(note.getAuthor())).withStyle(ChatFormatting.GRAY));
 
             if (note.getTagColor() != -1) {
                 String badgeId = getBadgeIdByColor(note.getTagColor());
                 if (badgeId != null) {
-                    Formatting colorFormatting = getFormattingFromColor(note.getTagColor());
-                    tooltip.add(Text.translatable("item.bulletin-board." + badgeId).formatted(colorFormatting));
+                    ChatFormatting colorFormatting = getFormattingFromColor(note.getTagColor());
+                    tooltip.add(Component.translatable("item.bulletin-board." + badgeId).withStyle(colorFormatting));
                 }
             }
         } else {
-            tooltip.add(Text.translatable("item.bulletin-board.note_paper.tooltip.empty")
-                    .formatted(Formatting.GRAY));
+            tooltip.add(Component.translatable("item.bulletin-board.note_paper.tooltip.empty")
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -175,25 +175,25 @@ public class NotePaperItem extends Item {
         };
     }
 
-    private Formatting getFormattingFromColor(int color) {
+    private ChatFormatting getFormattingFromColor(int color) {
         return switch (color) {
-            case 0x000000 -> Formatting.BLACK;
-            case 0xFF5555 -> Formatting.RED;
-            case 0x55FF55 -> Formatting.GREEN;
-            case 0x8B4513 -> Formatting.GOLD;
-            case 0x5555FF -> Formatting.BLUE;
-            case 0xAA00AA -> Formatting.DARK_PURPLE;
-            case 0x00AAAA -> Formatting.AQUA;
-            case 0xAAAAAA -> Formatting.GRAY;
-            case 0x555555 -> Formatting.DARK_GRAY;
-            case 0xFFAAFF -> Formatting.LIGHT_PURPLE;
-            case 0xAAFF55 -> Formatting.GREEN;
-            case 0xFFFF55 -> Formatting.YELLOW;
-            case 0x55FFFF -> Formatting.AQUA;
-            case 0xFF55FF -> Formatting.LIGHT_PURPLE;
-            case 0xFFAA00 -> Formatting.GOLD;
-            case 0xFFFFFF -> Formatting.WHITE;
-            default -> Formatting.WHITE;
+            case 0x000000 -> ChatFormatting.BLACK;
+            case 0xFF5555 -> ChatFormatting.RED;
+            case 0x55FF55 -> ChatFormatting.GREEN;
+            case 0x8B4513 -> ChatFormatting.GOLD;
+            case 0x5555FF -> ChatFormatting.BLUE;
+            case 0xAA00AA -> ChatFormatting.DARK_PURPLE;
+            case 0x00AAAA -> ChatFormatting.AQUA;
+            case 0xAAAAAA -> ChatFormatting.GRAY;
+            case 0x555555 -> ChatFormatting.DARK_GRAY;
+            case 0xFFAAFF -> ChatFormatting.LIGHT_PURPLE;
+            case 0xAAFF55 -> ChatFormatting.GREEN;
+            case 0xFFFF55 -> ChatFormatting.YELLOW;
+            case 0x55FFFF -> ChatFormatting.AQUA;
+            case 0xFF55FF -> ChatFormatting.LIGHT_PURPLE;
+            case 0xFFAA00 -> ChatFormatting.GOLD;
+            case 0xFFFFFF -> ChatFormatting.WHITE;
+            default -> ChatFormatting.WHITE;
         };
     }
 }

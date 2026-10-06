@@ -3,59 +3,60 @@ package com.unnameduser.bulletinboard.block;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class BulletinBoardBlock extends Block implements BlockEntityProvider {
-    public static final DirectionProperty FACING = HorizontalFacingBlock.FACING;
-    public static final EnumProperty<BoardType> BOARD_TYPE = EnumProperty.of("type", BoardType.class);
+public class BulletinBoardBlock extends Block implements EntityBlock {
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<BoardType> BOARD_TYPE = EnumProperty.create("type", BoardType.class);
 
-    private static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(0, 0, 15, 16, 16, 16);
-    private static final VoxelShape SOUTH_SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 1);
-    private static final VoxelShape WEST_SHAPE = Block.createCuboidShape(15, 0, 0, 16, 16, 16);
-    private static final VoxelShape EAST_SHAPE = Block.createCuboidShape(0, 0, 0, 1, 16, 16);
+    private static final VoxelShape NORTH_SHAPE = Block.box(0, 0, 15, 16, 16, 16);
+    private static final VoxelShape SOUTH_SHAPE = Block.box(0, 0, 0, 16, 16, 1);
+    private static final VoxelShape WEST_SHAPE = Block.box(15, 0, 0, 16, 16, 16);
+    private static final VoxelShape EAST_SHAPE = Block.box(0, 0, 0, 1, 16, 16);
 
-    private static final VoxelShape NORTH_DOUBLE_SHAPE = Block.createCuboidShape(0, 0, 15, 32, 16, 16);
-    private static final VoxelShape SOUTH_DOUBLE_SHAPE = Block.createCuboidShape(0, 0, 0, 32, 16, 1);
-    private static final VoxelShape WEST_DOUBLE_SHAPE = Block.createCuboidShape(15, 0, 0, 16, 16, 32);
-    private static final VoxelShape EAST_DOUBLE_SHAPE = Block.createCuboidShape(0, 0, 0, 1, 16, 32);
+    private static final VoxelShape NORTH_DOUBLE_SHAPE = Block.box(0, 0, 15, 32, 16, 16);
+    private static final VoxelShape SOUTH_DOUBLE_SHAPE = Block.box(0, 0, 0, 32, 16, 1);
+    private static final VoxelShape WEST_DOUBLE_SHAPE = Block.box(15, 0, 0, 16, 16, 32);
+    private static final VoxelShape EAST_DOUBLE_SHAPE = Block.box(0, 0, 0, 1, 16, 32);
 
-    public BulletinBoardBlock(Settings settings) {
+    public BulletinBoardBlock(BlockBehaviour.Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState()
-                .with(FACING, Direction.NORTH)
-                .with(BOARD_TYPE, BoardType.SINGLE_WALL));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(BOARD_TYPE, BoardType.SINGLE_WALL));
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        BoardType type = state.get(BOARD_TYPE);
-        Direction facing = state.get(FACING);
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        BoardType type = state.getValue(BOARD_TYPE);
+        Direction facing = state.getValue(FACING);
 
         if (type == BoardType.DOUBLE_WALL) {
             return switch (facing) {
@@ -78,62 +79,62 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        Direction side = ctx.getSide();
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        Direction side = ctx.getClickedFace();
         if (side == Direction.UP || side == Direction.DOWN) return null;
 
-        Direction playerFacing = ctx.getHorizontalPlayerFacing();
+        Direction playerFacing = ctx.getHorizontalDirection();
         Direction facing = playerFacing.getOpposite();
 
-        World world = ctx.getWorld();
-        BlockPos pos = ctx.getBlockPos();
+        Level world = ctx.getLevel();
+        BlockPos pos = ctx.getClickedPos();
 
         BoardType baseType = BoardType.SINGLE_WALL;
 
         Direction.Axis axis = facing.getAxis();
-        BlockPos neighborPos = pos.offset(axis == Direction.Axis.Z ? Direction.EAST : Direction.SOUTH);
+        BlockPos neighborPos = pos.relative(axis == Direction.Axis.Z ? Direction.EAST : Direction.SOUTH);
         BlockState neighbor = world.getBlockState(neighborPos);
 
         if (neighbor.getBlock() == this &&
-                neighbor.get(BOARD_TYPE) == BoardType.SINGLE_WALL &&
-                neighbor.get(FACING) == facing) {
+                neighbor.getValue(BOARD_TYPE) == BoardType.SINGLE_WALL &&
+                neighbor.getValue(FACING) == facing) {
             baseType = BoardType.DOUBLE_WALL;
         }
 
-        return this.getDefaultState()
-                .with(FACING, facing)
-                .with(BOARD_TYPE, baseType);
+        return this.defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(BOARD_TYPE, baseType);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, BOARD_TYPE);
     }
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BulletinBoardBlockEntity(pos, state);
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
         BlockEntity blockEntity = world.getBlockEntity(pos);
 
         if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
-        ItemStack heldItem = player.getStackInHand(hand);
+        ItemStack heldItem = player.getItemInHand(hand);
         int hitPosition = getHitPosition(hit, pos, state);
 
         if (heldItem.getItem() instanceof NotePaperItem notePaper &&
-                heldItem.hasNbt() && heldItem.getNbt().contains("NoteData")) {
+                heldItem.hasTag() && heldItem.getTag().contains("NoteData")) {
 
-            if (!world.isClient) {
+            if (!world.isClientSide) {
                 if (hitPosition >= 0) {
-                    NoteData note = NoteData.fromNbt(heldItem.getNbt().getCompound("NoteData"));
+                    NoteData note = NoteData.fromNbt(heldItem.getTag().getCompound("NoteData"));
 
                     boolean canPlace = false;
                     if (note.isSmall()) {
@@ -146,13 +147,13 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
                     if (canPlace && boardEntity.canPlaceNote(note, hitPosition)) {
                         boolean added = boardEntity.addNoteAtPosition(note, hitPosition);
                         if (added) {
-                            heldItem.decrement(1);
-                            return ActionResult.CONSUME;
+                            heldItem.shrink(1);
+                            return InteractionResult.CONSUME;
                         }
                     }
                 }
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         if (hitPosition >= 0) {
@@ -163,27 +164,27 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
                     if (index >= 0) {
                         boardEntity.removeNote(index);
                     }
-                    return ActionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 }
 
-                if (!world.isClient) {
-                    ModPackets.sendOpenNoteScreenToClient((ServerPlayerEntity) player, pos, hitPosition);
+                if (!world.isClientSide) {
+                    ModPackets.sendOpenNoteScreenToClient((ServerPlayer) player, pos, hitPosition);
                 }
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
 
-        if (!world.isClient && player.isSneaking()) {
+        if (!world.isClientSide && player.isShiftKeyDown()) {
             showNotes(player, boardEntity);
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     private int getHitPosition(BlockHitResult hit, BlockPos pos, BlockState state) {
-        Vec3d hitPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-        Direction facing = state.get(FACING);
+        Vec3 hitPos = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+        Direction facing = state.getValue(FACING);
         double x = hitPos.x, y = hitPos.y, z = hitPos.z;
 
         boolean hitFront = switch (facing) {
@@ -213,7 +214,7 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
         return -1; // Попал в доску, но не в слот
     }
 
-    private void showNotes(PlayerEntity player, BulletinBoardBlockEntity boardEntity) {
+    private void showNotes(Player player, BulletinBoardBlockEntity boardEntity) {
         var notes = boardEntity.getNotes();
         if (notes.isEmpty()) {
             return;
@@ -221,8 +222,8 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
     }
 
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? null : (world1, pos, state1, be) -> {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        return world.isClientSide ? null : (world1, pos, state1, be) -> {
             if (be instanceof BulletinBoardBlockEntity boardBe) {
                 boardBe.tick();
             }
@@ -230,12 +231,12 @@ public class BulletinBoardBlock extends Block implements BlockEntityProvider {
     }
 
     @Override
-    public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 }

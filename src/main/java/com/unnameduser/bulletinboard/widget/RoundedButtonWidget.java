@@ -1,13 +1,12 @@
 package com.unnameduser.bulletinboard.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
 
-public class RoundedButtonWidget extends ClickableWidget {
+public class RoundedButtonWidget extends AbstractWidget {
     private final Runnable onPress;
     private final int hoverColor;
     private final int textColor;
@@ -22,21 +21,21 @@ public class RoundedButtonWidget extends ClickableWidget {
     private static final int BG_COLOR = 0xFF1A1A1A;
     private static final int BORDER_COLOR = 0xFF888888;
 
-    public RoundedButtonWidget(int x, int y, Text message, Runnable onPress, int hoverColor) {
+    public RoundedButtonWidget(int x, int y, Component message, Runnable onPress, int hoverColor) {
         super(x, y, calculateWidth(message), HEIGHT, message);
         this.onPress = onPress;
         this.hoverColor = hoverColor;
         this.textColor = 0xFFFFFFFF;
     }
 
-    public static int calculateWidth(Text message) {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        int textWidth = textRenderer.getWidth(message);
+    public static int calculateWidth(Component message) {
+        Font textRenderer = Minecraft.getInstance().font;
+        int textWidth = textRenderer.width(message);
         return Math.max(MIN_WIDTH, textWidth + PADDING * 2);
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         int x = getX();
         int y = getY();
         int w = getWidth();
@@ -66,11 +65,11 @@ public class RoundedButtonWidget extends ClickableWidget {
 
         // 4. Текст (цвет меняется при наведении)
         int color = isHovered ? hoverColor : textColor;
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        Text message = getMessage();
-        int textX = x + (w - textRenderer.getWidth(message)) / 2;
-        int textY = y + (h - textRenderer.fontHeight) / 2;
-        context.drawText(textRenderer, message, textX, textY, color, false);
+        Font textRenderer = Minecraft.getInstance().font;
+        Component message = getMessage();
+        int textX = x + (w - textRenderer.width(message)) / 2;
+        int textY = y + (h - textRenderer.lineHeight) / 2;
+        context.drawString(textRenderer, message, textX, textY, color, false);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class RoundedButtonWidget extends ClickableWidget {
 
     // ============ МЕТОДЫ ОТРИСОВКИ ============
 
-    private void drawRoundRect(DrawContext context, int x, int y, int w, int h, int r, int color) {
+    private void drawRoundRect(GuiGraphics context, int x, int y, int w, int h, int r, int color) {
         drawCornerFilled(context, x + w - r, y + h - r, r, color, 0);
         drawCornerFilled(context, x, y + h - r, r, color, 1);
         drawCornerFilled(context, x + w - r, y, r, color, 2);
@@ -103,7 +102,7 @@ public class RoundedButtonWidget extends ClickableWidget {
         context.fill(x, y + r - 1, x + w, y + h - r + 1, color);
     }
 
-    private void drawRoundRectBorder(DrawContext context, int x, int y, int w, int h, int r, int color, int thickness) {
+    private void drawRoundRectBorder(GuiGraphics context, int x, int y, int w, int h, int r, int color, int thickness) {
         drawCornerBorder(context, x + w - r, y + h - r, r, color, thickness, 0);
         drawCornerBorder(context, x, y + h - r, r, color, thickness, 1);
         drawCornerBorder(context, x + w - r, y, r, color, thickness, 2);
@@ -114,7 +113,7 @@ public class RoundedButtonWidget extends ClickableWidget {
         context.fill(x + w - thickness, y + r - 1, x + w, y + h - r + 1, color);
     }
 
-    private void drawCornerFilled(DrawContext context, int x, int y, int r, int color, int corner) {
+    private void drawCornerFilled(GuiGraphics context, int x, int y, int r, int color, int corner) {
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < r; j++) {
                 if (i * i + j * j <= r * r) {
@@ -132,7 +131,7 @@ public class RoundedButtonWidget extends ClickableWidget {
         }
     }
 
-    private void drawCornerBorder(DrawContext context, int x, int y, int r, int color, int thickness, int corner) {
+    private void drawCornerBorder(GuiGraphics context, int x, int y, int r, int color, int thickness, int corner) {
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < r; j++) {
                 double dist = Math.sqrt(i * i + j * j);
@@ -151,7 +150,7 @@ public class RoundedButtonWidget extends ClickableWidget {
         }
     }
 
-    private void drawGlow(DrawContext context, int x, int y, int w, int h, int r, int color) {
+    private void drawGlow(GuiGraphics context, int x, int y, int w, int h, int r, int color) {
         int layers = 6;
         for (int i = 0; i < layers; i++) {
             float alpha = glowAlpha * (1.0f - (float) i / layers) * 0.3f;
@@ -172,7 +171,7 @@ public class RoundedButtonWidget extends ClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {
-        builder.put(net.minecraft.client.gui.screen.narration.NarrationPart.TITLE, getMessage());
+    protected void updateWidgetNarration(net.minecraft.client.gui.narration.NarrationElementOutput builder) {
+        builder.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE, getMessage());
     }
 }

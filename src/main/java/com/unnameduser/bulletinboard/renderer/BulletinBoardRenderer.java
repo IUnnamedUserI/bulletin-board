@@ -1,24 +1,26 @@
 package com.unnameduser.bulletinboard.renderer;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardBlockEntity> {
 
-    private static final Identifier NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/note_paper.png");
-    private static final Identifier SMALL_NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/small_note_paper.png");
-    private static final Identifier BADGE_TEXTURE = new Identifier("bulletin-board", "textures/block/badge.png");
+    private static final ResourceLocation NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/note_paper.png");
+    private static final ResourceLocation SMALL_NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation BADGE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/badge.png");
 
     private static final Map<Direction, BadgeConfig> BADGE_CONFIGS = new EnumMap<>(Direction.class);
     private static final Map<Direction, BadgeConfig> SMALL_BADGE_CONFIGS = new EnumMap<>(Direction.class);
@@ -37,25 +39,25 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         SMALL_BADGE_CONFIGS.put(Direction.EAST,  new BadgeConfig(-0.225, -0.125, -0.01, true, 0.2f));
     }
 
-    public BulletinBoardRenderer(BlockEntityRendererFactory.Context ctx) {
+    public BulletinBoardRenderer(BlockEntityRendererProvider.Context ctx) {
     }
 
     @Override
-    public void render(BulletinBoardBlockEntity entity, float tickDelta, MatrixStack matrices,
-                       VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(BulletinBoardBlockEntity entity, float tickDelta, PoseStack matrices,
+                       MultiBufferSource vertexConsumers, int light, int overlay) {
 
-        if (entity.getWorld() == null) return;
+        if (entity.getLevel() == null) return;
 
-        var state = entity.getCachedState();
+        var state = entity.getBlockState();
         if (!(state.getBlock() instanceof BulletinBoardBlock)) return;
 
-        Direction facing = state.get(BulletinBoardBlock.FACING);
+        Direction facing = state.getValue(BulletinBoardBlock.FACING);
         var notes = entity.getNotes();
         var positions = entity.getNotePositions();
 
         if (notes.isEmpty()) return;
 
-        matrices.push();
+        matrices.pushPose();
 
         // 🔧 Стандартное центрирование (как в рабочем коде)
         matrices.translate(0.5, 0.5, 0.5);
@@ -63,20 +65,20 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         // 🔧 Поворот и смещение по направлению (как в рабочем коде)
         switch (facing) {
             case NORTH:
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+                matrices.mulPose(Axis.YP.rotationDegrees(180));
                 matrices.translate(0, 0, -0.45);
                 break;
             case SOUTH:
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(0));
+                matrices.mulPose(Axis.YP.rotationDegrees(0));
                 matrices.translate(0, 0, -0.45);
                 matrices.scale(-1, 1, 1);
                 break;
             case WEST:
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90));
+                matrices.mulPose(Axis.YP.rotationDegrees(-90));
                 matrices.translate(0, 0, -0.45);
                 break;
             case EAST:
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90));
+                matrices.mulPose(Axis.YP.rotationDegrees(-90));
                 matrices.translate(0, 0, 0.45);
                 matrices.scale(-1, 1, 1);
                 break;
@@ -99,7 +101,7 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
                 slotCoords = getSlotCoordinates(position, facing);
             }
 
-            matrices.push();
+            matrices.pushPose();
             matrices.translate(slotCoords[0], slotCoords[1], 0.01);
 
             // 🔧 Масштаб: 0.3 для малых, 0.4 для большой
@@ -112,10 +114,10 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
                 renderBadge(matrices, vertexConsumers, light, overlay, facing, note.getTagColor(), note.isSmall());
             }
 
-            matrices.pop();
+            matrices.popPose();
         }
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     // 🔧 АДАПТИРОВАНО: координаты как в рабочем коде + расширено на 5 слотов
@@ -157,95 +159,95 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         return new double[]{x, y};
     }
 
-    private void renderNote(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+    private void renderNote(PoseStack matrices, MultiBufferSource vertexConsumers,
                             int light, int overlay, boolean mirror, boolean isSmall) {
 
-        Identifier texture = isSmall ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(texture));
-        MatrixStack.Entry entry = matrices.peek();
+        ResourceLocation texture = isSmall ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(texture));
+        PoseStack.Pose entry = matrices.last();
         float nx = 0, ny = 0, nz = 1;
 
         if (!mirror) {
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
-                    .color(255, 255, 255, 255).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
-                    .color(255, 255, 255, 255).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
-                    .color(255, 255, 255, 255).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
-                    .color(255, 255, 255, 255).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+            consumer.vertex(entry.pose(), -0.5f, -0.5f, 0)
+                    .color(255, 255, 255, 255).uv(0, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, -0.5f, 0)
+                    .color(255, 255, 255, 255).uv(1, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, 0.5f, 0)
+                    .color(255, 255, 255, 255).uv(1, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), -0.5f, 0.5f, 0)
+                    .color(255, 255, 255, 255).uv(0, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
         } else {
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
-                    .color(255, 255, 255, 255).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
-                    .color(255, 255, 255, 255).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
-                    .color(255, 255, 255, 255).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
-                    .color(255, 255, 255, 255).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+            consumer.vertex(entry.pose(), -0.5f, -0.5f, 0)
+                    .color(255, 255, 255, 255).uv(1, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, -0.5f, 0)
+                    .color(255, 255, 255, 255).uv(0, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, 0.5f, 0)
+                    .color(255, 255, 255, 255).uv(0, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), -0.5f, 0.5f, 0)
+                    .color(255, 255, 255, 255).uv(1, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
         }
     }
 
-    private void renderBadge(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+    private void renderBadge(PoseStack matrices, MultiBufferSource vertexConsumers,
                              int light, int overlay, Direction facing, int color, boolean isSmall) {
 
         if (color == -1) return;
 
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(BADGE_TEXTURE));
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(BADGE_TEXTURE));
         BadgeConfig config = isSmall ? SMALL_BADGE_CONFIGS.get(facing) : BADGE_CONFIGS.get(facing);
         if (config == null) return;
 
-        matrices.push();
+        matrices.pushPose();
         matrices.translate(config.x, config.y, config.z);
         matrices.scale(config.scale, config.scale, 1);
 
-        MatrixStack.Entry entry = matrices.peek();
+        PoseStack.Pose entry = matrices.last();
         float nx = 0, ny = 0, nz = 1;
         float r = ((color >> 16) & 0xFF) / 255f;
         float g = ((color >> 8) & 0xFF) / 255f;
         float b = (color & 0xFF) / 255f;
 
         if (!config.mirror) {
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+            consumer.vertex(entry.pose(), -0.5f, -0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(0, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, -0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(1, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, 0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(1, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), -0.5f, 0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(0, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
         } else {
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, -0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(1, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, -0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(0, 1).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), 0.5f, 0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(0, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-            consumer.vertex(entry.getPositionMatrix(), -0.5f, 0.5f, 0)
-                    .color(r, g, b, 1.0f).texture(1, 0).overlay(overlay).light(light)
-                    .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+            consumer.vertex(entry.pose(), -0.5f, -0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(1, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, -0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(0, 1).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), 0.5f, 0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(0, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
+            consumer.vertex(entry.pose(), -0.5f, 0.5f, 0)
+                    .color(r, g, b, 1.0f).uv(1, 0).overlayCoords(overlay).uv2(light)
+                    .normal(entry.normal(), nx, ny, nz).endVertex();
         }
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(BulletinBoardBlockEntity entity) {
+    public boolean shouldRenderOffScreen(BulletinBoardBlockEntity entity) {
         return true;
     }
 

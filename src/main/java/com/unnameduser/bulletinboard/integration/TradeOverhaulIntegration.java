@@ -1,9 +1,9 @@
 package com.unnameduser.bulletinboard.integration;
 
 import com.unnameduser.bulletinboard.event.VillageDiscountEvent;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.npc.Villager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class TradeOverhaulIntegration {
      * Инициализирует интеграцию. Проверяет наличие Trade Overhaul.
      */
     public static void init(MinecraftServer server) {
-        // Проверяем наличие мода через Fabric Loader
+        // Проверяем наличие мода через загрузчик классов
         try {
             // Пытаемся загрузить класс из Trade Overhaul
             Class.forName("com.unnameduser.tradeoverhaul.TradeOverhaulMod");
@@ -77,8 +77,8 @@ public class TradeOverhaulIntegration {
      * @param durationMs Длительность в миллисекундах
      * @return true если скидка применена успешно
      */
-    public static boolean applyDiscount(VillagerEntity villager, int discountPercent, long durationMs) {
-        UUID villagerUuid = villager.getUuid();
+    public static boolean applyDiscount(Villager villager, int discountPercent, long durationMs) {
+        UUID villagerUuid = villager.getUUID();
         
         // Сохраняем данные о скидке
         DiscountData data = new DiscountData(villagerUuid, discountPercent, durationMs);
@@ -86,22 +86,22 @@ public class TradeOverhaulIntegration {
         
         if (tradeOverhaulPresent) {
             // Получаем существующий NBT жителя
-            NbtCompound nbt = new NbtCompound();
-            villager.writeCustomDataToNbt(nbt);
+            CompoundTag nbt = new CompoundTag();
+            villager.addAdditionalSaveData(nbt);
             
             // Добавляем теги скидки
             nbt.putLong("BulletinBoardDiscountEndTime", data.endTime);
             nbt.putInt("BulletinBoardDiscountPercent", discountPercent);
             
             // Записываем обратно
-            villager.readCustomDataFromNbt(nbt);
+            villager.readAdditionalSaveData(nbt);
             
             LOGGER.info("Applied {}% discount to villager {} for {} minutes",
                     discountPercent, villager.getName().getString(), durationMs / 60000);
             
             // Проверяем, что данные записались
-            NbtCompound checkNbt = new NbtCompound();
-            villager.writeCustomDataToNbt(checkNbt);
+            CompoundTag checkNbt = new CompoundTag();
+            villager.addAdditionalSaveData(checkNbt);
             LOGGER.debug("NBT check - EndTime: {}, Percent: {}", 
                     checkNbt.getLong("BulletinBoardDiscountEndTime"),
                     checkNbt.getInt("BulletinBoardDiscountPercent"));
@@ -118,24 +118,24 @@ public class TradeOverhaulIntegration {
     /**
      * Удаляет скидку у жителя.
      */
-    public static void removeDiscount(VillagerEntity villager) {
-        UUID villagerUuid = villager.getUuid();
+    public static void removeDiscount(Villager villager) {
+        UUID villagerUuid = villager.getUUID();
         activeDiscounts.remove(villagerUuid);
         
         if (tradeOverhaulPresent) {
             // Удаляем данные из NBT
-            NbtCompound nbt = villager.writeNbt(new NbtCompound());
+            CompoundTag nbt = villager.saveWithoutId(new CompoundTag());
             nbt.remove("BulletinBoardDiscountEndTime");
             nbt.remove("BulletinBoardDiscountPercent");
-            villager.readNbt(nbt);
+            villager.load(nbt);
         }
     }
     
     /**
      * Проверяет, есть ли у жителя активная скидка.
      */
-    public static boolean hasActiveDiscount(VillagerEntity villager) {
-        UUID villagerUuid = villager.getUuid();
+    public static boolean hasActiveDiscount(Villager villager) {
+        UUID villagerUuid = villager.getUUID();
         DiscountData data = activeDiscounts.get(villagerUuid);
         
         if (data == null) {
@@ -154,8 +154,8 @@ public class TradeOverhaulIntegration {
     /**
      * Получает процент скидки у жителя.
      */
-    public static int getDiscountPercent(VillagerEntity villager) {
-        UUID villagerUuid = villager.getUuid();
+    public static int getDiscountPercent(Villager villager) {
+        UUID villagerUuid = villager.getUUID();
         DiscountData data = activeDiscounts.get(villagerUuid);
         
         if (data != null && data.isActive()) {

@@ -3,12 +3,12 @@ package com.unnameduser.bulletinboard.util;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.server.VillagerNameManager;
-import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.util.RandomSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.unnameduser.bulletinboard.config.ModConfig;
@@ -52,7 +52,7 @@ public class AutoNoteScheduler {
             return;
         }
 
-        long currentTime = instance.server.getOverworld().getTime();
+        long currentTime = instance.server.overworld().getGameTime();
 
         if (currentTime - instance.lastRunTime >= instance.intervalTicks) {
             instance.tryPlaceRandomNote();
@@ -61,8 +61,8 @@ public class AutoNoteScheduler {
     }
 
     private void tryPlaceRandomNote() {
-        ServerWorld world = server.getOverworld();
-        Random random = world.getRandom();
+        ServerLevel world = server.overworld();
+        RandomSource random = world.getRandom();
 
         updateBoardCache(world);
 
@@ -80,13 +80,13 @@ public class AutoNoteScheduler {
                 continue;
             }
 
-            List<VillagerEntity> villagers = getNearbyVillagers(world, boardPos, VILLAGER_SEARCH_RADIUS);
+            List<Villager> villagers = getNearbyVillagers(world, boardPos, VILLAGER_SEARCH_RADIUS);
             if (villagers.isEmpty()) {
                 LOGGER.debug("No villagers near board at {}, skipping", boardPos.toShortString());
                 continue;
             }
 
-            List<VillagerEntity> aliveVillagers = villagers.stream()
+            List<Villager> aliveVillagers = villagers.stream()
                     .filter(entity -> entity.isAlive() && !entity.isRemoved())
                     .collect(Collectors.toList());
 
@@ -108,9 +108,9 @@ public class AutoNoteScheduler {
 
             checkedBoards++;
 
-            VillagerEntity author = aliveVillagers.get(random.nextInt(aliveVillagers.size()));
-            String authorUuid = author.getUuid().toString();
-            String authorNameKey = VillagerNameManager.get(server).getNameKey(author.getUuid());
+            Villager author = aliveVillagers.get(random.nextInt(aliveVillagers.size()));
+            String authorUuid = author.getUUID().toString();
+            String authorNameKey = VillagerNameManager.get(server).getNameKey(author.getUUID());
             String professionId = author.getVillagerData().getProfession().toString();
 
             int targetSlot = freeSlots.get(random.nextInt(freeSlots.size()));
@@ -138,17 +138,17 @@ public class AutoNoteScheduler {
         }
     }
 
-    private List<VillagerEntity> getNearbyVillagers(ServerWorld world, BlockPos pos, int radius) {
-        Box area = new Box(pos).expand(radius);
-        return world.getEntitiesByClass(VillagerEntity.class, area, entity ->
+    private List<Villager> getNearbyVillagers(ServerLevel world, BlockPos pos, int radius) {
+        AABB area = new AABB(pos).inflate(radius);
+        return world.getEntitiesOfClass(Villager.class, area, entity ->
                 entity.isAlive() && !entity.isRemoved()
         );
     }
 
-    private void updateBoardCache(ServerWorld world) {
+    private void updateBoardCache(ServerLevel world) {
         CACHED_BOARDS.clear();
 
-        var players = world.getPlayers();
+        var players = world.players();
         if (players.isEmpty()) {
             return;
         }
@@ -156,8 +156,8 @@ public class AutoNoteScheduler {
         int scanRadius = 10;
 
         for (var player : players) {
-            int playerChunkX = player.getBlockX() >> 4;
-            int playerChunkZ = player.getBlockZ() >> 4;
+            int playerChunkX = player.blockPosition().getX() >> 4;
+            int playerChunkZ = player.blockPosition().getZ() >> 4;
 
             for (int cx = -scanRadius; cx <= scanRadius; cx++) {
                 for (int cz = -scanRadius; cz <= scanRadius; cz++) {
@@ -174,7 +174,7 @@ public class AutoNoteScheduler {
                             int worldX = (chunkX << 4) + x;
                             int worldZ = (chunkZ << 4) + z;
 
-                            for (int y = world.getBottomY(); y < world.getTopY(); y++) {
+                            for (int y = world.getMinBuildHeight(); y < world.getMaxBuildHeight(); y++) {
                                 if (chunk.getBlockState(new BlockPos(worldX, y, worldZ)).getBlock() instanceof BulletinBoardBlock) {
                                     CACHED_BOARDS.add(new BlockPos(worldX, y, worldZ));
                                 }
@@ -210,7 +210,7 @@ public class AutoNoteScheduler {
     public static void triggerNow() {
         if (instance != null) {
             instance.tryPlaceRandomNote();
-            instance.lastRunTime = instance.server.getOverworld().getTime();
+            instance.lastRunTime = instance.server.overworld().getGameTime();
         }
     }
 

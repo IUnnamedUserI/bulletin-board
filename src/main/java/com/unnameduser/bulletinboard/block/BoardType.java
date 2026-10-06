@@ -1,15 +1,15 @@
 package com.unnameduser.bulletinboard.block;
 
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.function.ValueLists;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.ByIdMap;
 import java.util.function.IntFunction;
 
-public enum BoardType implements StringIdentifiable {
+public enum BoardType implements StringRepresentable {
     SINGLE_WALL(0, "single_wall", false),
     DOUBLE_WALL(1, "double_wall", true);
 
-    private static final IntFunction<BoardType> BY_ID = ValueLists.createIdToValueFunction(
-            BoardType::getId, values(), ValueLists.OutOfBoundsHandling.ZERO);
+    private static final IntFunction<BoardType> BY_ID = ByIdMap.continuous(
+            BoardType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
 
     private final int id;
     private final String name;
@@ -22,7 +22,7 @@ public enum BoardType implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 

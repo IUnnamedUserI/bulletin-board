@@ -4,19 +4,15 @@ import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.integration.TradeOverhaulIntegration;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,29 +96,29 @@ public class VillageDiscountEvent {
      * @return true если успешно
      */
     public boolean triggerDiscountEvent() {
-        ServerWorld world = server.getOverworld();
-        Random random = world.getRandom();
+        ServerLevel world = server.overworld();
+        RandomSource random = world.getRandom();
         
         LOGGER.info("Starting discount event...");
         
         // Находим случайного жителя с профессией
-        VillagerEntity villager = findRandomVillagerWithProfession(world, 1000);
+        Villager villager = findRandomVillagerWithProfession(world, 1000);
         
         if (villager == null) {
             LOGGER.warn("No villagers with profession found in 1000 block radius");
             return false;
         }
         
-        LOGGER.info("Found villager: {} at {}", villager.getName().getString(), villager.getPos());
+        LOGGER.info("Found villager: {} at {}", villager.getName().getString(), villager.position());
         
         // Проверяем, есть ли у жителя уже скидка
-        if (activeDiscounts.containsKey(villager.getUuid())) {
+        if (activeDiscounts.containsKey(villager.getUUID())) {
             LOGGER.debug("Villager {} already has active discount", villager.getName().getString());
             return false;
         }
 
         // Находим случайную доску в радиусе 100 блоков
-        BlockPos boardPos = findRandomBulletinBoard(world, villager.getBlockPos(), 100);
+        BlockPos boardPos = findRandomBulletinBoard(world, villager.blockPosition(), 100);
 
         if (boardPos == null) {
             LOGGER.warn("No bulletin boards found in 100 block radius around villager");
@@ -158,13 +154,13 @@ public class VillageDiscountEvent {
         if (boardEntity.addNoteAtPosition(note, targetSlot)) {
             // Сохраняем данные о скидке
             DiscountData discountData = new DiscountData(
-                    villager.getUuid(),
+                    villager.getUUID(),
                     villager.getName().getString(),
                     profession,
                     System.currentTimeMillis(),
                     boardPos
             );
-            activeDiscounts.put(villager.getUuid(), discountData);
+            activeDiscounts.put(villager.getUUID(), discountData);
 
             LOGGER.info("Discount event started for {} ({}) at board {}", 
                     villager.getName().getString(), profession, boardPos.toShortString());
@@ -180,11 +176,11 @@ public class VillageDiscountEvent {
     /**
      * Находит случайного жителя с профессией в радиусе.
      */
-    private VillagerEntity findRandomVillagerWithProfession(ServerWorld world, int radius) {
-        List<VillagerEntity> villagers = new ArrayList<>();
+    private Villager findRandomVillagerWithProfession(ServerLevel world, int radius) {
+        List<Villager> villagers = new ArrayList<>();
         
         // Получаем всех игроков для центра поиска
-        var players = world.getPlayers();
+        var players = world.players();
         if (players.isEmpty()) {
             LOGGER.warn("No players online to search for villagers");
             return null;
@@ -192,21 +188,21 @@ public class VillageDiscountEvent {
         
         // Ищем вокруг каждого игрока
         for (var player : players) {
-            // Используем Box для поиска сущностей
-            var box = player.getBoundingBox().expand(radius);
-            List<VillagerEntity> nearby = world.getEntitiesByClass(
-                    VillagerEntity.class,
+            // Используем AABB для поиска сущностей
+            var box = player.getBoundingBox().inflate(radius);
+            List<Villager> nearby = world.getEntitiesOfClass(
+                    Villager.class,
                     box,
                     entity -> true
             );
             
             LOGGER.debug("Found {} villagers near player {}", nearby.size(), player.getName().getString());
             
-            for (VillagerEntity villager : nearby) {
+            for (Villager villager : nearby) {
                 var profession = villager.getVillagerData().getProfession();
                 LOGGER.debug("Villager {} has profession {}", villager.getName().getString(), profession);
                 
-                if (profession != net.minecraft.village.VillagerProfession.NONE) {
+                if (profession != VillagerProfession.NONE) {
                     villagers.add(villager);
                 }
             }
@@ -224,13 +220,13 @@ public class VillageDiscountEvent {
     /**
      * Находит случайную доску в радиусе от позиции.
      */
-    private BlockPos findRandomBulletinBoard(ServerWorld world, BlockPos center, int radius) {
+    private BlockPos findRandomBulletinBoard(ServerLevel world, BlockPos center, int radius) {
         List<BlockPos> boards = new ArrayList<>();
         
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
-                    BlockPos pos = center.add(x, y, z);
+                    BlockPos pos = center.offset(x, y, z);
                     if (world.getBlockState(pos).getBlock() instanceof BulletinBoardBlock) {
                         boards.add(pos);
                     }
@@ -249,7 +245,7 @@ public class VillageDiscountEvent {
      * Применяет скидку к торгам жителя.
      * Использует интеграцию с Trade Overhaul если доступна.
      */
-    private void applyDiscountToVillager(VillagerEntity villager) {
+    private void applyDiscountToVillager(Villager villager) {
         // Применяем скидку через интеграцию
         boolean applied = TradeOverhaulIntegration.applyDiscount(
                 villager, 
@@ -270,10 +266,10 @@ public class VillageDiscountEvent {
      * Создаёт записку о скидке.
      */
     private NoteData createDiscountNote(String villagerName, String profession) {
-        String title = Text.translatable("event.bulletin-board.discount.title")
+        String title = Component.translatable("event.bulletin-board.discount.title")
                 .getString();
         
-        String content = Text.translatable("event.bulletin-board.discount.content", 
+        String content = Component.translatable("event.bulletin-board.discount.content", 
                 villagerName, DISCOUNT_PERCENT)
                 .getString();
         
@@ -291,12 +287,12 @@ public class VillageDiscountEvent {
     /**
      * Получает название профессии.
      */
-    private String getProfessionName(VillagerEntity villager) {
+    private String getProfessionName(Villager villager) {
         var profession = villager.getVillagerData().getProfession();
-        Identifier id = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(profession);
+        ResourceLocation id = BuiltInRegistries.VILLAGER_PROFESSION.getKey(profession);
         
         if (id != null) {
-            return Text.translatable("entity.minecraft.villager." + id.getPath())
+            return Component.translatable("entity.minecraft.villager." + id.getPath())
                     .getString();
         }
         
@@ -332,12 +328,12 @@ public class VillageDiscountEvent {
      */
     private void restoreVillagerPrices(UUID villagerUuid) {
         // Находим жителя и удаляем скидку
-        ServerWorld world = server.getOverworld();
+        ServerLevel world = server.overworld();
         var entity = world.getEntity(villagerUuid);
         
-        if (entity instanceof VillagerEntity villager) {
+        if (entity instanceof Villager villager) {
             TradeOverhaulIntegration.removeDiscount(villager);
-            LOGGER.debug("Discount removed from villager {}", villager.getUuid());
+            LOGGER.debug("Discount removed from villager {}", villager.getUUID());
         }
     }
     

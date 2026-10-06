@@ -1,15 +1,15 @@
 package com.unnameduser.bulletinboard.block;
 
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -79,9 +79,9 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         }
 
         slots.add(new NoteSlot(note, startSlot));
-        markDirty();
-        if (world != null && !world.isClient) {
-            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
         return true;
     }
@@ -89,9 +89,9 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     public void removeNote(int slotIndex) {
         if (slotIndex >= 0 && slotIndex < slots.size()) {
             slots.remove(slotIndex);
-            markDirty();
-            if (world != null && !world.isClient) {
-                world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+            setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             }
         }
     }
@@ -135,10 +135,10 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     }
 
     public void tick() {
-        if (world == null || world.isClient) return;
+        if (level == null || level.isClientSide) return;
 
         boolean changed = false;
-        long currentGameTime = world.getTime(); // Абсолютное время мира в тиках
+        long currentGameTime = level.getGameTime(); // Абсолютное время мира в тиках
 
         for (int i = slots.size() - 1; i >= 0; i--) {
             NoteSlot slot = slots.get(i);
@@ -150,26 +150,26 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         }
 
         if (changed) {
-            markDirty();
-            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
     public boolean isNoteStillValid(NoteData note) {
         if (note.hasSeal()) return true;
-        if (world == null) return true; // Защита от NPE
-        long currentGameTime = world.getTime();
+        if (level == null) return true; // Защита от NPE
+        long currentGameTime = level.getGameTime();
         return (currentGameTime - note.getCreationTime() <= NOTE_LIFETIME_TICKS);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+    protected void saveAdditional(CompoundTag nbt) {
+        super.saveAdditional(nbt);
 
-        NbtList slotsList = new NbtList();
+        ListTag slotsList = new ListTag();
 
         for (NoteSlot slot : slots) {
-            NbtCompound slotNbt = new NbtCompound();
+            CompoundTag slotNbt = new CompoundTag();
             slotNbt.put("Note", slot.note.toNbt());
             slotNbt.putInt("StartSlot", slot.startSlot);
             slotsList.add(slotNbt);
@@ -179,14 +179,14 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void load(CompoundTag nbt) {
+        super.load(nbt);
         slots.clear();
 
-        NbtList slotsList = nbt.getList("Slots", 10);
+        ListTag slotsList = nbt.getList("Slots", 10);
 
         for (int i = 0; i < slotsList.size(); i++) {
-            NbtCompound slotNbt = slotsList.getCompound(i);
+            CompoundTag slotNbt = slotsList.getCompound(i);
             NoteData note = NoteData.fromNbt(slotNbt.getCompound("Note"));
             int startSlot = slotNbt.getInt("StartSlot");
             slots.add(new NoteSlot(note, startSlot));
@@ -195,12 +195,12 @@ public class BulletinBoardBlockEntity extends BlockEntity {
 
     @Nullable
     @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 }

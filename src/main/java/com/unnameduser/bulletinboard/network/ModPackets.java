@@ -6,147 +6,196 @@ import com.unnameduser.bulletinboard.block.PlacedNoteBlockEntity;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.server.VillagerNameManager;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ModPackets {
-    public static final Identifier TAKE_NOTE = new Identifier(BulletinBoardMod.MOD_ID, "take_note");
-    public static final Identifier UPDATE_NOTE_NBT = new Identifier(BulletinBoardMod.MOD_ID, "update_note_nbt");
-    public static final Identifier OPEN_PLACED_NOTE = new Identifier(BulletinBoardMod.MOD_ID, "open_placed_note");
-    public static final Identifier TAKE_PLACED_NOTE = new Identifier(BulletinBoardMod.MOD_ID, "take_placed_note");
+    private static final String PROTOCOL_VERSION = "1";
 
-    // ============ РЕГИСТРАЦИЯ СЕРВЕРНЫХ ПАКЕТОВ ============
+    // ============ КАНАЛ СЕТИ (замена Fabric-каналов по Identifier) ============
+
+    public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
+            .named(new ResourceLocation(BulletinBoardMod.MOD_ID, "main"))
+            .networkProtocolVersion(() -> PROTOCOL_VERSION)
+            .clientAcceptedVersions(PROTOCOL_VERSION::equals)
+            .serverAcceptedVersions(PROTOCOL_VERSION::equals)
+            .simpleChannel();
+
+    // ============ РЕГИСТРАЦИЯ ПАКЕТОВ ============
 
     public static void register() {
-        ServerPlayNetworking.registerGlobalReceiver(TAKE_NOTE, ModPackets::handleTakeNote);
-        ServerPlayNetworking.registerGlobalReceiver(UPDATE_NOTE_NBT, ModPackets::handleUpdateNoteNbt);
-        ServerPlayNetworking.registerGlobalReceiver(TAKE_PLACED_NOTE, ModPackets::handleTakePlacedNote);
+        int id = 0;
+
+        CHANNEL.messageBuilder(TakeNoteC2SPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(TakeNoteC2SPacket::write)
+                .decoder(TakeNoteC2SPacket::new)
+                .consumerMainThread(ModPackets::handleTakeNote)
+                .add();
+
+        CHANNEL.messageBuilder(UpdateNoteNbtC2SPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(UpdateNoteNbtC2SPacket::write)
+                .decoder(UpdateNoteNbtC2SPacket::new)
+                .consumerMainThread(ModPackets::handleUpdateNoteNbt)
+                .add();
+
+        CHANNEL.messageBuilder(TakePlacedNoteC2SPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(TakePlacedNoteC2SPacket::write)
+                .decoder(TakePlacedNoteC2SPacket::new)
+                .consumerMainThread(ModPackets::handleTakePlacedNote)
+                .add();
+
+        CHANNEL.messageBuilder(OpenNoteS2CPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenNoteS2CPacket::write)
+                .decoder(OpenNoteS2CPacket::new)
+                .consumerMainThread((msg, ctx) -> {
+                    if (FMLEnvironment.dist == Dist.CLIENT) {
+                        ModPacketsClient.handleOpenNote(msg);
+                    }
+                })
+                .add();
+
+        CHANNEL.messageBuilder(OpenPlacedNoteS2CPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OpenPlacedNoteS2CPacket::write)
+                .decoder(OpenPlacedNoteS2CPacket::new)
+                .consumerMainThread((msg, ctx) -> {
+                    if (FMLEnvironment.dist == Dist.CLIENT) {
+                        ModPacketsClient.handleOpenPlacedNote(msg);
+                    }
+                })
+                .add();
+
+        CHANNEL.messageBuilder(VillagerNameSyncPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(VillagerNameSyncPacket::write)
+                .decoder(VillagerNameSyncPacket::new)
+                .consumerMainThread((msg, ctx) -> {
+                    if (FMLEnvironment.dist == Dist.CLIENT) {
+                        ModPacketsClient.handleVillagerNames(msg);
+                    }
+                })
+                .add();
     }
 
     // ============ ОБРАБОТЧИКИ СЕРВЕРНЫХ ПАКЕТОВ ============
 
-    private static void handleTakeNote(MinecraftServer server, ServerPlayerEntity player,
-                                       ServerPlayNetworkHandler handler, PacketByteBuf buf,
-                                       PacketSender responseSender) {
-        final BlockPos pos = buf.readBlockPos();
-        final int position = buf.readInt();
+    private static void handleTakeNote(TakeNoteC2SPacket msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context ctx = ctxSupplier.get();
+        final ServerPlayer player = ctx.getSender();
+        if (player == null) return;
 
-        server.execute(() -> {
-            var world = player.getWorld();
-            var blockEntity = world.getBlockEntity(pos);
+        final BlockPos pos = msg.pos();
+        final int position = msg.noteIndex();
 
-            if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
-                var note = boardEntity.getNoteAtPosition(position);
+        ServerLevel world = player.serverLevel();
+        var blockEntity = world.getBlockEntity(pos);
 
-                if (note != null && !boardEntity.isPositionFree(position)) {
-                    int index = boardEntity.getNoteIndexByPosition(position);
-                    if (index >= 0) {
-                        boardEntity.removeNote(index);
-                    }
+        if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
+            var note = boardEntity.getNoteAtPosition(position);
 
-                    ItemStack noteStack = new ItemStack(
-                            note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
-                            1
-                    );
-                    NbtCompound nbt = noteStack.getOrCreateNbt();
-                    nbt.put("NoteData", note.toNbt());
-
-                    player.getInventory().offerOrDrop(noteStack);
+            if (note != null && !boardEntity.isPositionFree(position)) {
+                int index = boardEntity.getNoteIndexByPosition(position);
+                if (index >= 0) {
+                    boardEntity.removeNote(index);
                 }
+
+                ItemStack noteStack = new ItemStack(
+                        note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
+                        1
+                );
+                CompoundTag nbt = noteStack.getOrCreateTag();
+                nbt.put("NoteData", note.toNbt());
+
+                player.getInventory().placeItemBackInInventory(noteStack);
             }
-        });
+        }
     }
 
-    private static void handleUpdateNoteNbt(MinecraftServer server, ServerPlayerEntity player,
-                                            ServerPlayNetworkHandler handler, PacketByteBuf buf,
-                                            PacketSender responseSender) {
-        final UpdateNoteNbtC2SPacket packet = new UpdateNoteNbtC2SPacket(buf);
+    private static void handleUpdateNoteNbt(UpdateNoteNbtC2SPacket packet, Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context ctx = ctxSupplier.get();
+        final ServerPlayer player = ctx.getSender();
+        if (player == null) return;
+
         final int slot = packet.slot();
-        final NbtCompound nbt = packet.nbt();
+        final CompoundTag nbt = packet.nbt();
 
-        server.execute(() -> {
-            if (slot >= 0 && slot < player.getInventory().size()) {
-                ItemStack stack = player.getInventory().getStack(slot);
-                if (stack.getItem() instanceof NotePaperItem) {
-                    stack.setNbt(nbt.copy());
-                    player.getInventory().markDirty();
-                }
+        if (slot >= 0 && slot < player.getInventory().getContainerSize()) {
+            ItemStack stack = player.getInventory().getItem(slot);
+            if (stack.getItem() instanceof NotePaperItem) {
+                stack.setTag(nbt.copy());
+                player.getInventory().setChanged();
             }
-        });
+        }
     }
 
-    private static void handleTakePlacedNote(MinecraftServer server, ServerPlayerEntity player,
-                                             ServerPlayNetworkHandler handler, PacketByteBuf buf,
-                                             PacketSender responseSender) {
-        final BlockPos pos = buf.readBlockPos();
+    private static void handleTakePlacedNote(TakePlacedNoteC2SPacket msg, Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context ctx = ctxSupplier.get();
+        final ServerPlayer player = ctx.getSender();
+        if (player == null) return;
 
-        server.execute(() -> {
-            var world = player.getWorld();
-            var blockEntity = world.getBlockEntity(pos);
+        final BlockPos pos = msg.pos();
 
-            if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
-                NoteData note = noteEntity.getNoteData();
-                if (note != null) {
-                    ItemStack noteStack = new ItemStack(
-                            note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
-                            1
-                    );
-                    NbtCompound nbt = noteStack.getOrCreateNbt();
-                    nbt.put("NoteData", note.toNbt());
-                    player.getInventory().offerOrDrop(noteStack);
-                }
+        ServerLevel world = player.serverLevel();
+        var blockEntity = world.getBlockEntity(pos);
 
-                noteEntity.setTakenByPlayer(true);
-                world.removeBlock(pos, false);
+        if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
+            NoteData note = noteEntity.getNoteData();
+            if (note != null) {
+                ItemStack noteStack = new ItemStack(
+                        note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
+                        1
+                );
+                CompoundTag nbt = noteStack.getOrCreateTag();
+                nbt.put("NoteData", note.toNbt());
+                player.getInventory().placeItemBackInInventory(noteStack);
             }
-        });
+
+            noteEntity.setTakenByPlayer(true);
+            world.removeBlock(pos, false);
+        }
     }
 
     // ============ ОТПРАВКА ПАКЕТОВ С СЕРВЕРА ============
 
-    public static void sendVillagerNames(ServerPlayerEntity player, MinecraftServer server) {
+    public static void sendVillagerNames(ServerPlayer player, MinecraftServer server) {
         VillagerNameManager manager = VillagerNameManager.get(server);
         Map<String, String> allNames = new HashMap<>();
 
-        var world = server.getWorld(World.OVERWORLD);
+        ServerLevel world = server.overworld();
         if (world != null) {
-            for (VillagerEntity villager : world.getEntitiesByType(EntityType.VILLAGER, entity -> true)) {
-                String nameKey = manager.getOrCreateNameKey(villager.getUuid());
-                allNames.put(villager.getUuid().toString(), nameKey);
+            for (Entity entity : world.getAllEntities()) {
+                if (entity instanceof Villager villager) {
+                    String nameKey = manager.getOrCreateNameKey(villager.getUUID());
+                    allNames.put(villager.getUUID().toString(), nameKey);
+                }
             }
         }
 
         VillagerNameSyncPacket packet = new VillagerNameSyncPacket(allNames);
-        PacketByteBuf buf = PacketByteBufs.create();
-        packet.write(buf);
-        ServerPlayNetworking.send(player, VillagerNameSyncPacket.ID, buf);
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 
-    public static void sendOpenNoteScreenToClient(ServerPlayerEntity player, BlockPos pos, int slot) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        buf.writeInt(slot);
-        ServerPlayNetworking.send(player, new Identifier(BulletinBoardMod.MOD_ID, "open_note"), buf);
+    public static void sendOpenNoteScreenToClient(ServerPlayer player, BlockPos pos, int slot) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenNoteS2CPacket(pos, slot));
     }
 
-    public static void sendOpenPlacedNoteScreen(ServerPlayerEntity player, BlockPos pos) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeBlockPos(pos);
-        ServerPlayNetworking.send(player, OPEN_PLACED_NOTE, buf);
+    public static void sendOpenPlacedNoteScreen(ServerPlayer player, BlockPos pos) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new OpenPlacedNoteS2CPacket(pos));
     }
 }

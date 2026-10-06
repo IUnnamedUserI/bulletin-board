@@ -1,16 +1,31 @@
 package com.unnameduser.bulletinboard.network;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
-public record UpdateNoteNbtC2SPacket(int slot, NbtCompound nbt) {
+public final class UpdateNoteNbtC2SPacket {
+    private final int slot;
+    private final CompoundTag nbt;
 
-    public UpdateNoteNbtC2SPacket(PacketByteBuf buf) {
+    public UpdateNoteNbtC2SPacket(int slot, CompoundTag nbt) {
+        this.slot = slot;
+        this.nbt = nbt;
+    }
+
+    public UpdateNoteNbtC2SPacket(FriendlyByteBuf buf) {
         this(buf.readInt(), buf.readNbt());
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(slot);
         buf.writeNbt(nbt);
+    }
+
+    public int slot() {
+        return slot;
+    }
+
+    public CompoundTag nbt() {
+        return nbt;
     }
 }

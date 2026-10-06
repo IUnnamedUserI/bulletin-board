@@ -4,12 +4,12 @@ import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class NoteViewScreen extends Screen {
     }
 
     private NoteViewScreen(NoteData note, BulletinBoardBlockEntity boardEntity, int notePosition, BlockPos placedPos) {
-        super(Text.translatable("gui.bulletin-board.note_view.title"));
+        super(Component.translatable("gui.bulletin-board.note_view.title"));
         this.note = note;
         this.boardEntity = boardEntity;
         this.notePosition = notePosition;
@@ -58,35 +58,35 @@ public class NoteViewScreen extends Screen {
         super.init();
 
         // Кнопка "Закрыть"
-        this.addDrawableChild(
-                ButtonWidget.builder(
-                                Text.translatable("gui.bulletin-board.note_view.close"),
-                                button -> this.close()
+        this.addRenderableWidget(
+                Button.builder(
+                                Component.translatable("gui.bulletin-board.note_view.close"),
+                                button -> this.onClose()
                         )
-                        .dimensions(this.width / 2 - 50, this.height - 40, 100, 20)
+                        .bounds(this.width / 2 - 50, this.height - 40, 100, 20)
                         .build()
         );
 
         // Кнопка "Забрать" для записки на доске
         if (boardEntity != null && notePosition >= 0) {
-            this.addDrawableChild(
-                    ButtonWidget.builder(
-                                    Text.translatable("gui.bulletin-board.note_view.take"),
+            this.addRenderableWidget(
+                    Button.builder(
+                                    Component.translatable("gui.bulletin-board.note_view.take"),
                                     button -> this.takeNote()
                             )
-                            .dimensions(this.width / 2 + 60, this.height - 40, 80, 20)
+                            .bounds(this.width / 2 + 60, this.height - 40, 80, 20)
                             .build()
             );
         }
 
         // Кнопка "Забрать" для записки на блоке
         if (placedPos != null) {
-            this.addDrawableChild(
-                    ButtonWidget.builder(
-                                    Text.translatable("gui.bulletin-board.note_view.take"),
+            this.addRenderableWidget(
+                    Button.builder(
+                                    Component.translatable("gui.bulletin-board.note_view.take"),
                                     button -> this.takePlacedNote()
                             )
-                            .dimensions(this.width / 2 + 60, this.height - 40, 80, 20)
+                            .bounds(this.width / 2 + 60, this.height - 40, 80, 20)
                             .build()
             );
         }
@@ -100,7 +100,7 @@ public class NoteViewScreen extends Screen {
 
         wrapText(note.getTranslatedContent());
         maxScroll = Math.max(0, wrappedLines.size() * 12 - (textEndY - textStartY));
-        scrollOffset = MathHelper.clamp(scrollOffset, 0, maxScroll);
+        scrollOffset = Mth.clamp(scrollOffset, 0, maxScroll);
     }
 
     private void wrapText(String text) {
@@ -126,7 +126,7 @@ public class NoteViewScreen extends Screen {
                     continue;
                 }
 
-                int wordWidth = this.textRenderer.getWidth(word);
+                int wordWidth = this.font.width(word);
 
                 // СЛОВО ШИРЕ МАКСИМАЛЬНОЙ ДОПУСТИМОЙ ШИРИНЫ — разбиваем посимвольно
                 if (wordWidth > maxWidth) {
@@ -141,7 +141,7 @@ public class NoteViewScreen extends Screen {
                     for (int i = 0; i < word.length(); i++) {
                         char c = word.charAt(i);
                         String testChunk = chunk.toString() + c;
-                        if (this.textRenderer.getWidth(testChunk) > maxWidth) {
+                        if (this.font.width(testChunk) > maxWidth) {
                             // Текущий кусок заполнен, сохраняем и начинаем новый
                             wrappedLines.add(chunk.toString());
                             chunk.setLength(0);
@@ -155,7 +155,7 @@ public class NoteViewScreen extends Screen {
 
                 // Обычная логика: слово помещается или нет
                 String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
-                int lineWidth = this.textRenderer.getWidth(testLine);
+                int lineWidth = this.font.width(testLine);
 
                 if (lineWidth <= maxWidth) {
                     if (currentLine.length() == 0) {
@@ -177,26 +177,26 @@ public class NoteViewScreen extends Screen {
     }
 
     private void takeNote() {
-        if (boardEntity != null && notePosition >= 0 && this.client != null) {
-            ModPacketsClient.sendTakeNote(boardEntity.getPos(), notePosition);
-            this.close();
+        if (boardEntity != null && notePosition >= 0 && this.minecraft != null) {
+            ModPacketsClient.sendTakeNote(boardEntity.getBlockPos(), notePosition);
+            this.onClose();
         }
     }
 
     private void takePlacedNote() {
-        if (placedPos != null && this.client != null) {
+        if (placedPos != null && this.minecraft != null) {
             ModPacketsClient.sendTakePlacedNote(placedPos);
-            this.close();
+            this.onClose();
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // Проверка актуальности записки на доске
         if (boardEntity != null && notePosition >= 0) {
             NoteData currentNote = boardEntity.getNoteAtPosition(notePosition);
             if (currentNote == null || !currentNote.equals(note)) {
-                this.close();
+                this.onClose();
                 return;
             }
         }
@@ -206,7 +206,7 @@ public class NoteViewScreen extends Screen {
         context.fill(parchmentX, parchmentY,
                 parchmentX + parchmentWidth, parchmentY + parchmentHeight,
                 PARCHMENT_COLOR);
-        context.drawBorder(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
+        context.renderOutline(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
 
         // === ОТРИСОВКА ЗАГОЛОВКА С ГИБРИДНЫМ ПЕРЕНОСОМ ===
         String rawTitle = "§l" + note.getTranslatedTitle();
@@ -224,7 +224,7 @@ public class NoteViewScreen extends Screen {
                 continue;
             }
 
-            int wordWidth = this.textRenderer.getWidth(word);
+            int wordWidth = this.font.width(word);
 
             // Слово шире максимальной ширины — разбиваем посимвольно
             if (wordWidth > titleMaxWidth) {
@@ -237,7 +237,7 @@ public class NoteViewScreen extends Screen {
                 for (int i = 0; i < word.length(); i++) {
                     char c = word.charAt(i);
                     String testChunk = chunk.toString() + c;
-                    if (this.textRenderer.getWidth(testChunk) > titleMaxWidth) {
+                    if (this.font.width(testChunk) > titleMaxWidth) {
                         titleLines.add(chunk.toString());
                         chunk.setLength(0);
                     }
@@ -249,7 +249,7 @@ public class NoteViewScreen extends Screen {
 
             // Обычная логика: проверяем, влезает ли слово с пробелом
             String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
-            int lineWidth = this.textRenderer.getWidth(testLine);
+            int lineWidth = this.font.width(testLine);
 
             if (lineWidth <= titleMaxWidth) {
                 if (currentLine.length() == 0) {
@@ -275,9 +275,9 @@ public class NoteViewScreen extends Screen {
         int titleStartY = parchmentY + 20 - (totalTitleHeight / 2) + (titleLineHeight / 2);
 
         for (int i = 0; i < titleLines.size(); i++) {
-            context.drawCenteredTextWithShadow(
-                    this.textRenderer,
-                    Text.literal(titleLines.get(i)),
+            context.drawCenteredString(
+                    this.font,
+                    Component.literal(titleLines.get(i)),
                     this.width / 2,
                     titleStartY + i * titleLineHeight,
                     TITLE_COLOR
@@ -297,16 +297,16 @@ public class NoteViewScreen extends Screen {
         for (int i = visibleStart; i < visibleEnd; i++) {
             int y = textY + i * 12;
             if (y >= parchmentY + 57 && y <= parchmentY + parchmentHeight - 50) {
-                context.drawText(this.textRenderer,
-                        Text.literal(wrappedLines.get(i)),
+                context.drawString(this.font,
+                        Component.literal(wrappedLines.get(i)),
                         parchmentX + 20, y, TEXT_COLOR, false);
             }
         }
 
         // Автор
-        Text authorText = Text.translatable("gui.bulletin-board.note_view.from",
-                Text.translatable(note.getAuthor()));
-        context.drawText(this.textRenderer,
+        Component authorText = Component.translatable("gui.bulletin-board.note_view.from",
+                Component.translatable(note.getAuthor()));
+        context.drawString(this.font,
                 authorText,
                 parchmentX + parchmentWidth - 100, parchmentY + parchmentHeight - 25,
                 0xFF6B5E4A, false);
@@ -328,7 +328,7 @@ public class NoteViewScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
     }
 
-    private void drawArrow(DrawContext context, int x, int y, boolean up, int mouseX, int mouseY) {
+    private void drawArrow(GuiGraphics context, int x, int y, boolean up, int mouseX, int mouseY) {
         int alpha = 150;
         int size = 16;
 
@@ -373,14 +373,14 @@ public class NoteViewScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (mouseX >= parchmentX && mouseX <= parchmentX + parchmentWidth &&
                 mouseY >= parchmentY && mouseY <= parchmentY + parchmentHeight) {
-            scrollOffset = MathHelper.clamp(scrollOffset - (int) (amount * 15), 0, maxScroll);
+            scrollOffset = Mth.clamp(scrollOffset - (int) (amount * 15), 0, maxScroll);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

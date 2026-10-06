@@ -1,8 +1,8 @@
 package com.unnameduser.bulletinboard.util;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum NoteBadge implements StringIdentifiable {
+public enum NoteBadge implements StringRepresentable {
     NONE("none"),
     RED("red"),
     BLUE("blue"),
@@ -15,7 +15,7 @@ public enum NoteBadge implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 

@@ -1,9 +1,7 @@
 package com.unnameduser.bulletinboard.util;
 
 import com.unnameduser.bulletinboard.config.NoteConfigLoader;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class NoteData {
     private String noteId;
@@ -65,8 +63,8 @@ public class NoteData {
             NoteConfigLoader.NoteTemplate template = NoteConfigLoader.getNoteById(noteId);
             if (template != null) {
                 // Безопасно: этот метод вызывается только из NoteViewScreen (клиент)
-                String lang = net.minecraft.client.MinecraftClient.getInstance()
-                        .getLanguageManager().getLanguage();
+                String lang = net.minecraft.client.Minecraft.getInstance()
+                        .getLanguageManager().getSelected();
                 return template.getTitle(lang);
             }
         }
@@ -77,8 +75,8 @@ public class NoteData {
         if (noteId != null && !noteId.isEmpty()) {
             NoteConfigLoader.NoteTemplate template = NoteConfigLoader.getNoteById(noteId);
             if (template != null) {
-                String lang = net.minecraft.client.MinecraftClient.getInstance()
-                        .getLanguageManager().getLanguage();
+                String lang = net.minecraft.client.Minecraft.getInstance()
+                        .getLanguageManager().getSelected();
                 return template.getContent(lang);
             }
         }
@@ -97,8 +95,8 @@ public class NoteData {
 
     // ============ NBT (без изменений) ============
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putString("NoteId", noteId != null ? noteId : "");
         nbt.putString("Title", title);
         nbt.putString("Content", content);
@@ -113,7 +111,7 @@ public class NoteData {
         return nbt;
     }
 
-    public static NoteData fromNbt(NbtCompound nbt) {
+    public static NoteData fromNbt(CompoundTag nbt) {
         String noteId = nbt.getString("NoteId");
         String title = nbt.getString("Title");
         String content = nbt.getString("Content");

@@ -3,29 +3,29 @@ package com.unnameduser.bulletinboard.network;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
-public final class TakeNoteC2SPacket {
+public final class OpenNoteS2CPacket {
     private final BlockPos pos;
-    private final int noteIndex;
+    private final int slot;
 
-    public TakeNoteC2SPacket(BlockPos pos, int noteIndex) {
+    public OpenNoteS2CPacket(BlockPos pos, int slot) {
         this.pos = pos;
-        this.noteIndex = noteIndex;
+        this.slot = slot;
     }
 
-    public TakeNoteC2SPacket(FriendlyByteBuf buf) {
+    public OpenNoteS2CPacket(FriendlyByteBuf buf) {
         this(buf.readBlockPos(), buf.readInt());
     }
 
     public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeInt(noteIndex);
+        buf.writeInt(slot);
     }
 
     public BlockPos pos() {
         return pos;
     }
 
-    public int noteIndex() {
-        return noteIndex;
+    public int slot() {
+        return slot;
     }
 }

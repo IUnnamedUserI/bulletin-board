@@ -1,21 +1,21 @@
 package com.unnameduser.bulletinboard.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoundedTextFieldWidget extends ClickableWidget {
-    protected final TextRenderer textRenderer;
+public class RoundedTextFieldWidget extends AbstractWidget {
+    protected final Font textRenderer;
     protected String text = "";
     protected final int maxLength;
-    protected final Text placeholder;
+    protected final Component placeholder;
     protected boolean focused = false;
     protected int cursorPos = 0;
     protected int firstLineIndex = 0;
@@ -34,9 +34,9 @@ public class RoundedTextFieldWidget extends ClickableWidget {
     // Анимация свечения
     private float glowAlpha = 0.0f;
 
-    public RoundedTextFieldWidget(int x, int y, int width, int height, int maxLength, Text placeholder) {
-        super(x, y, width, height, Text.empty());
-        this.textRenderer = MinecraftClient.getInstance().textRenderer;
+    public RoundedTextFieldWidget(int x, int y, int width, int height, int maxLength, Component placeholder) {
+        super(x, y, width, height, Component.empty());
+        this.textRenderer = Minecraft.getInstance().font;
         this.maxLength = maxLength;
         this.placeholder = placeholder;
         this.cursorPos = 0;
@@ -47,24 +47,24 @@ public class RoundedTextFieldWidget extends ClickableWidget {
     public String getText() { return text; }
     public void setText(String text) {
         this.text = text != null ? text : "";
-        this.cursorPos = MathHelper.clamp(cursorPos, 0, this.text.length());
+        this.cursorPos = Mth.clamp(cursorPos, 0, this.text.length());
     }
     public boolean isFocused() { return focused; }
     public void setFocused(boolean focused) { this.focused = focused; }
     public void setCursorPos(int pos) {
-        this.cursorPos = MathHelper.clamp(pos, 0, text.length());
+        this.cursorPos = Mth.clamp(pos, 0, text.length());
     }
 
     // ============ МЕТОДЫ ДЛЯ NARRATOR ============
 
     @Override
-    protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {
-        builder.put(net.minecraft.client.gui.screen.narration.NarrationPart.TITLE,
-                Text.literal("Текстовое поле: " + text));
+    protected void updateWidgetNarration(net.minecraft.client.gui.narration.NarrationElementOutput builder) {
+        builder.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE,
+                Component.literal("Текстовое поле: " + text));
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         this.render(context, mouseX, mouseY, delta);
     }
 
@@ -75,10 +75,10 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         } else if (!focused && glowAlpha > 0.0f) {
             glowAlpha -= 0.08f;
         }
-        glowAlpha = MathHelper.clamp(glowAlpha, 0.0f, 1.0f);
+        glowAlpha = Mth.clamp(glowAlpha, 0.0f, 1.0f);
     }
 
-    private void drawGlow(DrawContext context, int x, int y, int w, int h, int r) {
+    private void drawGlow(GuiGraphics context, int x, int y, int w, int h, int r) {
         if (glowAlpha < 0.01f) return;
 
         int color = 0x55AAFF;
@@ -106,7 +106,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
     // ============ ОТРИСОВКА ============
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (!this.visible) return;
 
         int x = getX();
@@ -134,21 +134,21 @@ public class RoundedTextFieldWidget extends ClickableWidget {
 
         // 5. Текст или плейсхолдер
         if (text.isEmpty() && !focused) {
-            context.drawText(textRenderer, placeholder, textX, textY, PLACEHOLDER_COLOR, false);
+            context.drawString(textRenderer, placeholder, textX, textY, PLACEHOLDER_COLOR, false);
         } else {
             List<String> lines = wrapText(text, maxTextWidth);
             if (lines.isEmpty()) lines.add("");
 
             int maxLines = maxTextHeight / LINE_HEIGHT;
             int maxScroll = Math.max(0, lines.size() - maxLines);
-            firstLineIndex = MathHelper.clamp(firstLineIndex, 0, maxScroll);
+            firstLineIndex = Mth.clamp(firstLineIndex, 0, maxScroll);
 
             int startLine = firstLineIndex;
             int endLine = Math.min(lines.size(), startLine + maxLines);
 
             for (int i = startLine; i < endLine; i++) {
                 int lineY = textY + (i - startLine) * LINE_HEIGHT;
-                context.drawText(textRenderer, Text.literal(lines.get(i)), textX, lineY, TEXT_COLOR, false);
+                context.drawString(textRenderer, Component.literal(lines.get(i)), textX, lineY, TEXT_COLOR, false);
             }
 
             // 6. Курсор
@@ -158,7 +158,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                 String line = lines.get(cursorLine);
                 String beforeCursor = line.substring(0, Math.min(posInLine, line.length()));
 
-                int cursorX = textX + textRenderer.getWidth(beforeCursor);
+                int cursorX = textX + textRenderer.width(beforeCursor);
                 int cursorY = textY + (cursorLine - firstLineIndex) * LINE_HEIGHT;
 
                 if (cursorX > textX + maxTextWidth) {
@@ -171,7 +171,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                     firstLineIndex = cursorLine - maxLines + 1;
                 }
                 maxScroll = Math.max(0, lines.size() - maxLines);
-                firstLineIndex = MathHelper.clamp(firstLineIndex, 0, maxScroll);
+                firstLineIndex = Mth.clamp(firstLineIndex, 0, maxScroll);
 
                 cursorY = textY + (cursorLine - firstLineIndex) * LINE_HEIGHT;
 
@@ -183,7 +183,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
 
         // 7. Счётчик символов
         String counter = text.length() + "/" + maxLength;
-        int counterWidth = textRenderer.getWidth(counter);
+        int counterWidth = textRenderer.width(counter);
         int counterX = x + w - PADDING - counterWidth;
         int counterY = y + h - PADDING_BOTTOM + 2;
         boolean isFull = text.length() >= maxLength;
@@ -193,13 +193,13 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                 counterX - 3,
                 counterY - 1,
                 counterX + counterWidth + 3,
-                counterY + textRenderer.fontHeight + 1,
+                counterY + textRenderer.lineHeight + 1,
                 0xCC1A1A1A
         );
 
-        context.drawText(
+        context.drawString(
                 textRenderer,
-                Text.literal(counter),
+                Component.literal(counter),
                 counterX,
                 counterY,
                 counterColor,
@@ -228,9 +228,9 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                     continue;
                 }
 
-                if (textRenderer.getWidth(word) <= maxWidth) {
+                if (textRenderer.width(word) <= maxWidth) {
                     String testLine = currentLine + (currentLine.isEmpty() ? "" : " ") + word;
-                    if (textRenderer.getWidth(testLine) <= maxWidth) {
+                    if (textRenderer.width(testLine) <= maxWidth) {
                         if (!currentLine.isEmpty()) currentLine.append(" ");
                         currentLine.append(word);
                     } else {
@@ -245,7 +245,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
                     for (int i = 0; i < word.length(); i++) {
                         char c = word.charAt(i);
                         String testLine = currentLine.toString() + c;
-                        if (textRenderer.getWidth(testLine) <= maxWidth) {
+                        if (textRenderer.width(testLine) <= maxWidth) {
                             currentLine.append(c);
                         } else {
                             lines.add(currentLine.toString());
@@ -318,7 +318,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
             int bestWidth = 0;
             for (int i = 0; i <= line.length(); i++) {
                 String sub = line.substring(0, i);
-                int w = textRenderer.getWidth(sub);
+                int w = textRenderer.width(sub);
                 if (Math.abs(w - clickX) < Math.abs(bestWidth - clickX)) {
                     bestWidth = w;
                     posInLine = i;
@@ -328,7 +328,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
             for (int i = 0; i < lineIndex; i++) {
                 charCount += lines.get(i).length() + 1;
             }
-            cursorPos = MathHelper.clamp(charCount + posInLine, 0, text.length());
+            cursorPos = Mth.clamp(charCount + posInLine, 0, text.length());
         }
         return true;
     }
@@ -406,7 +406,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
 
             case GLFW.GLFW_KEY_V:
                 if (ctrlDown) {
-                    String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
+                    String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
                     if (clipboard != null) {
                         for (char c : clipboard.toCharArray()) {
                             if (text.length() < maxLength) {
@@ -495,7 +495,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
 
     // ============ МЕТОДЫ ОТРИСОВКИ ФИГУР ============
 
-    private void drawRoundRect(DrawContext context, int x, int y, int w, int h, int r, int color) {
+    private void drawRoundRect(GuiGraphics context, int x, int y, int w, int h, int r, int color) {
         drawCornerFilled(context, x + w - r, y + h - r, r, color, 0);
         drawCornerFilled(context, x, y + h - r, r, color, 1);
         drawCornerFilled(context, x + w - r, y, r, color, 2);
@@ -504,7 +504,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         context.fill(x, y + r - 1, x + w, y + h - r + 1, color);
     }
 
-    private void drawCornerFilled(DrawContext context, int x, int y, int r, int color, int corner) {
+    private void drawCornerFilled(GuiGraphics context, int x, int y, int r, int color, int corner) {
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < r; j++) {
                 if (i * i + j * j <= r * r) {
@@ -522,7 +522,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         }
     }
 
-    private void drawRoundRectBorder(DrawContext context, int x, int y, int w, int h, int r, int color, int thickness) {
+    private void drawRoundRectBorder(GuiGraphics context, int x, int y, int w, int h, int r, int color, int thickness) {
         drawCornerBorder(context, x + w - r, y + h - r, r, color, thickness, 0);
         drawCornerBorder(context, x, y + h - r, r, color, thickness, 1);
         drawCornerBorder(context, x + w - r, y, r, color, thickness, 2);
@@ -533,7 +533,7 @@ public class RoundedTextFieldWidget extends ClickableWidget {
         context.fill(x + w - thickness, y + r - 1, x + w, y + h - r + 1, color);
     }
 
-    private void drawCornerBorder(DrawContext context, int x, int y, int r, int color, int thickness, int corner) {
+    private void drawCornerBorder(GuiGraphics context, int x, int y, int r, int color, int thickness, int corner) {
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < r; j++) {
                 double dist = Math.sqrt(i * i + j * j);

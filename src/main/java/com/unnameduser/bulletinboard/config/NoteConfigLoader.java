@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.unnameduser.bulletinboard.util.RandomNotePool;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -14,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class NoteConfigLoader {
-    private static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve("bulletin-board/notes");
+    private static final Path CONFIG_DIR = FMLPaths.CONFIGDIR.get().resolve("bulletin-board/notes");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Map<String, List<NoteTemplate>> PROFESSION_NOTES = new HashMap<>();

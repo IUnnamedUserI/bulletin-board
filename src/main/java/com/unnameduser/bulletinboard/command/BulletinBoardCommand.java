@@ -13,14 +13,14 @@ import com.unnameduser.bulletinboard.integration.TradeOverhaulIntegration;
 import com.unnameduser.bulletinboard.util.AutoNoteScheduler;
 import com.unnameduser.bulletinboard.util.NoteData;
 import com.unnameduser.bulletinboard.util.RandomNotePool;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
@@ -35,76 +35,76 @@ import java.util.List;
 public class BulletinBoardCommand {
 
     private static final SimpleCommandExceptionType NO_BOARD_NEARBY =
-            new SimpleCommandExceptionType(Text.translatable("command.bulletin.no_board_nearby"));
+            new SimpleCommandExceptionType(Component.translatable("command.bulletin.no_board_nearby"));
 
     private static final SimpleCommandExceptionType BOARD_EMPTY =
-            new SimpleCommandExceptionType(Text.translatable("command.bulletin.board_empty"));
+            new SimpleCommandExceptionType(Component.translatable("command.bulletin.board_empty"));
 
     private static final SimpleCommandExceptionType CLEARED =
-            new SimpleCommandExceptionType(Text.translatable("command.bulletin.clear.success"));
+            new SimpleCommandExceptionType(Component.translatable("command.bulletin.clear.success"));
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
-                                CommandRegistryAccess registryAccess,
-                                CommandManager.RegistrationEnvironment environment) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher,
+                                CommandBuildContext ctx,
+                                Commands.CommandSelection selection) {
 
-        LiteralCommandNode<ServerCommandSource> bulletinNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> bulletinNode = Commands
                 .literal("bulletin")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(source -> source.hasPermission(2))
                 .build();
 
         // /bulletin trigger [radius]
-        LiteralCommandNode<ServerCommandSource> triggerNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> triggerNode = Commands
                 .literal("trigger")
                 .executes(BulletinBoardCommand::triggerRandom)
-                .then(CommandManager
+                .then(Commands
                         .argument("radius", IntegerArgumentType.integer(1, 100))
                         .executes(BulletinBoardCommand::triggerRandomWithRadius)
                 )
                 .build();
 
         // /bulletin trigger-at <pos>
-        LiteralCommandNode<ServerCommandSource> triggerAtNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> triggerAtNode = Commands
                 .literal("trigger-at")
-                .then(CommandManager
-                        .argument("pos", BlockPosArgumentType.blockPos())
+                .then(Commands
+                        .argument("pos", BlockPosArgument.blockPos())
                         .executes(BulletinBoardCommand::triggerAtPosition)
                 )
                 .build();
 
         // /bulletin clear <pos>
-        LiteralCommandNode<ServerCommandSource> clearNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> clearNode = Commands
                 .literal("clear")
-                .then(CommandManager
-                        .argument("pos", BlockPosArgumentType.blockPos())
+                .then(Commands
+                        .argument("pos", BlockPosArgument.blockPos())
                         .executes(BulletinBoardCommand::clearBoard)
                 )
                 .build();
 
         // /bulletin list <pos>
-        LiteralCommandNode<ServerCommandSource> listNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> listNode = Commands
                 .literal("list")
-                .then(CommandManager
-                        .argument("pos", BlockPosArgumentType.blockPos())
+                .then(Commands
+                        .argument("pos", BlockPosArgument.blockPos())
                         .executes(BulletinBoardCommand::listNotes)
                 )
                 .build();
 
         // /bulletin scheduler <enable|disable|trigger|status>
-        LiteralCommandNode<ServerCommandSource> schedulerNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> schedulerNode = Commands
                 .literal("scheduler")
-                .then(CommandManager
+                .then(Commands
                         .literal("enable")
                         .executes(BulletinBoardCommand::schedulerEnable)
                 )
-                .then(CommandManager
+                .then(Commands
                         .literal("disable")
                         .executes(BulletinBoardCommand::schedulerDisable)
                 )
-                .then(CommandManager
+                .then(Commands
                         .literal("trigger")
                         .executes(BulletinBoardCommand::schedulerTrigger)
                 )
-                .then(CommandManager
+                .then(Commands
                         .literal("status")
                         .executes(BulletinBoardCommand::schedulerStatus)
                 )
@@ -117,17 +117,17 @@ public class BulletinBoardCommand {
         bulletinNode.addChild(schedulerNode);
 
         // /bulletin discount <trigger|list|clear>
-        LiteralCommandNode<ServerCommandSource> discountNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> discountNode = Commands
                 .literal("discount")
-                .then(CommandManager
+                .then(Commands
                         .literal("trigger")
                         .executes(BulletinBoardCommand::discountTrigger)
                 )
-                .then(CommandManager
+                .then(Commands
                         .literal("list")
                         .executes(BulletinBoardCommand::discountList)
                 )
-                .then(CommandManager
+                .then(Commands
                         .literal("clear")
                         .executes(BulletinBoardCommand::discountClear)
                 )
@@ -138,25 +138,26 @@ public class BulletinBoardCommand {
         dispatcher.getRoot().addChild(bulletinNode);
     }
 
-    private static int triggerRandom(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int triggerRandom(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return triggerRandomWithRadius(context, 10);
     }
 
-    private static int triggerRandomWithRadius(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int triggerRandomWithRadius(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return triggerRandomWithRadius(context, IntegerArgumentType.getInteger(context, "radius"));
     }
 
-    private static int triggerRandomWithRadius(CommandContext<ServerCommandSource> context, int radius) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-
-        if (player == null) {
-            source.sendError(Text.translatable("command.bulletin.no_player"));
+    private static int triggerRandomWithRadius(CommandContext<CommandSourceStack> context, int radius) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player;
+        try {
+            player = source.getPlayerOrException();
+        } catch (CommandSyntaxException e) {
+            source.sendFailure(Component.translatable("command.bulletin.no_player"));
             return 0;
         }
 
-        ServerWorld world = source.getWorld();
-        BlockPos playerPos = player.getBlockPos();
+        ServerLevel world = source.getLevel();
+        BlockPos playerPos = player.blockPosition();
 
         // Ищем ближайшую доску объявлений в радиусе
         BlockPos boardPos = findNearestBulletinBoard(world, playerPos, radius);
@@ -168,30 +169,30 @@ public class BulletinBoardCommand {
         // Генерируем и размещаем записку
         int notesAdded = placeRandomNote(world, boardPos);
 
-        source.sendFeedback(() -> Text.translatable("command.bulletin.trigger.success", notesAdded), true);
+        source.sendSuccess(() -> Component.translatable("command.bulletin.trigger.success", notesAdded), true);
         return notesAdded;
     }
 
-    private static int triggerAtPosition(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        BlockPos pos = BlockPosArgumentType.getBlockPos(context, "pos");
-        ServerWorld world = source.getWorld();
+    private static int triggerAtPosition(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        BlockPos pos = BlockPosArgument.getBlockPos(context, "pos");
+        ServerLevel world = source.getLevel();
 
         // Проверяем, что это доска объявлений
         if (!(world.getBlockState(pos).getBlock() instanceof BulletinBoardBlock)) {
-            source.sendError(Text.translatable("command.bulletin.not_a_board"));
+            source.sendFailure(Component.translatable("command.bulletin.not_a_board"));
             return 0;
         }
 
         int notesAdded = placeRandomNote(world, pos);
-        source.sendFeedback(() -> Text.translatable("command.bulletin.trigger.success", notesAdded), true);
+        source.sendSuccess(() -> Component.translatable("command.bulletin.trigger.success", notesAdded), true);
         return notesAdded;
     }
 
     /**
      * Размещает случайную записку на доске.
      */
-    private static int placeRandomNote(ServerWorld world, BlockPos boardPos) {
+    private static int placeRandomNote(ServerLevel world, BlockPos boardPos) {
         var blockEntity = world.getBlockEntity(boardPos);
 
         if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
@@ -235,12 +236,12 @@ public class BulletinBoardCommand {
         return freeSlots;
     }
 
-    private static BlockPos findNearestBulletinBoard(ServerWorld world, BlockPos center, int radius) {
+    private static BlockPos findNearestBulletinBoard(ServerLevel world, BlockPos center, int radius) {
         // Ищем доски объявлений в радиусе
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
-                    BlockPos pos = center.add(x, y, z);
+                    BlockPos pos = center.offset(x, y, z);
                     if (world.getBlockState(pos).getBlock() instanceof BulletinBoardBlock) {
                         return pos;
                     }
@@ -250,15 +251,15 @@ public class BulletinBoardCommand {
         return null;
     }
 
-    private static int clearBoard(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        BlockPos pos = BlockPosArgumentType.getBlockPos(context, "pos");
-        ServerWorld world = source.getWorld();
+    private static int clearBoard(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        BlockPos pos = BlockPosArgument.getBlockPos(context, "pos");
+        ServerLevel world = source.getLevel();
 
         var blockEntity = world.getBlockEntity(pos);
 
         if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
-            source.sendError(Text.translatable("command.bulletin.not_a_board"));
+            source.sendFailure(Component.translatable("command.bulletin.not_a_board"));
             return 0;
         }
 
@@ -272,34 +273,34 @@ public class BulletinBoardCommand {
             boardEntity.removeNote(i);
         }
 
-        source.sendFeedback(() -> Text.translatable("command.bulletin.clear.success"), true);
+        source.sendSuccess(() -> Component.translatable("command.bulletin.clear.success"), true);
         return count;
     }
 
-    private static int listNotes(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        BlockPos pos = BlockPosArgumentType.getBlockPos(context, "pos");
-        ServerWorld world = source.getWorld();
+    private static int listNotes(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
+        BlockPos pos = BlockPosArgument.getBlockPos(context, "pos");
+        ServerLevel world = source.getLevel();
 
         var blockEntity = world.getBlockEntity(pos);
 
         if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
-            source.sendError(Text.translatable("command.bulletin.not_a_board"));
+            source.sendFailure(Component.translatable("command.bulletin.not_a_board"));
             return 0;
         }
 
         var notes = boardEntity.getNotes();
         if (notes.isEmpty()) {
-            source.sendFeedback(() -> Text.translatable("command.bulletin.list.empty"), true);
+            source.sendSuccess(() -> Component.translatable("command.bulletin.list.empty"), true);
             return 0;
         }
 
-        source.sendFeedback(() -> Text.translatable("command.bulletin.list.header", notes.size()), true);
+        source.sendSuccess(() -> Component.translatable("command.bulletin.list.header", notes.size()), true);
 
         int index = 0;
         for (var note : notes) {
             final int currentIndex = index;
-            source.sendFeedback(() -> Text.literal(
+            source.sendSuccess(() -> Component.literal(
                     String.format("§6[%d] §r%s §7- %s",
                             currentIndex,
                             note.getTitle(),
@@ -311,98 +312,98 @@ public class BulletinBoardCommand {
         return notes.size();
     }
 
-    private static int schedulerEnable(CommandContext<ServerCommandSource> context) {
+    private static int schedulerEnable(CommandContext<CommandSourceStack> context) {
         AutoNoteScheduler.setEnabled(true);
-        context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.scheduler.enabled"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.scheduler.enabled"), true);
         return 1;
     }
 
-    private static int schedulerDisable(CommandContext<ServerCommandSource> context) {
+    private static int schedulerDisable(CommandContext<CommandSourceStack> context) {
         AutoNoteScheduler.setEnabled(false);
-        context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.scheduler.disabled"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.scheduler.disabled"), true);
         return 1;
     }
 
-    private static int schedulerTrigger(CommandContext<ServerCommandSource> context) {
+    private static int schedulerTrigger(CommandContext<CommandSourceStack> context) {
         AutoNoteScheduler.triggerNow();
-        context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.scheduler.triggered"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.scheduler.triggered"), true);
         return 1;
     }
 
-    private static int schedulerStatus(CommandContext<ServerCommandSource> context) {
+    private static int schedulerStatus(CommandContext<CommandSourceStack> context) {
         boolean enabled = AutoNoteScheduler.isEnabled();
-        Text status = enabled ?
-                Text.translatable("command.bulletin.scheduler.status.enabled") :
-                Text.translatable("command.bulletin.scheduler.status.disabled");
-        context.getSource().sendFeedback(() -> status, true);
+        Component status = enabled ?
+                Component.translatable("command.bulletin.scheduler.status.enabled") :
+                Component.translatable("command.bulletin.scheduler.status.disabled");
+        context.getSource().sendSuccess(() -> status, true);
         return 1;
     }
 
-    private static int discountTrigger(CommandContext<ServerCommandSource> context) {
+    private static int discountTrigger(CommandContext<CommandSourceStack> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
 
         if (event == null) {
-            context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
+            context.getSource().sendFailure(Component.translatable("command.bulletin.not_initialized"));
             return 0;
         }
 
         boolean success = event.triggerDiscountEvent();
 
         if (success) {
-            context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.trigger.success"), true);
+            context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.discount.trigger.success"), true);
             return 1;
         } else {
-            context.getSource().sendError(Text.translatable("command.bulletin.discount.trigger.failed"));
+            context.getSource().sendFailure(Component.translatable("command.bulletin.discount.trigger.failed"));
             return 0;
         }
     }
 
-    private static int discountList(CommandContext<ServerCommandSource> context) {
+    private static int discountList(CommandContext<CommandSourceStack> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
 
         if (event == null) {
-            context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
+            context.getSource().sendFailure(Component.translatable("command.bulletin.not_initialized"));
             return 0;
         }
 
         var discounts = event.getActiveDiscounts();
 
         if (discounts.isEmpty()) {
-            context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.list.empty"), true);
+            context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.discount.list.empty"), true);
             return 0;
         }
 
         // Добавляем информацию об интеграции
         boolean tradeOverhaulPresent = TradeOverhaulIntegration.isTradeOverhaulPresent();
-        Text integrationStatus = tradeOverhaulPresent ?
-                Text.literal("§a[Trade Overhaul ENABLED] §r") :
-                Text.literal("§c[Trade Overhaul DISABLED] §r");
+        Component integrationStatus = tradeOverhaulPresent ?
+                Component.literal("§a[Trade Overhaul ENABLED] §r") :
+                Component.literal("§c[Trade Overhaul DISABLED] §r");
 
-        context.getSource().sendFeedback(() -> integrationStatus, false);
-        context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.list.header", discounts.size()), true);
+        context.getSource().sendSuccess(() -> integrationStatus, false);
+        context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.discount.list.header", discounts.size()), true);
 
         for (var discount : discounts) {
             long remainingMinutes = discount.getRemainingTime() / 60000;
             String discountType = tradeOverhaulPresent ? "§aREAL" : "§eINFO";
-            Text message = Text.literal(String.format("  %s §6%s (%s) - §e%d мин. осталось",
+            Component message = Component.literal(String.format("  %s §6%s (%s) - §e%d мин. осталось",
                     discountType,
                     discount.villagerName, discount.profession, remainingMinutes));
-            context.getSource().sendFeedback(() -> message, false);
+            context.getSource().sendSuccess(() -> message, false);
         }
 
         return discounts.size();
     }
 
-    private static int discountClear(CommandContext<ServerCommandSource> context) {
+    private static int discountClear(CommandContext<CommandSourceStack> context) {
         VillageDiscountEvent event = VillageDiscountEvent.getInstance();
 
         if (event == null) {
-            context.getSource().sendError(Text.translatable("command.bulletin.not_initialized"));
+            context.getSource().sendFailure(Component.translatable("command.bulletin.not_initialized"));
             return 0;
         }
 
         event.clearAllDiscounts();
-        context.getSource().sendFeedback(() -> Text.translatable("command.bulletin.discount.clear.success"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("command.bulletin.discount.clear.success"), true);
         return 1;
     }
 }

@@ -1,42 +1,44 @@
 package com.unnameduser.bulletinboard.renderer;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlock;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlockEntity;
 import com.unnameduser.bulletinboard.util.NoteData;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
 
 public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBlockEntity> {
 
-    private static final Identifier NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/note_paper.png");
-    private static final Identifier SMALL_NOTE_TEXTURE = new Identifier("bulletin-board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/note_paper.png");
+    private static final ResourceLocation SMALL_NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/small_note_paper.png");
 
-    public PlacedNoteBlockRenderer(BlockEntityRendererFactory.Context ctx) {
+    public PlacedNoteBlockRenderer(BlockEntityRendererProvider.Context ctx) {
     }
 
     @Override
-    public void render(PlacedNoteBlockEntity entity, float tickDelta, MatrixStack matrices,
-                       VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(PlacedNoteBlockEntity entity, float tickDelta, PoseStack matrices,
+                       MultiBufferSource vertexConsumers, int light, int overlay) {
 
         NoteData note = entity.getNoteData();
         if (note == null) return;
 
-        var state = entity.getCachedState();
+        var state = entity.getBlockState();
         if (!(state.getBlock() instanceof PlacedNoteBlock)) return;
 
-        int rotation = state.get(PlacedNoteBlock.ROTATION);
+        int rotation = state.getValue(PlacedNoteBlock.ROTATION);
 
-        matrices.push();
+        matrices.pushPose();
 
         // Центрируем на блоке
         matrices.translate(0.5, 0.0, 0.5);
 
         // Поворот по 8 позициям
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation * 45.0f));
+        matrices.mulPose(Axis.YP.rotationDegrees(rotation * 45.0f));
 
         // Поднимаем на 1 пиксель над блоком
         matrices.translate(0, 0.001, 0);
@@ -50,33 +52,33 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
 
         // Рендер записки
         // Рендер записки
-        Identifier texture = note.isSmall() ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(texture));
+        ResourceLocation texture = note.isSmall() ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        MatrixStack.Entry entry = matrices.peek();
+        PoseStack.Pose entry = matrices.last();
         float nx = 0, ny = 1, nz = 0;
 
         // Отзеркаленная текстура (поворот на 180°)
-        consumer.vertex(entry.getPositionMatrix(), -1.0f, 0, -1.0f)
-                .color(255, 255, 255, 255).texture(1, 1).overlay(overlay).light(light)
-                .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-        consumer.vertex(entry.getPositionMatrix(), 1.0f, 0, -1.0f)
-                .color(255, 255, 255, 255).texture(0, 1).overlay(overlay).light(light)
-                .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-        consumer.vertex(entry.getPositionMatrix(), 1.0f, 0, 1.0f)
-                .color(255, 255, 255, 255).texture(0, 0).overlay(overlay).light(light)
-                .normal(entry.getNormalMatrix(), nx, ny, nz).next();
-        consumer.vertex(entry.getPositionMatrix(), -1.0f, 0, 1.0f)
-                .color(255, 255, 255, 255).texture(1, 0).overlay(overlay).light(light)
-                .normal(entry.getNormalMatrix(), nx, ny, nz).next();
+        consumer.vertex(entry.pose(), -1.0f, 0, -1.0f)
+                .color(255, 255, 255, 255).uv(1, 1).overlayCoords(overlay).uv2(light)
+                .normal(entry.normal(), nx, ny, nz).endVertex();
+        consumer.vertex(entry.pose(), 1.0f, 0, -1.0f)
+                .color(255, 255, 255, 255).uv(0, 1).overlayCoords(overlay).uv2(light)
+                .normal(entry.normal(), nx, ny, nz).endVertex();
+        consumer.vertex(entry.pose(), 1.0f, 0, 1.0f)
+                .color(255, 255, 255, 255).uv(0, 0).overlayCoords(overlay).uv2(light)
+                .normal(entry.normal(), nx, ny, nz).endVertex();
+        consumer.vertex(entry.pose(), -1.0f, 0, 1.0f)
+                .color(255, 255, 255, 255).uv(1, 0).overlayCoords(overlay).uv2(light)
+                .normal(entry.normal(), nx, ny, nz).endVertex();
 
         // Рендер печати
         // Рендер печати
         if (note.getTagColor() != -1) {
-            Identifier badgeTexture = new Identifier("bulletin-board", "textures/block/badge.png");
-            VertexConsumer badgeConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(badgeTexture));
+            ResourceLocation badgeTexture = new ResourceLocation("bulletin-board", "textures/block/badge.png");
+            VertexConsumer badgeConsumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(badgeTexture));
 
-            matrices.push();
+            matrices.pushPose();
 
             // Позиция печати (в пределах записки)
             // Записка теперь scale = 0.3, значит её размер в блоках = 0.6
@@ -90,33 +92,33 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
             float badgeScale = note.isSmall() ? 0.2f : 0.25f;
             matrices.scale(badgeScale, 1, badgeScale);
 
-            MatrixStack.Entry badgeEntry = matrices.peek();
+            PoseStack.Pose badgeEntry = matrices.last();
             float r = ((note.getTagColor() >> 16) & 0xFF) / 255f;
             float g = ((note.getTagColor() >> 8) & 0xFF) / 255f;
             float b = (note.getTagColor() & 0xFF) / 255f;
 
             // Отзеркаленная текстура (поворот на 180°)
-            badgeConsumer.vertex(badgeEntry.getPositionMatrix(), -1.0f, 0, -1.0f)
-                    .color(r, g, b, 1.0f).texture(1, 1).overlay(overlay).light(light)
-                    .normal(badgeEntry.getNormalMatrix(), nx, ny, nz).next();
-            badgeConsumer.vertex(badgeEntry.getPositionMatrix(), 1.0f, 0, -1.0f)
-                    .color(r, g, b, 1.0f).texture(0, 1).overlay(overlay).light(light)
-                    .normal(badgeEntry.getNormalMatrix(), nx, ny, nz).next();
-            badgeConsumer.vertex(badgeEntry.getPositionMatrix(), 1.0f, 0, 1.0f)
-                    .color(r, g, b, 1.0f).texture(0, 0).overlay(overlay).light(light)
-                    .normal(badgeEntry.getNormalMatrix(), nx, ny, nz).next();
-            badgeConsumer.vertex(badgeEntry.getPositionMatrix(), -1.0f, 0, 1.0f)
-                    .color(r, g, b, 1.0f).texture(1, 0).overlay(overlay).light(light)
-                    .normal(badgeEntry.getNormalMatrix(), nx, ny, nz).next();
+            badgeConsumer.vertex(badgeEntry.pose(), -1.0f, 0, -1.0f)
+                    .color(r, g, b, 1.0f).uv(1, 1).overlayCoords(overlay).uv2(light)
+                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
+            badgeConsumer.vertex(badgeEntry.pose(), 1.0f, 0, -1.0f)
+                    .color(r, g, b, 1.0f).uv(0, 1).overlayCoords(overlay).uv2(light)
+                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
+            badgeConsumer.vertex(badgeEntry.pose(), 1.0f, 0, 1.0f)
+                    .color(r, g, b, 1.0f).uv(0, 0).overlayCoords(overlay).uv2(light)
+                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
+            badgeConsumer.vertex(badgeEntry.pose(), -1.0f, 0, 1.0f)
+                    .color(r, g, b, 1.0f).uv(1, 0).overlayCoords(overlay).uv2(light)
+                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
 
-            matrices.pop();
+            matrices.popPose();
         }
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(PlacedNoteBlockEntity entity) {
+    public boolean shouldRenderOffScreen(PlacedNoteBlockEntity entity) {
         return false;
     }
 }

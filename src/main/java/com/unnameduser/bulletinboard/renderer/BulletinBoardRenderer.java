@@ -18,9 +18,9 @@ import java.util.Map;
 
 public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardBlockEntity> {
 
-    private static final ResourceLocation NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/note_paper.png");
-    private static final ResourceLocation SMALL_NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/small_note_paper.png");
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/badge.png");
+    private static final ResourceLocation NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/note_paper.png");
+    private static final ResourceLocation SMALL_NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/badge.png");
 
     private static final Map<Direction, BadgeConfig> BADGE_CONFIGS = new EnumMap<>(Direction.class);
     private static final Map<Direction, BadgeConfig> SMALL_BADGE_CONFIGS = new EnumMap<>(Direction.class);
@@ -133,69 +133,66 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         return new double[]{x, y};
     }
 
-    /**
-     * В NeoForge 1.21.1 используется addVertex, а атрибуты задаются отдельными сеттерами.
-     * endVertex() больше не требуется.
-     */
     private void renderNote(PoseStack matrices, MultiBufferSource vertexConsumers,
                             int light, int overlay, boolean mirror, boolean isSmall) {
 
         ResourceLocation texture = isSmall ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(texture));
+        PoseStack.Pose pose = matrices.last();
 
         float nx = 0, ny = 0, nz = 1;
 
         if (!mirror) {
-            consumer.addVertex(-0.5f, -0.5f, 0);
+            consumer.addVertex(pose, -0.5f, -0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(0, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, -0.5f, 0);
+            consumer.addVertex(pose, 0.5f, -0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(1, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, 0.5f, 0);
+            consumer.addVertex(pose, 0.5f, 0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(1, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(-0.5f, 0.5f, 0);
+            consumer.addVertex(pose, -0.5f, 0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(0, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
         } else {
-            consumer.addVertex(-0.5f, -0.5f, 0);
+            consumer.addVertex(pose, -0.5f, -0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(1, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, -0.5f, 0);
+            consumer.addVertex(pose, 0.5f, -0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(0, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, 0.5f, 0);
+            consumer.addVertex(pose, 0.5f, 0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(0, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(-0.5f, 0.5f, 0);
+            consumer.addVertex(pose, -0.5f, 0.5f, 0);
             consumer.setColor(255, 255, 255, 255);
             consumer.setUv(1, 0);
             consumer.setOverlay(overlay);
@@ -217,62 +214,63 @@ public class BulletinBoardRenderer implements BlockEntityRenderer<BulletinBoardB
         matrices.translate(config.x, config.y, config.z);
         matrices.scale(config.scale, config.scale, 1);
 
+        PoseStack.Pose pose = matrices.last();
         float nx = 0, ny = 0, nz = 1;
         float r = ((color >> 16) & 0xFF) / 255f;
         float g = ((color >> 8) & 0xFF) / 255f;
         float b = (color & 0xFF) / 255f;
 
         if (!config.mirror) {
-            consumer.addVertex(-0.5f, -0.5f, 0);
+            consumer.addVertex(pose, -0.5f, -0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(0, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, -0.5f, 0);
+            consumer.addVertex(pose, 0.5f, -0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(1, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, 0.5f, 0);
+            consumer.addVertex(pose, 0.5f, 0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(1, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(-0.5f, 0.5f, 0);
+            consumer.addVertex(pose, -0.5f, 0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(0, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
         } else {
-            consumer.addVertex(-0.5f, -0.5f, 0);
+            consumer.addVertex(pose, -0.5f, -0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(1, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, -0.5f, 0);
+            consumer.addVertex(pose, 0.5f, -0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(0, 1);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(0.5f, 0.5f, 0);
+            consumer.addVertex(pose, 0.5f, 0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(0, 0);
             consumer.setOverlay(overlay);
             consumer.setLight(light);
             consumer.setNormal(nx, ny, nz);
 
-            consumer.addVertex(-0.5f, 0.5f, 0);
+            consumer.addVertex(pose, -0.5f, 0.5f, 0);
             consumer.setColor(r, g, b, 1.0f);
             consumer.setUv(1, 0);
             consumer.setOverlay(overlay);

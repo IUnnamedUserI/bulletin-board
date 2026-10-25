@@ -266,10 +266,10 @@ public class VillageDiscountEvent {
      * Создаёт записку о скидке.
      */
     private NoteData createDiscountNote(String villagerName, String profession) {
-        String title = Component.translatable("event.bulletin-board.discount.title")
+        String title = Component.translatable("event.bulletin_board.discount.title")
                 .getString();
         
-        String content = Component.translatable("event.bulletin-board.discount.content", 
+        String content = Component.translatable("event.bulletin_board.discount.content",
                 villagerName, DISCOUNT_PERCENT)
                 .getString();
         

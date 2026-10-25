@@ -37,7 +37,7 @@ import java.util.List;
 public class StructureRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger("BulletinBoard/Structures");
 
-    private static final String INJECTION_DIR = "/data/bulletin-board/structure_pool_api/";
+    private static final String INJECTION_DIR = "/data/bulletin_board/structure_pool_api/";
 
     private static final String[] INJECTION_FILES = {
             "inject_village_houses.json",

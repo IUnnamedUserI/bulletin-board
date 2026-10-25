@@ -44,7 +44,7 @@ public class NoteViewScreen extends Screen {
     }
 
     private NoteViewScreen(NoteData note, BulletinBoardBlockEntity boardEntity, int notePosition, BlockPos placedPos) {
-        super(Component.translatable("gui.bulletin-board.note_view.title"));
+        super(Component.translatable("gui.bulletin_board.note_view.title"));
         this.note = note;
         this.boardEntity = boardEntity;
         this.notePosition = notePosition;
@@ -58,7 +58,7 @@ public class NoteViewScreen extends Screen {
 
         this.addRenderableWidget(
                 Button.builder(
-                                Component.translatable("gui.bulletin-board.note_view.close"),
+                                Component.translatable("gui.bulletin_board.note_view.close"),
                                 button -> this.onClose()
                         )
                         .bounds(this.width / 2 - 50, this.height - 40, 100, 20)
@@ -68,7 +68,7 @@ public class NoteViewScreen extends Screen {
         if (boardEntity != null && notePosition >= 0) {
             this.addRenderableWidget(
                     Button.builder(
-                                    Component.translatable("gui.bulletin-board.note_view.take"),
+                                    Component.translatable("gui.bulletin_board.note_view.take"),
                                     button -> this.takeNote()
                             )
                             .bounds(this.width / 2 + 60, this.height - 40, 80, 20)
@@ -79,7 +79,7 @@ public class NoteViewScreen extends Screen {
         if (placedPos != null) {
             this.addRenderableWidget(
                     Button.builder(
-                                    Component.translatable("gui.bulletin-board.note_view.take"),
+                                    Component.translatable("gui.bulletin_board.note_view.take"),
                                     button -> this.takePlacedNote()
                             )
                             .bounds(this.width / 2 + 60, this.height - 40, 80, 20)
@@ -282,7 +282,7 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        Component authorText = Component.translatable("gui.bulletin-board.note_view.from",
+        Component authorText = Component.translatable("gui.bulletin_board.note_view.from",
                 Component.translatable(note.getAuthor()));
         context.drawString(this.font,
                 authorText,
@@ -363,5 +363,12 @@ public class NoteViewScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Не вызываем super, чтобы избежать блюра
+        // Можно залить затемнением вручную:
+        guiGraphics.fill(0, 0, this.width, this.height, 0x00FFFFFF); // полупрозрачный чёрный
     }
 }

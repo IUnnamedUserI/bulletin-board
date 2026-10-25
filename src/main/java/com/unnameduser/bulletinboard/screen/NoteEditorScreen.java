@@ -25,7 +25,7 @@ public class NoteEditorScreen extends Screen {
     private final int contentMaxLength;
 
     public NoteEditorScreen(ItemStack notePaper) {
-        super(Component.translatable("gui.bulletin-board.note_editor.title"));
+        super(Component.translatable("gui.bulletin_board.note_editor.title"));
         this.notePaper = notePaper;
 
         // В 1.21.1 hasTag() -> hasComponents() или проверка через getOrDefault,
@@ -64,7 +64,7 @@ public class NoteEditorScreen extends Screen {
                 fieldWidth,
                 20, 60,
                 titleMaxLength,
-                Component.translatable("gui.bulletin-board.note_editor.title_placeholder")
+                Component.translatable("gui.bulletin_board.note_editor.title_placeholder")
         );
         this.addWidget(this.titleField);
 
@@ -73,7 +73,7 @@ public class NoteEditorScreen extends Screen {
                 fieldX, contentY,
                 fieldWidth, contentHeight,
                 contentMaxLength,
-                Component.translatable("gui.bulletin-board.note_editor.content_placeholder")
+                Component.translatable("gui.bulletin_board.note_editor.content_placeholder")
         );
         this.addWidget(this.contentField);
 
@@ -81,7 +81,7 @@ public class NoteEditorScreen extends Screen {
         int switchY = contentY + contentHeight + 10;
         this.anonymousSwitch = new SwitchWidget(
                 fieldX, switchY,
-                Component.translatable("gui.bulletin-board.note_editor.anonymous"),
+                Component.translatable("gui.bulletin_board.note_editor.anonymous"),
                 () -> {
                     isAnonymous = anonymousSwitch.getState();
                 }
@@ -89,8 +89,8 @@ public class NoteEditorScreen extends Screen {
         this.addRenderableWidget(this.anonymousSwitch);
 
         // === КНОПКИ ===
-        Component saveText = Component.translatable("gui.bulletin-board.note_editor.save");
-        Component cancelText = Component.translatable("gui.bulletin-board.note_editor.cancel");
+        Component saveText = Component.translatable("gui.bulletin_board.note_editor.save");
+        Component cancelText = Component.translatable("gui.bulletin_board.note_editor.cancel");
 
         int saveWidth = RoundedButtonWidget.calculateWidth(saveText);
         int cancelWidth = RoundedButtonWidget.calculateWidth(cancelText);
@@ -122,7 +122,7 @@ public class NoteEditorScreen extends Screen {
 
         if (!title.isEmpty() && !content.isEmpty()) {
             String author = isAnonymous ?
-                    Component.translatable("gui.bulletin-board.note_editor.anonymous_name").getString() :
+                    Component.translatable("gui.bulletin_board.note_editor.anonymous_name").getString() :
                     this.minecraft.player.getName().getString();
 
             NoteData note = new NoteData(title, content, author, -1);
@@ -171,15 +171,15 @@ public class NoteEditorScreen extends Screen {
         int fieldX = centerX - fieldWidth / 2;
 
         context.drawCenteredString(this.font,
-                Component.translatable("gui.bulletin-board.note_editor.title"),
+                Component.translatable("gui.bulletin_board.note_editor.title"),
                 centerX, 20, 0xFFFFFF);
 
         context.drawString(this.font,
-                Component.translatable("gui.bulletin-board.note_editor.title_label"),
+                Component.translatable("gui.bulletin_board.note_editor.title_label"),
                 fieldX, this.titleField.getY() - 12, 0xFFFFFF, false);
 
         context.drawString(this.font,
-                Component.translatable("gui.bulletin-board.note_editor.content_label"),
+                Component.translatable("gui.bulletin_board.note_editor.content_label"),
                 fieldX, this.contentField.getY() - 12, 0xFFFFFF, false);
 
         this.titleField.render(context, mouseX, mouseY, delta);
@@ -217,5 +217,12 @@ public class NoteEditorScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Не вызываем super, чтобы избежать блюра
+        // Можно залить затемнением вручную:
+        guiGraphics.fill(0, 0, this.width, this.height, 0x00FFFFFF); // полупрозрачный чёрный
     }
 }

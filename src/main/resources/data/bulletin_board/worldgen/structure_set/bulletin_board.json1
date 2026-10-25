@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "bulletin_board:bulletin_board",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 6554568,
+    "spacing": 20,
+    "separation": 8,
+    "rotation": "random"
+  }
+}

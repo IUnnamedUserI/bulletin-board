@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "bulletin_board:block/placed_note"
+    }
+  }
+}

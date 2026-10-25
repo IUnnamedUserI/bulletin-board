@@ -155,18 +155,18 @@ public class NotePaperItem extends Item {
             String translatedTitle = note.getTranslatedTitle();
             tooltip.add(Component.literal("§6" + translatedTitle).withStyle(ChatFormatting.GOLD));
 
-            tooltip.add(Component.translatable("item.bulletin-board.note_paper.tooltip.author",
+            tooltip.add(Component.translatable("item.bulletin_board.note_paper.tooltip.author",
                     Component.translatable(note.getAuthor())).withStyle(ChatFormatting.GRAY));
 
             if (note.getTagColor() != -1) {
                 String badgeId = getBadgeIdByColor(note.getTagColor());
                 if (badgeId != null) {
                     ChatFormatting colorFormatting = getFormattingFromColor(note.getTagColor());
-                    tooltip.add(Component.translatable("item.bulletin-board." + badgeId).withStyle(colorFormatting));
+                    tooltip.add(Component.translatable("item.bulletin_board." + badgeId).withStyle(colorFormatting));
                 }
             }
         } else {
-            tooltip.add(Component.translatable("item.bulletin-board.note_paper.tooltip.empty")
+            tooltip.add(Component.translatable("item.bulletin_board.note_paper.tooltip.empty")
                     .withStyle(ChatFormatting.GRAY));
         }
     }

@@ -14,9 +14,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBlockEntity> {
 
-    private static final ResourceLocation NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/note_paper.png");
-    private static final ResourceLocation SMALL_NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/small_note_paper.png");
-    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/badge.png");
+    private static final ResourceLocation NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/note_paper.png");
+    private static final ResourceLocation SMALL_NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin_board", "textures/block/badge.png");
 
     public PlacedNoteBlockRenderer(BlockEntityRendererProvider.Context ctx) {
     }

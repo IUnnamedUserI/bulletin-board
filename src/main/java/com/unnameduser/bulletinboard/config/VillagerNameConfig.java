@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class VillagerNameConfig {
-    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve("bulletin-board/villager_names.json");
+    private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get().resolve("bulletin_board/villager_names.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Map<String, String> NAMES = new HashMap<>();

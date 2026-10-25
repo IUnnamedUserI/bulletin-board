@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
 import com.unnameduser.bulletinboard.config.ModConfig;
 import net.minecraft.core.Registry;
@@ -15,8 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +25,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Внедрение доски объявлений в пулы деревенских домов.
  * <p>
- * В Fabric-версии это делал сторонний мод {@code structure-pool-api}. В Forge такого API нет,
- * поэтому инъекция выполняется напрямую: описания берутся из тех же файлов данных
- * {@code data/bulletin-board/structure_pool_api/inject_village_*.json}, которые уже есть в моде.
+ * Инъекция выполняется напрямую через Reflection: описания берутся из файлов данных
+ * {@code data/bulletin-board/structure_pool_api/inject_village_*.json}.
  */
 public class StructureRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger("BulletinBoard/Structures");
@@ -49,7 +48,7 @@ public class StructureRegistry {
     };
 
     public static void register() {
-        MinecraftForge.EVENT_BUS.addListener(StructureRegistry::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener(StructureRegistry::onServerAboutToStart);
     }
 
     private static void onServerAboutToStart(ServerAboutToStartEvent event) {
@@ -72,8 +71,8 @@ public class StructureRegistry {
     }
 
     private static int applyInjection(Registry<StructureTemplatePool> poolRegistry,
-                                     RegistryOps<JsonElement> ops,
-                                     String fileName) {
+                                      RegistryOps<JsonElement> ops,
+                                      String fileName) {
         JsonObject root = readJson(INJECTION_DIR + fileName);
         if (root == null) {
             return 0;
@@ -84,7 +83,7 @@ public class StructureRegistry {
             return 0;
         }
 
-        ResourceLocation poolId = new ResourceLocation(root.get("target_pool").getAsString());
+        ResourceLocation poolId = ResourceLocation.parse(root.get("target_pool").getAsString());
         StructureTemplatePool pool = poolRegistry.get(poolId);
         if (pool == null) {
             LOGGER.warn("Пул структур не найден: {}", poolId);
@@ -137,9 +136,9 @@ public class StructureRegistry {
     /**
      * Добавляет элемент в список шаблонов пула.
      * <p>
-     * Поле приватное и в продакшене носит SRG-имя, поэтому ищем его не по имени, а по типу:
-     * список, параметризованный именно {@link StructurePoolElement} (это {@code templates},
-     * в отличие от {@code rawTemplates}, где лежат {@code Pair}).
+     * Поле приватное и может носить SRG-имя, поэтому ищем его не по имени, а по типу:
+     * список, параметризованный именно {@link StructurePoolElement}.
+     * Если список иммутабелен (ImmutableList), создаём новую копию.
      */
     private static boolean appendToPool(StructureTemplatePool pool, StructurePoolElement element, int weight) {
         for (Field field : StructureTemplatePool.class.getDeclaredFields()) {
@@ -157,8 +156,25 @@ public class StructureRegistry {
                 if (value instanceof List<?> rawList) {
                     @SuppressWarnings("unchecked")
                     List<StructurePoolElement> templates = (List<StructurePoolElement>) rawList;
-                    for (int i = 0; i < weight; i++) {
-                        templates.add(element);
+
+                    // Проверяем иммутабельность и создаём копию при необходимости
+                    List<StructurePoolElement> mutableList;
+                    try {
+                        templates.add(element); // Пробуем добавить напрямую
+                        mutableList = templates;
+                    } catch (UnsupportedOperationException e) {
+                        // Список иммутабелен — создаём мутабельную копию
+                        mutableList = new ArrayList<>(templates);
+                        for (int i = 0; i < weight; i++) {
+                            mutableList.add(element);
+                        }
+                        field.set(pool, mutableList);
+                        return true;
+                    }
+
+                    // Если добавление прошло успешно, добавляем оставшиеся копии
+                    for (int i = 1; i < weight; i++) {
+                        mutableList.add(element);
                     }
                     return true;
                 }
@@ -167,11 +183,5 @@ public class StructureRegistry {
             }
         }
         return false;
-    }
-
-    /** Не используется напрямую, но сохраняет совместимость с прежним API (rawTemplates). */
-    @SuppressWarnings("unused")
-    private static Pair<StructurePoolElement, Integer> rawEntry(StructurePoolElement element, int weight) {
-        return Pair.of(element, weight);
     }
 }

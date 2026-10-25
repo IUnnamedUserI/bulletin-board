@@ -51,13 +51,14 @@ public class AdaptiveRoundedTextFieldWidget extends RoundedTextFieldWidget {
                 maxHeight
         );
 
-        int oldHeight = this.height;
+        int oldHeight = getHeight();
         int deltaY = oldHeight - newHeight;
 
-        this.height = newHeight;
+        // В NeoForge 1.21.1 поле height приватное, используем сеттер
+        setHeight(newHeight);
 
         if (deltaY != 0) {
-            this.setY(this.getY() + deltaY);
+            setY(getY() + deltaY);
         }
     }
 }

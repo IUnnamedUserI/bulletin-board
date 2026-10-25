@@ -1,6 +1,5 @@
 package com.unnameduser.bulletinboard.screen;
 
-import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.util.NoteConstants;
 import com.unnameduser.bulletinboard.util.NoteData;
@@ -29,10 +28,16 @@ public class NoteEditorScreen extends Screen {
         super(Component.translatable("gui.bulletin-board.note_editor.title"));
         this.notePaper = notePaper;
 
-        // Определяем тип записки по NBT или по умолчанию (полноразмерная)
+        // В 1.21.1 hasTag() -> hasComponents() или проверка через getOrDefault,
+        // но для кастомных данных в ComponentMap используем get(DataComponentType).
+        // Однако если вы храните данные через legacy NBT (setTag), то в 1.21.1
+        // это больше не работает напрямую. Нужно использовать CustomData component.
+        // Для упрощения порта пока оставим проверку через components,
+        // но ниже в saveNote нужно будет писать правильно.
         boolean isSmall = false;
-        if (notePaper.hasTag() && notePaper.getTag().contains("IsSmall")) {
-            isSmall = notePaper.getTag().getBoolean("IsSmall");
+        var customData = notePaper.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData != null && customData.contains("IsSmall")) {
+            isSmall = customData.copyTag().getBoolean("IsSmall");
         }
 
         this.titleMaxLength = isSmall ? NoteConstants.SMALL_TITLE_MAX : NoteConstants.FULL_TITLE_MAX;
@@ -122,18 +127,22 @@ public class NoteEditorScreen extends Screen {
 
             NoteData note = new NoteData(title, content, author, -1);
 
-            CompoundTag nbt = new CompoundTag();
-            nbt.put("NoteData", note.toNbt());
-
-            // Сохраняем тип записки
+            CompoundTag noteNbt = note.toNbt();
             boolean isSmall = titleMaxLength == NoteConstants.SMALL_TITLE_MAX;
-            nbt.putBoolean("IsSmall", isSmall);
+
+            // В 1.21.1 нельзя просто setTag(). Нужно использовать CustomData component.
+            CompoundTag rootTag = new CompoundTag();
+            rootTag.put("NoteData", noteNbt);
+            rootTag.putBoolean("IsSmall", isSmall);
+
+            this.notePaper.set(
+                    net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                    net.minecraft.world.item.component.CustomData.of(rootTag)
+            );
 
             int slot = findSlotIndex();
-            this.notePaper.setTag(nbt);
-
             if (slot >= 0) {
-                ModPacketsClient.sendUpdateNoteNbt(slot, nbt);
+                ModPacketsClient.sendUpdateNoteNbt(slot, rootTag);
             }
 
             this.onClose();
@@ -154,7 +163,8 @@ public class NoteEditorScreen extends Screen {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        // В NeoForge 1.21.1 renderBackground требует 4 аргумента
+        this.renderBackground(context, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
         int fieldWidth = 200;

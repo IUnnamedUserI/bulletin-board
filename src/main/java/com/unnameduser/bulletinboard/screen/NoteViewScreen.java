@@ -1,7 +1,6 @@
 package com.unnameduser.bulletinboard.screen;
 
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
-import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.network.ModPacketsClient;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.gui.GuiGraphics;
@@ -119,7 +118,6 @@ public class NoteViewScreen extends Screen {
 
             for (String word : words) {
                 if (word.isEmpty()) {
-                    // Пустое слово = лишний пробел, добавляем как есть
                     if (currentLine.length() > 0) {
                         currentLine.append(" ");
                     }
@@ -130,25 +128,21 @@ public class NoteViewScreen extends Screen {
 
                 // СЛОВО ШИРЕ МАКСИМАЛЬНОЙ ДОПУСТИМОЙ ШИРИНЫ — разбиваем посимвольно
                 if (wordWidth > maxWidth) {
-                    // Сначала сохраняем текущую накопленную строку (если есть)
                     if (currentLine.length() > 0) {
                         wrappedLines.add(currentLine.toString());
                         currentLine.setLength(0);
                     }
 
-                    // Разбиваем длинное слово на части по пикселям
                     StringBuilder chunk = new StringBuilder();
                     for (int i = 0; i < word.length(); i++) {
                         char c = word.charAt(i);
                         String testChunk = chunk.toString() + c;
                         if (this.font.width(testChunk) > maxWidth) {
-                            // Текущий кусок заполнен, сохраняем и начинаем новый
                             wrappedLines.add(chunk.toString());
                             chunk.setLength(0);
                         }
                         chunk.append(c);
                     }
-                    // Остаток слова становится началом следующей строки
                     currentLine = chunk;
                     continue;
                 }
@@ -164,7 +158,6 @@ public class NoteViewScreen extends Screen {
                         currentLine.append(" ").append(word);
                     }
                 } else {
-                    // Слово не влезает в текущую строку, но само по себе короче maxWidth
                     wrappedLines.add(currentLine.toString());
                     currentLine = new StringBuilder(word);
                 }
@@ -201,7 +194,8 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        this.renderBackground(context);
+        // В NeoForge 1.21.1 renderBackground требует 4 аргумента
+        this.renderBackground(context, mouseX, mouseY, delta);
 
         context.fill(parchmentX, parchmentY,
                 parchmentX + parchmentWidth, parchmentY + parchmentHeight,
@@ -226,7 +220,6 @@ public class NoteViewScreen extends Screen {
 
             int wordWidth = this.font.width(word);
 
-            // Слово шире максимальной ширины — разбиваем посимвольно
             if (wordWidth > titleMaxWidth) {
                 if (currentLine.length() > 0) {
                     titleLines.add(currentLine.toString());
@@ -247,7 +240,6 @@ public class NoteViewScreen extends Screen {
                 continue;
             }
 
-            // Обычная логика: проверяем, влезает ли слово с пробелом
             String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
             int lineWidth = this.font.width(testLine);
 
@@ -258,8 +250,6 @@ public class NoteViewScreen extends Screen {
                     currentLine.append(" ").append(word);
                 }
             } else {
-                // Слово не влезает в текущую строку, но само короче maxWidth
-                // Переносим целое слово на следующую строку
                 titleLines.add(currentLine.toString());
                 currentLine = new StringBuilder(word);
             }
@@ -269,7 +259,6 @@ public class NoteViewScreen extends Screen {
             titleLines.add(currentLine.toString());
         }
 
-        // Отрисовываем каждую строку заголовка по центру
         int titleLineHeight = 12;
         int totalTitleHeight = titleLines.size() * titleLineHeight;
         int titleStartY = parchmentY + 20 - (totalTitleHeight / 2) + (titleLineHeight / 2);

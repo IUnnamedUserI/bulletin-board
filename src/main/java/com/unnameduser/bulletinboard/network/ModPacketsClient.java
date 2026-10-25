@@ -8,25 +8,23 @@ import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-@OnlyIn(Dist.CLIENT)
 public class ModPacketsClient {
 
-    // ============ ОБРАБОТЧИКИ КЛИЕНТСКИХ ПАКЕТОВ ============
+    // ============ ОБРАБОТЧИКИ КЛИЕНТСКИХ ПАКЕТОВ (вызываются из ModPackets.onRegisterPayloadHandlers) ============
 
-    public static void handleVillagerNames(VillagerNameSyncPacket packet) {
-        Minecraft client = Minecraft.getInstance();
-        client.execute(() -> {
-            VillagerNameClientCache.updateNames(packet.getNames());
+    public static void handleVillagerNames(VillagerNameSyncPacket packet, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            VillagerNameClientCache.updateNames(packet.names());
         });
     }
 
-    public static void handleOpenPlacedNote(OpenPlacedNoteS2CPacket packet) {
-        Minecraft client = Minecraft.getInstance();
-        final BlockPos pos = packet.pos();
-        client.execute(() -> {
+    public static void handleOpenPlacedNote(OpenPlacedNoteS2CPacket packet, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft client = Minecraft.getInstance();
+            BlockPos pos = packet.pos();
             if (client.level != null
                     && client.level.getBlockEntity(pos) instanceof PlacedNoteBlockEntity noteEntity) {
                 NoteData note = noteEntity.getNoteData();
@@ -37,11 +35,11 @@ public class ModPacketsClient {
         });
     }
 
-    public static void handleOpenNote(OpenNoteS2CPacket packet) {
-        Minecraft client = Minecraft.getInstance();
-        final BlockPos pos = packet.pos();
-        final int slot = packet.slot();
-        client.execute(() -> {
+    public static void handleOpenNote(OpenNoteS2CPacket packet, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft client = Minecraft.getInstance();
+            BlockPos pos = packet.pos();
+            int slot = packet.slot();
             if (client.level != null
                     && client.level.getBlockEntity(pos) instanceof BulletinBoardBlockEntity boardEntity) {
                 NoteData note = boardEntity.getNoteAtPosition(slot);
@@ -55,14 +53,14 @@ public class ModPacketsClient {
     // ============ ОТПРАВКА ПАКЕТОВ НА СЕРВЕР ============
 
     public static void sendTakeNote(BlockPos pos, int noteIndex) {
-        ModPackets.CHANNEL.sendToServer(new TakeNoteC2SPacket(pos, noteIndex));
+        PacketDistributor.sendToServer(new TakeNoteC2SPacket(pos, noteIndex));
     }
 
     public static void sendUpdateNoteNbt(int slot, CompoundTag nbt) {
-        ModPackets.CHANNEL.sendToServer(new UpdateNoteNbtC2SPacket(slot, nbt));
+        PacketDistributor.sendToServer(new UpdateNoteNbtC2SPacket(slot, nbt));
     }
 
     public static void sendTakePlacedNote(BlockPos pos) {
-        ModPackets.CHANNEL.sendToServer(new TakePlacedNoteC2SPacket(pos));
+        PacketDistributor.sendToServer(new TakePlacedNoteC2SPacket(pos));
     }
 }

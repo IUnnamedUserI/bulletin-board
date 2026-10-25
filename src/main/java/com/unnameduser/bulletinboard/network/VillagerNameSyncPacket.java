@@ -1,42 +1,28 @@
 package com.unnameduser.bulletinboard.network;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.unnameduser.bulletinboard.BulletinBoardMod;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class VillagerNameSyncPacket {
+public record VillagerNameSyncPacket(Map<String, String> names) implements CustomPacketPayload {
 
-    private final Map<String, String> names;
+    public static final Type<VillagerNameSyncPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(BulletinBoardMod.MOD_ID, "villager_name_sync"));
 
-    public VillagerNameSyncPacket(Map<String, String> names) {
-        this.names = names;
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerNameSyncPacket> STREAM_CODEC =
+            StreamCodec.composite(
+                    ByteBufCodecs.map(ByteBufCodecs.STRING_UTF8, ByteBufCodecs.STRING_UTF8),
+                    VillagerNameSyncPacket::names,
+                    VillagerNameSyncPacket::new
+            );
 
-    public VillagerNameSyncPacket(FriendlyByteBuf buf) {
-        int size = buf.readInt();
-        Map<String, String> read = new HashMap<>();
-        for (int i = 0; i < size; i++) {
-            String uuid = buf.readUtf();
-            String name = buf.readUtf();
-            read.put(uuid, name);
-        }
-        this.names = read;
-    }
-
-    public static VillagerNameSyncPacket read(FriendlyByteBuf buf) {
-        return new VillagerNameSyncPacket(buf);
-    }
-
-    public void write(FriendlyByteBuf buf) {
-        buf.writeInt(names.size());
-        for (Map.Entry<String, String> entry : names.entrySet()) {
-            buf.writeUtf(entry.getKey());
-            buf.writeUtf(entry.getValue());
-        }
-    }
-
-    public Map<String, String> getNames() {
-        return names;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

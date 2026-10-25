@@ -1,31 +1,27 @@
 package com.unnameduser.bulletinboard.network;
 
+import com.unnameduser.bulletinboard.BulletinBoardMod;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public final class TakeNoteC2SPacket {
-    private final BlockPos pos;
-    private final int noteIndex;
+public record TakeNoteC2SPacket(BlockPos pos, int noteIndex) implements CustomPacketPayload {
 
-    public TakeNoteC2SPacket(BlockPos pos, int noteIndex) {
-        this.pos = pos;
-        this.noteIndex = noteIndex;
-    }
+    public static final Type<TakeNoteC2SPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(BulletinBoardMod.MOD_ID, "take_note"));
 
-    public TakeNoteC2SPacket(FriendlyByteBuf buf) {
-        this(buf.readBlockPos(), buf.readInt());
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, TakeNoteC2SPacket> STREAM_CODEC =
+            StreamCodec.composite(
+                    BlockPos.STREAM_CODEC, TakeNoteC2SPacket::pos,
+                    ByteBufCodecs.INT, TakeNoteC2SPacket::noteIndex,
+                    TakeNoteC2SPacket::new
+            );
 
-    public void write(FriendlyByteBuf buf) {
-        buf.writeBlockPos(pos);
-        buf.writeInt(noteIndex);
-    }
-
-    public BlockPos pos() {
-        return pos;
-    }
-
-    public int noteIndex() {
-        return noteIndex;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

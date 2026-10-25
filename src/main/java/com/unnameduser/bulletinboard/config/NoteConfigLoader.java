@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.unnameduser.bulletinboard.util.RandomNotePool;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -62,9 +62,6 @@ public class NoteConfigLoader {
             }
         }
     }
-
-    // ... остальной код load(), copyDefaultIfMissing(), loadFile(), геттеры остаются БЕЗ ИЗМЕНЕНИЙ ...
-    // (методы getNotes, getNotesForProfession, getNoteById, getNotesByCategory тоже без изменений)
 
     public static void load() {
         System.out.println("[Bulletin Board] Loading notes config from: " + CONFIG_DIR);

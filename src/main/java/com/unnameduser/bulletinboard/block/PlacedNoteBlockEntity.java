@@ -2,6 +2,7 @@ package com.unnameduser.bulletinboard.block;
 
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -16,7 +17,7 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     private boolean takenByPlayer = false;
 
     public PlacedNoteBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.PLACED_NOTE_ENTITY, pos, state);
+        super(ModBlockEntities.PLACED_NOTE_ENTITY.get(), pos, state);
     }
 
     // ============ ГЕТТЕРЫ / СЕТТЕРЫ ============
@@ -48,7 +49,6 @@ public class PlacedNoteBlockEntity extends BlockEntity {
 
         if (level.isRaining() || level.isThundering()) {
             if (level.canSeeSky(worldPosition.above())) {
-                // Помечаем, что дроп не нужен
                 this.takenByPlayer = true;
                 level.removeBlock(worldPosition, false);
             }
@@ -58,8 +58,8 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     // ============ NBT ============
 
     @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.saveAdditional(nbt, registries);
         if (noteData != null) {
             nbt.put("NoteData", noteData.toNbt());
         }
@@ -67,8 +67,8 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
         if (nbt.contains("NoteData")) {
             this.noteData = NoteData.fromNbt(nbt.getCompound("NoteData"));
         }
@@ -82,7 +82,7 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveCustomOnly(registries);
     }
 }

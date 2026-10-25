@@ -2,8 +2,8 @@ package com.unnameduser.bulletinboard.block;
 
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -18,11 +18,10 @@ import java.util.List;
 public class BulletinBoardBlockEntity extends BlockEntity {
     private List<NoteSlot> slots = new ArrayList<>();
     private static final int BIG_SLOT = 4;
-    private static final long NOTE_LIFETIME = 3600000; // 1 час
-    private static final long NOTE_LIFETIME_TICKS = 144000L;
+    private static final long NOTE_LIFETIME_TICKS = 144000L; // 1 час в тиках
 
     public BulletinBoardBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.BULLETIN_BOARD_ENTITY, pos, state);
+        super(ModBlockEntities.BULLETIN_BOARD_ENTITY.get(), pos, state);
     }
 
     public static class NoteSlot {
@@ -41,7 +40,6 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         }
     }
 
-    // Добавленный метод
     private boolean isSlotFree(int slot) {
         for (NoteSlot s : slots) {
             if (s.occupies(slot)) return false;
@@ -138,7 +136,7 @@ public class BulletinBoardBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide) return;
 
         boolean changed = false;
-        long currentGameTime = level.getGameTime(); // Абсолютное время мира в тиках
+        long currentGameTime = level.getGameTime();
 
         for (int i = slots.size() - 1; i >= 0; i--) {
             NoteSlot slot = slots.get(i);
@@ -157,14 +155,14 @@ public class BulletinBoardBlockEntity extends BlockEntity {
 
     public boolean isNoteStillValid(NoteData note) {
         if (note.hasSeal()) return true;
-        if (level == null) return true; // Защита от NPE
+        if (level == null) return true;
         long currentGameTime = level.getGameTime();
         return (currentGameTime - note.getCreationTime() <= NOTE_LIFETIME_TICKS);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.saveAdditional(nbt, registries);
 
         ListTag slotsList = new ListTag();
 
@@ -179,8 +177,8 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
         slots.clear();
 
         ListTag slotsList = nbt.getList("Slots", 10);
@@ -200,7 +198,7 @@ public class BulletinBoardBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveCustomOnly(registries);
     }
 }

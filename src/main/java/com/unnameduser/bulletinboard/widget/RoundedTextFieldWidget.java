@@ -272,16 +272,12 @@ public class RoundedTextFieldWidget extends AbstractWidget {
                 return i;
             }
 
-            // Проверяем, есть ли после этой строки разделитель в исходном тексте
-            // Если следующий символ в оригинальном тексте — \n или пробел, то +1
-            // Если слово было разбито посимвольно, разделителя нет
             charCount = lineEnd;
             if (charCount < text.length()) {
                 char nextChar = text.charAt(charCount);
                 if (nextChar == '\n' || nextChar == ' ') {
-                    charCount++; // учитываем разделитель
+                    charCount++;
                 }
-                // иначе: принудительный перенос внутри слова, разделителя нет
             }
         }
         return Math.max(0, lines.size() - 1);
@@ -324,9 +320,17 @@ public class RoundedTextFieldWidget extends AbstractWidget {
                     posInLine = i;
                 }
             }
+
+            // ИСПРАВЛЕНО: используем ту же логику подсчёта символов, что и в getLineIndexForCursor
             int charCount = 0;
             for (int i = 0; i < lineIndex; i++) {
-                charCount += lines.get(i).length() + 1;
+                charCount += lines.get(i).length();
+                if (charCount < text.length()) {
+                    char nextChar = text.charAt(charCount);
+                    if (nextChar == '\n' || nextChar == ' ') {
+                        charCount++;
+                    }
+                }
             }
             cursorPos = Mth.clamp(charCount + posInLine, 0, text.length());
         }
@@ -444,7 +448,13 @@ public class RoundedTextFieldWidget extends AbstractWidget {
 
             int charCount = 0;
             for (int i = 0; i < lineIndex - 1; i++) {
-                charCount += lines.get(i).length() + 1;
+                charCount += lines.get(i).length();
+                if (charCount < text.length()) {
+                    char nextChar = text.charAt(charCount);
+                    if (nextChar == '\n' || nextChar == ' ') {
+                        charCount++;
+                    }
+                }
             }
             cursorPos = charCount + newPos;
         } else {
@@ -464,7 +474,13 @@ public class RoundedTextFieldWidget extends AbstractWidget {
 
             int charCount = 0;
             for (int i = 0; i < lineIndex + 1; i++) {
-                charCount += lines.get(i).length() + 1;
+                charCount += lines.get(i).length();
+                if (charCount < text.length()) {
+                    char nextChar = text.charAt(charCount);
+                    if (nextChar == '\n' || nextChar == ' ') {
+                        charCount++;
+                    }
+                }
             }
             cursorPos = charCount + newPos;
         } else {

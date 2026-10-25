@@ -15,10 +15,8 @@ import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.server.VillagerNameManager;
 import com.unnameduser.bulletinboard.util.AutoNoteScheduler;
 import com.unnameduser.bulletinboard.world.StructureRegistry;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -32,31 +30,23 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-@Mod(BulletinBoardMod.FORGE_MOD_ID)
+@Mod(BulletinBoardMod.MOD_ID)
 public class BulletinBoardMod {
-	/** Namespace ресурсов мода (assets/bulletin-board, data/bulletin-board). */
 	public static final String MOD_ID = "bulletin-board";
 
-	/** Идентификатор мода для Forge (в mods.toml и в аннотации @Mod). */
-	public static final String FORGE_MOD_ID = "bulletin_board";
-
-	// В Forge реестры заморожены в момент загрузки класса мода, поэтому предметы и блоки
-	// нельзя создавать в статических инициализаторах: конструкторы Item/Block регистрируют
-	// «intrusive holder» и требуют размороженного реестра. Все объекты создаются
-	// в обработчике RegisterEvent, где Forge реестр размораживает.
+	// В NeoForge реестры тоже заморожены во время загрузки класса мода.
+	// Все объекты создаются в обработчике RegisterEvent.
 	public static Item NOTE_PAPER;
 	public static Item SMALL_NOTE_PAPER;
 
@@ -82,12 +72,13 @@ public class BulletinBoardMod {
 
 	public static CreativeModeTab BULLETIN_BOARD_GROUP;
 
-	public BulletinBoardMod() {
-		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+	public BulletinBoardMod(ModContainer container) {
+		IEventBus modEventBus = container.getEventBus();
+
 		modEventBus.addListener(this::onRegister);
 
-		// Сетевой канал и конфиги не зависят от реестров
-		ModPackets.register();
+		// ModPackets.register() пока оставляем без аргументов — исправим в следующем файле
+		ModPackets.register(modEventBus);
 
 		ModConfig.load();
 		NoteConfigLoader.load();
@@ -100,27 +91,24 @@ public class BulletinBoardMod {
 	// ============ РЕГИСТРАЦИЯ КОНТЕНТА ============
 
 	private void onRegister(RegisterEvent event) {
-		ResourceKey<? extends Registry<?>> key = event.getRegistryKey();
-
-		if (key.equals(Registries.ITEM)) {
+		if (event.getRegistryKey().equals(Registries.ITEM)) {
 			registerItems(event);
-		} else if (key.equals(Registries.BLOCK)) {
+		} else if (event.getRegistryKey().equals(Registries.BLOCK)) {
 			registerBlocks(event);
-		} else if (key.equals(Registries.BLOCK_ENTITY_TYPE)) {
+		} else if (event.getRegistryKey().equals(Registries.BLOCK_ENTITY_TYPE)) {
 			ModBlockEntities.register(event);
-		} else if (key.equals(Registries.CREATIVE_MODE_TAB)) {
+		} else if (event.getRegistryKey().equals(Registries.CREATIVE_MODE_TAB)) {
 			registerCreativeTab(event);
 		}
 	}
 
 	/**
-	 * Регистрирует объект через Forge-метод {@code RegisterEvent#register} и запоминает его
-	 * в статическом поле мода. Прямой вызов {@code Registry.register} здесь недопустим:
-	 * во время рассылки события реестр заблокирован.
+	 * Регистрирует объект через NeoForge RegisterEvent и запоминает его
+	 * в статическом поле мода.
 	 */
-	private static <T> void reg(RegisterEvent event, ResourceKey<? extends Registry<T>> registryKey,
-	                            String name, Supplier<T> supplier, Consumer<T> assign) {
-		event.register(registryKey, new ResourceLocation(MOD_ID, name), () -> {
+	private static <T> void reg(RegisterEvent event, net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<T>> registryKey,
+								String name, java.util.function.Supplier<T> supplier, java.util.function.Consumer<T> assign) {
+		event.register(registryKey, ResourceLocation.fromNamespaceAndPath(MOD_ID, name), () -> {
 			T value = supplier.get();
 			assign.accept(value);
 			return value;
@@ -167,7 +155,7 @@ public class BulletinBoardMod {
 				() -> new BadgeItem(new Item.Properties().stacksTo(16), 0xFFFFFF), v -> WHITE_BADGE = v);
 
 		// BlockItem'ы блоков регистрируются именно здесь: во время события BLOCK реестр
-		// предметов ещё заблокирован. Реестр BLOCK обрабатывается Forge раньше реестра ITEM.
+		// предметов ещё заблокирован. Реестр BLOCK обрабатывается NeoForge раньше реестра ITEM.
 		reg(event, Registries.ITEM, "bulletin_board",
 				() -> new BlockItem(BULLETIN_BOARD, new Item.Properties()), v -> { });
 		reg(event, Registries.ITEM, "placed_note",
@@ -176,11 +164,11 @@ public class BulletinBoardMod {
 
 	private void registerBlocks(RegisterEvent event) {
 		reg(event, Registries.BLOCK, "bulletin_board",
-				() -> new BulletinBoardBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion()),
+				() -> new BulletinBoardBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()),
 				v -> BULLETIN_BOARD = v);
 
 		reg(event, Registries.BLOCK, "placed_note",
-				() -> new PlacedNoteBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS)
+				() -> new PlacedNoteBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
 						.noOcclusion().noCollission().instabreak()),
 				v -> PLACED_NOTE = v);
 	}
@@ -213,13 +201,13 @@ public class BulletinBoardMod {
 				.build(), v -> BULLETIN_BOARD_GROUP = v);
 	}
 
-	// ============ СОБЫТИЯ СЕРВЕРА (игровая шина) ============
+	// ============ СОБЫТИЯ СЕРВЕРА (игровая шина NeoForge) ============
 
 	private void registerServerEvents() {
-		MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
-		MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommands);
-		MinecraftForge.EVENT_BUS.addListener(this::onServerTick);
-		MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
+		NeoForge.EVENT_BUS.addListener(this::onServerStopped);
+		NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
+		NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, this::onServerTick);
+		NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, this::onPlayerLoggedIn);
 	}
 
 	private void onServerStopped(ServerStoppedEvent event) {
@@ -230,9 +218,7 @@ public class BulletinBoardMod {
 		BulletinBoardCommand.register(event.getDispatcher(), event.getBuildContext(), event.getCommandSelection());
 	}
 
-	private void onServerTick(TickEvent.ServerTickEvent event) {
-		if (event.phase != TickEvent.Phase.START) return;
-
+	private void onServerTick(ServerTickEvent.Post event) {
 		MinecraftServer server = event.getServer();
 
 		if (AutoNoteScheduler.getInstance() == null && server.getTickCount() > 200) {

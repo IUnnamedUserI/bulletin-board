@@ -1,24 +1,25 @@
 package com.unnameduser.bulletinboard.network;
 
+import com.unnameduser.bulletinboard.BulletinBoardMod;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public final class OpenPlacedNoteS2CPacket {
-    private final BlockPos pos;
+public record OpenPlacedNoteS2CPacket(BlockPos pos) implements CustomPacketPayload {
 
-    public OpenPlacedNoteS2CPacket(BlockPos pos) {
-        this.pos = pos;
-    }
+    public static final Type<OpenPlacedNoteS2CPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(BulletinBoardMod.MOD_ID, "open_placed_note"));
 
-    public OpenPlacedNoteS2CPacket(FriendlyByteBuf buf) {
-        this(buf.readBlockPos());
-    }
+    public static final StreamCodec<RegistryFriendlyByteBuf, OpenPlacedNoteS2CPacket> STREAM_CODEC =
+            StreamCodec.composite(
+                    BlockPos.STREAM_CODEC, OpenPlacedNoteS2CPacket::pos,
+                    OpenPlacedNoteS2CPacket::new
+            );
 
-    public void write(FriendlyByteBuf buf) {
-        buf.writeBlockPos(pos);
-    }
-
-    public BlockPos pos() {
-        return pos;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

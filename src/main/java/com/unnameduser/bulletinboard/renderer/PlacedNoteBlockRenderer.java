@@ -38,16 +38,18 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
         matrices.mulPose(Axis.YP.rotationDegrees(rotation * 45.0f));
         matrices.translate(0, 0.001, 0);
 
-        float scale = 0.2f;
+        float scale = 0.4f;
         matrices.scale(scale, 1, scale);
 
         ResourceLocation texture = note.isSmall() ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(texture));
+        PoseStack.Pose pose = matrices.last();
 
+        float y = 0.01f; // чуть выше поверхности блока
         float nx = 0, ny = 1, nz = 0;
 
         // Вершина 1
-        consumer.addVertex(-1.0f, 0, -1.0f);
+        consumer.addVertex(pose, -0.5f, y, -0.5f);
         consumer.setColor(255, 255, 255, 255);
         consumer.setUv(1, 1);
         consumer.setOverlay(overlay);
@@ -55,7 +57,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
         consumer.setNormal(nx, ny, nz);
 
         // Вершина 2
-        consumer.addVertex(1.0f, 0, -1.0f);
+        consumer.addVertex(pose, 0.5f, y, -0.5f);
         consumer.setColor(255, 255, 255, 255);
         consumer.setUv(0, 1);
         consumer.setOverlay(overlay);
@@ -63,7 +65,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
         consumer.setNormal(nx, ny, nz);
 
         // Вершина 3
-        consumer.addVertex(1.0f, 0, 1.0f);
+        consumer.addVertex(pose, 0.5f, y, 0.5f);
         consumer.setColor(255, 255, 255, 255);
         consumer.setUv(0, 0);
         consumer.setOverlay(overlay);
@@ -71,7 +73,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
         consumer.setNormal(nx, ny, nz);
 
         // Вершина 4
-        consumer.addVertex(-1.0f, 0, 1.0f);
+        consumer.addVertex(pose, -0.5f, y, 0.5f);
         consumer.setColor(255, 255, 255, 255);
         consumer.setUv(1, 0);
         consumer.setOverlay(overlay);
@@ -83,20 +85,24 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
 
             matrices.pushPose();
 
-            float badgeX = 0.4f;
-            float badgeZ = note.isSmall() ? -0.25f : -0.7f;
+            float badgeX = 0.2f; // 0.4
+            float badgeZ = note.isSmall() ? -0.15f : -0.35f; // large: -0.7f
 
             matrices.translate(badgeX, 0.001f, badgeZ);
 
             float badgeScale = note.isSmall() ? 0.2f : 0.25f;
             matrices.scale(badgeScale, 1, badgeScale);
 
+            PoseStack.Pose badgePose = matrices.last();
+
             float r = ((note.getTagColor() >> 16) & 0xFF) / 255f;
             float g = ((note.getTagColor() >> 8) & 0xFF) / 255f;
             float b = (note.getTagColor() & 0xFF) / 255f;
 
+            float by = 0.01f;
+
             // Вершина 1
-            badgeConsumer.addVertex(-1.0f, 0, -1.0f);
+            badgeConsumer.addVertex(badgePose, -0.5f, by, -0.5f);
             badgeConsumer.setColor(r, g, b, 1.0f);
             badgeConsumer.setUv(1, 1);
             badgeConsumer.setOverlay(overlay);
@@ -104,7 +110,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
             badgeConsumer.setNormal(nx, ny, nz);
 
             // Вершина 2
-            badgeConsumer.addVertex(1.0f, 0, -1.0f);
+            badgeConsumer.addVertex(badgePose, 0.5f, by, -0.5f);
             badgeConsumer.setColor(r, g, b, 1.0f);
             badgeConsumer.setUv(0, 1);
             badgeConsumer.setOverlay(overlay);
@@ -112,7 +118,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
             badgeConsumer.setNormal(nx, ny, nz);
 
             // Вершина 3
-            badgeConsumer.addVertex(1.0f, 0, 1.0f);
+            badgeConsumer.addVertex(badgePose, 0.5f, by, 0.5f);
             badgeConsumer.setColor(r, g, b, 1.0f);
             badgeConsumer.setUv(0, 0);
             badgeConsumer.setOverlay(overlay);
@@ -120,7 +126,7 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
             badgeConsumer.setNormal(nx, ny, nz);
 
             // Вершина 4
-            badgeConsumer.addVertex(-1.0f, 0, 1.0f);
+            badgeConsumer.addVertex(badgePose, -0.5f, by, 0.5f);
             badgeConsumer.setColor(r, g, b, 1.0f);
             badgeConsumer.setUv(1, 0);
             badgeConsumer.setOverlay(overlay);
@@ -135,6 +141,6 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
 
     @Override
     public boolean shouldRenderOffScreen(PlacedNoteBlockEntity entity) {
-        return false;
+        return true; // было false — из-за этого записка могла не рисоваться за пределами экрана
     }
 }

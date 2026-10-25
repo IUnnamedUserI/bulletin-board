@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class NoteConfigLoader {
-    private static final Path CONFIG_DIR = FMLPaths.CONFIGDIR.get().resolve("bulletin-board/notes");
+    private static final Path CONFIG_DIR = FMLPaths.CONFIGDIR.get().resolve("bulletin_board/notes");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Map<String, List<NoteTemplate>> PROFESSION_NOTES = new HashMap<>();

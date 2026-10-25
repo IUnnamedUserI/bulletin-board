@@ -125,12 +125,13 @@ public class NoteEditorScreen extends Screen {
                     Component.translatable("gui.bulletin_board.note_editor.anonymous_name").getString() :
                     this.minecraft.player.getName().getString();
 
-            NoteData note = new NoteData(title, content, author, -1);
-
-            CompoundTag noteNbt = note.toNbt();
             boolean isSmall = titleMaxLength == NoteConstants.SMALL_TITLE_MAX;
 
-            // В 1.21.1 нельзя просто setTag(). Нужно использовать CustomData component.
+            // ← ГЛАВНОЕ ИСПРАВЛЕНИЕ: передаём isSmall в конструктор
+            NoteData note = new NoteData(title, content, author, -1, System.currentTimeMillis(), false, isSmall);
+
+            CompoundTag noteNbt = note.toNbt();
+
             CompoundTag rootTag = new CompoundTag();
             rootTag.put("NoteData", noteNbt);
             rootTag.putBoolean("IsSmall", isSmall);

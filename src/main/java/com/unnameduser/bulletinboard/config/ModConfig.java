@@ -19,7 +19,7 @@ import java.nio.file.Path;
  */
 public class ModConfig {
     private static final Path CONFIG_PATH = FMLPaths.CONFIGDIR.get()
-            .resolve("bulletin-board/config.json5");
+            .resolve("bulletin_board/config.json5");
 
     private static final Gson GSON = new GsonBuilder()
             .setLenient()

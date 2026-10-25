@@ -6,12 +6,14 @@ import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlockEntity;
 import com.unnameduser.bulletinboard.block.ModBlockEntities;
 import com.unnameduser.bulletinboard.client.VillagerNameClientCache;
+import com.unnameduser.bulletinboard.config.ModConfig;
+import com.unnameduser.bulletinboard.config.VillagerNameConfig;
 import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.renderer.BulletinBoardRenderer;
 import com.unnameduser.bulletinboard.renderer.PlacedNoteBlockRenderer;
-import com.unnameduser.bulletinboard.renderer.VillagerNameRenderer;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -19,6 +21,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
@@ -57,29 +61,91 @@ public class BulletinBoardClient {
     }
 
     private static void onRenderLevelStage(RenderLevelStageEvent event) {
-        // В NeoForge 1.21.1 стадии называются иначе
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             renderVillagerNames(event);
         } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             renderBlockHighlight(event);
         }
     }
 
+    // ============ РЕНДЕРИНГ ИМЁН ЖИТЕЛЕЙ ============
+
     private static void renderVillagerNames(RenderLevelStageEvent event) {
         Minecraft client = Minecraft.getInstance();
         ClientLevel level = client.level;
         if (client.player == null || level == null) return;
+        if (!ModConfig.isShowVillagerNames()) return;
 
+        PoseStack matrices = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = client.renderBuffers().bufferSource();
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
 
+        // Используем EntityRenderDispatcher вместо event.getCamera() —
+        // это тот же API, что используется в VillagerNameRenderer из Fabric-версии
+        var dispatcher = client.getEntityRenderDispatcher();
+        Vec3 cameraPos = dispatcher.camera.getPosition();
+
+        Font font = client.font;
+
         for (Entity entity : level.entitiesForRendering()) {
-            if (entity instanceof Villager villager) {
-                String nameKey = VillagerNameClientCache.getNameKey(villager.getUUID());
-                VillagerNameRenderer.render(villager, nameKey, event.getPoseStack(), buffers, partialTick);
-            }
+            if (!(entity instanceof Villager villager)) continue;
+
+            String nameKey = VillagerNameClientCache.getNameKey(villager.getUUID());
+            Component nameText = Component.translatable(nameKey);
+
+            String professionRaw = BuiltInRegistries.VILLAGER_PROFESSION
+                    .getKey(villager.getVillagerData().getProfession()).getPath();
+            Component professionText = Component.translatable("villager.profession." + professionRaw);
+
+            float nameWidth = font.width(nameText) / 2f;
+            float profWidth = font.width(professionText) / 2f;
+
+            Vec3 pos = villager.getPosition(partialTick).add(0, villager.getBbHeight() * 1.2, 0);
+
+            matrices.pushPose();
+            matrices.translate(
+                    pos.x - cameraPos.x,
+                    pos.y - cameraPos.y,
+                    pos.z - cameraPos.z
+            );
+            matrices.mulPose(dispatcher.camera.rotation());
+
+            float scale = -0.025f;
+            matrices.scale(scale, scale, scale);
+
+            font.drawInBatch(
+                    nameText,
+                    -nameWidth,
+                    -6,
+                    VillagerNameConfig.getNameColor(),
+                    false,
+                    matrices.last().pose(),
+                    buffers,
+                    Font.DisplayMode.SEE_THROUGH,
+                    0,
+                    15728880
+            );
+
+            font.drawInBatch(
+                    professionText,
+                    -profWidth,
+                    10,
+                    VillagerNameConfig.getProfessionColor(),
+                    false,
+                    matrices.last().pose(),
+                    buffers,
+                    Font.DisplayMode.SEE_THROUGH,
+                    0,
+                    15728880
+            );
+
+            matrices.popPose();
         }
+
+        buffers.endBatch();
     }
+
+    // ============ ПОДСВЕТКА СЛОТОВ ДОСКИ ============
 
     private static void renderBlockHighlight(RenderLevelStageEvent event) {
         Minecraft client = Minecraft.getInstance();
@@ -278,6 +344,7 @@ public class BulletinBoardClient {
         double minY = box.minY, maxY = box.maxY;
         double minZ = box.minZ, maxZ = box.maxZ;
         PoseStack.Pose entry = matrices.last();
+
         line(lines, entry, minX, minY, minZ, maxX, minY, minZ, r, g, b, a, 1, 0, 0);
         line(lines, entry, minX, minY, minZ, minX, maxY, minZ, r, g, b, a, 0, 1, 0);
         line(lines, entry, minX, minY, minZ, minX, minY, maxZ, r, g, b, a, 0, 0, 1);
@@ -295,11 +362,15 @@ public class BulletinBoardClient {
     private static void line(VertexConsumer lines, PoseStack.Pose entry,
                              double x1, double y1, double z1, double x2, double y2, double z2,
                              float r, float g, float b, float a, int nx, int ny, int nz) {
-        // В NeoForge 1.21.1 используется addVertex() вместо vertex()
-        lines.addVertex(entry.pose(), (float) x1, (float) y1, (float) z1)
-                .setColor(r, g, b, a).setNormal(nx, ny, nz);
-        lines.addVertex(entry.pose(), (float) x2, (float) y2, (float) z2)
-                .setColor(r, g, b, a).setNormal(nx, ny, nz);
+        // Первая вершина
+        lines.addVertex((float) x1, (float) y1, (float) z1);
+        lines.setColor(r, g, b, a);
+        lines.setNormal(nx, ny, nz);
+
+        // Вторая вершина
+        lines.addVertex((float) x2, (float) y2, (float) z2);
+        lines.setColor(r, g, b, a);
+        lines.setNormal(nx, ny, nz);
     }
 
     private static boolean isSmallNote(ItemStack stack) {

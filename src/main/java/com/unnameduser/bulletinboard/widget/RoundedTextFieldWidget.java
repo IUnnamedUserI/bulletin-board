@@ -63,11 +63,6 @@ public class RoundedTextFieldWidget extends AbstractWidget {
                 Component.literal("Текстовое поле: " + text));
     }
 
-    @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        this.render(context, mouseX, mouseY, delta);
-    }
-
     // ============ АНИМАЦИЯ СВЕЧЕНИЯ ============
     public void tick() {
         if (focused && glowAlpha < 1.0f) {
@@ -105,8 +100,12 @@ public class RoundedTextFieldWidget extends AbstractWidget {
 
     // ============ ОТРИСОВКА ============
 
+    /**
+     * В NeoForge 1.21.1 render() в AbstractWidget стал final.
+     * Вся кастомная отрисовка перенесена в renderWidget().
+     */
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (!this.visible) return;
 
         int x = getX();
@@ -321,7 +320,6 @@ public class RoundedTextFieldWidget extends AbstractWidget {
                 }
             }
 
-            // ИСПРАВЛЕНО: используем ту же логику подсчёта символов, что и в getLineIndexForCursor
             int charCount = 0;
             for (int i = 0; i < lineIndex; i++) {
                 charCount += lines.get(i).length();

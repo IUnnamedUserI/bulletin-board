@@ -56,7 +56,6 @@ public class NoteViewScreen extends Screen {
     protected void init() {
         super.init();
 
-        // Кнопка "Закрыть"
         this.addRenderableWidget(
                 Button.builder(
                                 Component.translatable("gui.bulletin-board.note_view.close"),
@@ -66,7 +65,6 @@ public class NoteViewScreen extends Screen {
                         .build()
         );
 
-        // Кнопка "Забрать" для записки на доске
         if (boardEntity != null && notePosition >= 0) {
             this.addRenderableWidget(
                     Button.builder(
@@ -78,7 +76,6 @@ public class NoteViewScreen extends Screen {
             );
         }
 
-        // Кнопка "Забрать" для записки на блоке
         if (placedPos != null) {
             this.addRenderableWidget(
                     Button.builder(
@@ -126,7 +123,6 @@ public class NoteViewScreen extends Screen {
 
                 int wordWidth = this.font.width(word);
 
-                // СЛОВО ШИРЕ МАКСИМАЛЬНОЙ ДОПУСТИМОЙ ШИРИНЫ — разбиваем посимвольно
                 if (wordWidth > maxWidth) {
                     if (currentLine.length() > 0) {
                         wrappedLines.add(currentLine.toString());
@@ -147,7 +143,6 @@ public class NoteViewScreen extends Screen {
                     continue;
                 }
 
-                // Обычная логика: слово помещается или нет
                 String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
                 int lineWidth = this.font.width(testLine);
 
@@ -185,7 +180,6 @@ public class NoteViewScreen extends Screen {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        // Проверка актуальности записки на доске
         if (boardEntity != null && notePosition >= 0) {
             NoteData currentNote = boardEntity.getNoteAtPosition(notePosition);
             if (currentNote == null || !currentNote.equals(note)) {
@@ -194,7 +188,6 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        // В NeoForge 1.21.1 renderBackground требует 4 аргумента
         this.renderBackground(context, mouseX, mouseY, delta);
 
         context.fill(parchmentX, parchmentY,
@@ -202,7 +195,6 @@ public class NoteViewScreen extends Screen {
                 PARCHMENT_COLOR);
         context.renderOutline(parchmentX, parchmentY, parchmentWidth, parchmentHeight, BORDER_COLOR);
 
-        // === ОТРИСОВКА ЗАГОЛОВКА С ГИБРИДНЫМ ПЕРЕНОСОМ ===
         String rawTitle = "§l" + note.getTranslatedTitle();
         int titleMaxWidth = parchmentWidth - 40;
         List<String> titleLines = new ArrayList<>();
@@ -273,12 +265,10 @@ public class NoteViewScreen extends Screen {
             );
         }
 
-        // Разделительная линия под заголовком
         context.fill(parchmentX + 20, parchmentY + 35,
                 parchmentX + parchmentWidth - 20, parchmentY + 36,
                 BORDER_COLOR);
 
-        // === ОТРИСОВКА КОНТЕНТА ===
         int textY = textStartY - scrollOffset;
         int visibleStart = Math.max(0, (parchmentY + 57 - textY) / 12);
         int visibleEnd = Math.min(wrappedLines.size(), (parchmentY + parchmentHeight - 50 - textY) / 12 + 1);
@@ -292,7 +282,6 @@ public class NoteViewScreen extends Screen {
             }
         }
 
-        // Автор
         Component authorText = Component.translatable("gui.bulletin-board.note_view.from",
                 Component.translatable(note.getAuthor()));
         context.drawString(this.font,
@@ -300,7 +289,6 @@ public class NoteViewScreen extends Screen {
                 parchmentX + parchmentWidth - 100, parchmentY + parchmentHeight - 25,
                 0xFF6B5E4A, false);
 
-        // Стрелки прокрутки
         boolean canScrollUp = scrollOffset > 0;
         boolean canScrollDown = scrollOffset < maxScroll;
 
@@ -358,14 +346,18 @@ public class NoteViewScreen extends Screen {
         }
     }
 
+    /**
+     * В NeoForge 1.21.1 mouseScrolled принимает 4 аргумента:
+     * mouseX, mouseY, deltaX (горизонтальная прокрутка), deltaY (вертикальная прокрутка).
+     */
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
         if (mouseX >= parchmentX && mouseX <= parchmentX + parchmentWidth &&
                 mouseY >= parchmentY && mouseY <= parchmentY + parchmentHeight) {
-            scrollOffset = Mth.clamp(scrollOffset - (int) (amount * 15), 0, maxScroll);
+            scrollOffset = Mth.clamp(scrollOffset - (int) (deltaY * 15), 0, maxScroll);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
     }
 
     @Override

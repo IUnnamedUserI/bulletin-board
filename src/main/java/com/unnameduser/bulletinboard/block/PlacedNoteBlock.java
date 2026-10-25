@@ -1,15 +1,20 @@
 package com.unnameduser.bulletinboard.block;
 
+import com.mojang.serialization.MapCodec;
 import com.unnameduser.bulletinboard.BulletinBoardMod;
+import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -29,12 +34,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class PlacedNoteBlock extends BaseEntityBlock {
+
+    public static final MapCodec<PlacedNoteBlock> CODEC = simpleCodec(PlacedNoteBlock::new);
 
     public static final IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 7);
     private static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 1.0, 14.0);
@@ -42,6 +45,11 @@ public class PlacedNoteBlock extends BaseEntityBlock {
     public PlacedNoteBlock(BlockBehaviour.Properties settings) {
         super(settings);
         this.registerDefaultState(this.stateDefinition.any().setValue(ROTATION, 0));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -96,22 +104,20 @@ public class PlacedNoteBlock extends BaseEntityBlock {
 
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                                LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+                                  LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
         if (direction == Direction.DOWN && !canPlaceOn(neighborState, world, neighborPos)) {
-            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+            return Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     private boolean canPlaceOn(BlockState belowState, BlockGetter world, BlockPos belowPos) {
-        // Проверяем, твёрдый ли блок (с учётом ступеней/плит)
         if (!isSolidForNote(belowState, world, belowPos)) {
             return false;
         }
 
         Block block = belowState.getBlock();
 
-        // Чёрный список
         if (block instanceof DoorBlock
                 || block instanceof TrapDoorBlock
                 || block instanceof FenceBlock
@@ -135,17 +141,14 @@ public class PlacedNoteBlock extends BaseEntityBlock {
     }
 
     private boolean isSolidForNote(BlockState state, BlockGetter world, BlockPos pos) {
-        // Обычный твёрдый блок
         if (state.isSolidRender(world, pos)) {
             return true;
         }
 
-        // Ступень: если half = BOTTOM (верхняя грань на полной высоте)
         if (state.getBlock() instanceof StairBlock) {
             return state.getValue(StairBlock.HALF) == Half.TOP;
         }
 
-        // Плита: если DOUBLE (полный блок) или TOP (верхняя грань на полной высоте)
         if (state.getBlock() instanceof SlabBlock) {
             SlabType type = state.getValue(SlabBlock.TYPE);
             return type == SlabType.DOUBLE || type == SlabType.TOP;
@@ -158,34 +161,36 @@ public class PlacedNoteBlock extends BaseEntityBlock {
         if (player == null) return 0;
 
         float yaw = player.getYRot();
-        // Нормализуем yaw
         yaw = ((yaw % 360) + 360) % 360;
 
-        // 8 позиций по 45 градусов
         int rotation = Math.round(yaw / 45.0f) & 7;
-
-        // Инвертируем для правильного отображения
         return (rotation + 4) & 7;
     }
 
     // ============ ВЗАИМОДЕЙСТВИЕ ============
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player,
-                              InteractionHand hand, BlockHitResult hit) {
-        if (world.isClientSide) {
-            return InteractionResult.SUCCESS;
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos,
+                                              Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (hand != InteractionHand.MAIN_HAND) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
-            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-                com.unnameduser.bulletinboard.network.ModPackets.sendOpenPlacedNoteScreen(serverPlayer, pos);
+        if (!stack.isEmpty()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!world.isClientSide) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    ModPackets.sendOpenPlacedNoteScreen(serverPlayer, pos);
+                }
+                return ItemInteractionResult.CONSUME;
             }
-            return InteractionResult.CONSUME;
         }
 
-        return InteractionResult.PASS;
+        return ItemInteractionResult.SUCCESS;
     }
 
     // ============ ДРОП ПРИ РАЗРУШЕНИИ ============
@@ -195,7 +200,6 @@ public class PlacedNoteBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
-                // Если записка уже забрана игроком или уничтожена дождём — не дропаем
                 if (!noteEntity.isTakenByPlayer()) {
                     NoteData note = noteEntity.getNoteData();
                     if (note != null && !world.isClientSide) {
@@ -203,8 +207,9 @@ public class PlacedNoteBlock extends BaseEntityBlock {
                                 note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
                                 1
                         );
-                        CompoundTag nbt = stack.getOrCreateTag();
-                        nbt.put("NoteData", note.toNbt());
+                        CompoundTag rootTag = new CompoundTag();
+                        rootTag.put("NoteData", note.toNbt());
+                        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rootTag));
 
                         Containers.dropItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
                     }
@@ -219,7 +224,7 @@ public class PlacedNoteBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-        return world.isClientSide ? null : (BlockEntityTicker<T>) (world1, pos, state1, blockEntity) -> {
+        return world.isClientSide ? null : (world1, pos1, state1, blockEntity) -> {
             if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
                 noteEntity.tick();
             }
@@ -229,12 +234,11 @@ public class PlacedNoteBlock extends BaseEntityBlock {
     // ============ РЕНДЕР ============
 
     @Override
-    public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
-        return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
-    @Override
-    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state, boolean includeData) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
             NoteData note = noteEntity.getNoteData();
@@ -243,12 +247,12 @@ public class PlacedNoteBlock extends BaseEntityBlock {
                         note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
                         1
                 );
-                CompoundTag nbt = stack.getOrCreateTag();
-                nbt.put("NoteData", note.toNbt());
+                CompoundTag rootTag = new CompoundTag();
+                rootTag.put("NoteData", note.toNbt());
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(rootTag));
                 return stack;
             }
         }
-        // Если данных нет, возвращаем пустую записку
         return new ItemStack(BulletinBoardMod.NOTE_PAPER);
     }
 }

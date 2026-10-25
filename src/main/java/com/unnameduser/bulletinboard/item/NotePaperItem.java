@@ -3,8 +3,6 @@ package com.unnameduser.bulletinboard.item;
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlock;
 import com.unnameduser.bulletinboard.block.PlacedNoteBlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import com.unnameduser.bulletinboard.block.BulletinBoardBlock;
 import com.unnameduser.bulletinboard.screen.NoteEditorScreen;
 import com.unnameduser.bulletinboard.screen.NoteViewScreen;
@@ -13,6 +11,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
@@ -69,7 +70,8 @@ public class NotePaperItem extends Item {
                             // Сохраняем данные записки в BlockEntity
                             BlockEntity blockEntity = world.getBlockEntity(placePos);
                             if (blockEntity instanceof PlacedNoteBlockEntity noteEntity) {
-                                NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
+                                CompoundTag tag = getCustomTag(stack);
+                                NoteData note = NoteData.fromNbt(tag.getCompound("NoteData"));
                                 noteEntity.setNoteData(note);
                             }
 
@@ -103,40 +105,56 @@ public class NotePaperItem extends Item {
     private int getRotation(Player player) {
         float yaw = player.getYRot();
         yaw = ((yaw % 360) + 360) % 360;
-        // Инвертируем yaw: 360 - yaw
         float invertedYaw = 360 - yaw;
         return Math.round(invertedYaw / 45.0f) & 7;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    /**
+     * Клиентский метод открытия экрана.
+     */
     private void openScreen(ItemStack stack, boolean hasNote) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return;
+
         if (hasNote) {
-            NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
+            CompoundTag tag = getCustomTag(stack);
+            NoteData note = NoteData.fromNbt(tag.getCompound("NoteData"));
             Minecraft.getInstance().setScreen(new NoteViewScreen(note));
         } else {
-            // Передаём тип записки через NBT
-            if (!stack.hasTag()) {
-                stack.setTag(new net.minecraft.nbt.CompoundTag());
-            }
-            stack.getTag().putBoolean("IsSmall", isSmall);
+            CompoundTag rootTag = getOrCreateCustomTag(stack);
+            rootTag.putBoolean("IsSmall", isSmall);
+            setCustomTag(stack, rootTag);
             Minecraft.getInstance().setScreen(new NoteEditorScreen(stack));
         }
     }
 
     private boolean hasNoteData(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().contains("NoteData");
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
+    }
+
+    private CompoundTag getCustomTag(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
+    }
+
+    private CompoundTag getOrCreateCustomTag(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
+    }
+
+    private void setCustomTag(ItemStack stack, CompoundTag tag) {
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         if (hasNoteData(stack)) {
-            NoteData note = NoteData.fromNbt(stack.getTag().getCompound("NoteData"));
+            CompoundTag tag = getCustomTag(stack);
+            NoteData note = NoteData.fromNbt(tag.getCompound("NoteData"));
 
-            // Используем переведённый заголовок
             String translatedTitle = note.getTranslatedTitle();
             tooltip.add(Component.literal("§6" + translatedTitle).withStyle(ChatFormatting.GOLD));
 
-            // Автор уже переводится
             tooltip.add(Component.translatable("item.bulletin-board.note_paper.tooltip.author",
                     Component.translatable(note.getAuthor())).withStyle(ChatFormatting.GRAY));
 

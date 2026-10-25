@@ -43,7 +43,7 @@ import net.neoforged.fml.common.Mod;
 
 @Mod(BulletinBoardMod.MOD_ID)
 public class BulletinBoardMod {
-	public static final String MOD_ID = "bulletin-board";
+	public static final String MOD_ID = "bulletin_board";
 
 	// В NeoForge реестры тоже заморожены во время загрузки класса мода.
 	// Все объекты создаются в обработчике RegisterEvent.

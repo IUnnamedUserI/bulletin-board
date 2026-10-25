@@ -18,22 +18,23 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
-@Mod.EventBusSubscriber(modid = BulletinBoardMod.FORGE_MOD_ID,
-        bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BulletinBoardMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class BulletinBoardClient {
 
     private static final int COLOR_FREE = 0x00FF00;
@@ -52,11 +53,11 @@ public class BulletinBoardClient {
                 PlacedNoteBlockRenderer::new
         );
 
-        // Аналог Fabric WorldRenderEvents: имена жителей и подсветка слотов
-        MinecraftForge.EVENT_BUS.addListener(BulletinBoardClient::onRenderLevelStage);
+        NeoForge.EVENT_BUS.addListener(BulletinBoardClient::onRenderLevelStage);
     }
 
     private static void onRenderLevelStage(RenderLevelStageEvent event) {
+        // В NeoForge 1.21.1 стадии называются иначе
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
             renderVillagerNames(event);
         } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
@@ -70,11 +71,12 @@ public class BulletinBoardClient {
         if (client.player == null || level == null) return;
 
         MultiBufferSource.BufferSource buffers = client.renderBuffers().bufferSource();
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
 
         for (Entity entity : level.entitiesForRendering()) {
             if (entity instanceof Villager villager) {
                 String nameKey = VillagerNameClientCache.getNameKey(villager.getUUID());
-                VillagerNameRenderer.render(villager, nameKey, event.getPoseStack(), buffers, event.getPartialTick());
+                VillagerNameRenderer.render(villager, nameKey, event.getPoseStack(), buffers, partialTick);
             }
         }
     }
@@ -121,8 +123,9 @@ public class BulletinBoardClient {
     }
 
     private static boolean isSignedNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem
-                && stack.hasTag() && stack.getTag().contains("NoteData");
+        if (!(stack.getItem() instanceof NotePaperItem)) return false;
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
     }
 
     private static int calculateSlot(BlockHitResult hit, BlockPos pos, Direction facing) {
@@ -150,12 +153,13 @@ public class BulletinBoardClient {
             return -1;
         } else if (horizontal > 0.47 && horizontal < 0.83 && y < 0.7 && y > 0.3) {
             return 4;
-        } else { return -1; }
+        } else {
+            return -1;
+        }
     }
 
     private static void renderHighlight(RenderLevelStageEvent event, BlockPos pos, int slot,
                                         Direction facing, int color, float alpha) {
-
         Minecraft client = Minecraft.getInstance();
         ClientLevel level = client.level;
         if (client.player == null || level == null) return;
@@ -243,7 +247,8 @@ public class BulletinBoardClient {
         double slotX1, slotX2, slotY1, slotY2;
 
         if (slot >= 0 && slot <= 3) {
-            slotX1 = 0.14; slotX2 = 0.42;
+            slotX1 = 0.14;
+            slotX2 = 0.42;
             switch (slot) {
                 case 0: slotY1 = 0.64; slotY2 = 0.80; break;
                 case 1: slotY1 = 0.47; slotY2 = 0.63; break;
@@ -252,16 +257,18 @@ public class BulletinBoardClient {
                 default: slotY1 = 0.04; slotY2 = 0.88;
             }
         } else {
-            slotX1 = 0.47; slotX2 = 0.83;
-            slotY1 = 0.3; slotY2 = 0.7;
+            slotX1 = 0.47;
+            slotX2 = 0.83;
+            slotY1 = 0.3;
+            slotY2 = 0.7;
         }
 
         return switch (facing) {
             case NORTH -> new AABB(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
             case SOUTH -> new AABB(x + slotX1, y + slotY1, z + 0.05, x + slotX2, y + slotY2, z + 0.07);
-            case WEST  -> new AABB(x + 0.93, y + slotY1, z + slotX1, x + 0.95, y + slotY2, z + slotX2);
-            case EAST  -> new AABB(x + 0.05, y + slotY1, z + slotX1, x + 0.07, y + slotY2, z + slotX2);
-            default    -> new AABB(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
+            case WEST -> new AABB(x + 0.93, y + slotY1, z + slotX1, x + 0.95, y + slotY2, z + slotX2);
+            case EAST -> new AABB(x + 0.05, y + slotY1, z + slotX1, x + 0.07, y + slotY2, z + slotX2);
+            default -> new AABB(x + slotX1, y + slotY1, z + 0.93, x + slotX2, y + slotY2, z + 0.95);
         };
     }
 
@@ -270,39 +277,43 @@ public class BulletinBoardClient {
         double minX = box.minX, maxX = box.maxX;
         double minY = box.minY, maxY = box.maxY;
         double minZ = box.minZ, maxZ = box.maxZ;
-        line(lines, matrices, minX, minY, minZ, maxX, minY, minZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, minY, minZ, minX, maxY, minZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, minX, minY, minZ, minX, minY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a, 1, 0, 0);
-        line(lines, matrices, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a, 0, 1, 0);
-        line(lines, matrices, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a, 0, 0, 1);
-        line(lines, matrices, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a, 1, 0, 0);
+        PoseStack.Pose entry = matrices.last();
+        line(lines, entry, minX, minY, minZ, maxX, minY, minZ, r, g, b, a, 1, 0, 0);
+        line(lines, entry, minX, minY, minZ, minX, maxY, minZ, r, g, b, a, 0, 1, 0);
+        line(lines, entry, minX, minY, minZ, minX, minY, maxZ, r, g, b, a, 0, 0, 1);
+        line(lines, entry, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a, 0, 1, 0);
+        line(lines, entry, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a, 0, 0, 1);
+        line(lines, entry, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a, 1, 0, 0);
+        line(lines, entry, minX, maxY, minZ, minX, maxY, maxZ, r, g, b, a, 0, 0, 1);
+        line(lines, entry, minX, minY, maxZ, maxX, minY, maxZ, r, g, b, a, 1, 0, 0);
+        line(lines, entry, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a, 0, 1, 0);
+        line(lines, entry, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a, 0, 1, 0);
+        line(lines, entry, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a, 0, 0, 1);
+        line(lines, entry, minX, maxY, maxZ, maxX, maxY, maxZ, r, g, b, a, 1, 0, 0);
     }
 
-    private static void line(VertexConsumer lines, PoseStack matrices,
+    private static void line(VertexConsumer lines, PoseStack.Pose entry,
                              double x1, double y1, double z1, double x2, double y2, double z2,
                              float r, float g, float b, float a, int nx, int ny, int nz) {
-        lines.vertex(matrices.last().pose(), (float) x1, (float) y1, (float) z1)
-                .color(r, g, b, a).normal(nx, ny, nz).endVertex();
-        lines.vertex(matrices.last().pose(), (float) x2, (float) y2, (float) z2)
-                .color(r, g, b, a).normal(nx, ny, nz).endVertex();
+        // В NeoForge 1.21.1 используется addVertex() вместо vertex()
+        lines.addVertex(entry.pose(), (float) x1, (float) y1, (float) z1)
+                .setColor(r, g, b, a).setNormal(nx, ny, nz);
+        lines.addVertex(entry.pose(), (float) x2, (float) y2, (float) z2)
+                .setColor(r, g, b, a).setNormal(nx, ny, nz);
     }
 
     private static boolean isSmallNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem notePaper &&
-                notePaper.isSmall() &&
-                stack.hasTag() && stack.getTag().contains("NoteData");
+        if (!(stack.getItem() instanceof NotePaperItem notePaper)) return false;
+        if (!notePaper.isSmall()) return false;
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
     }
 
     private static boolean isNormalNote(ItemStack stack) {
-        return stack.getItem() instanceof NotePaperItem notePaper &&
-                !notePaper.isSmall() &&
-                stack.hasTag() && stack.getTag().contains("NoteData");
+        if (!(stack.getItem() instanceof NotePaperItem notePaper)) return false;
+        if (notePaper.isSmall()) return false;
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
     }
 
     private static AABB getCombinedSlotWorldBox(int slot1, int slot2, BlockPos pos, Direction facing) {

@@ -14,8 +14,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBlockEntity> {
 
-    private static final ResourceLocation NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/note_paper.png");
-    private static final ResourceLocation SMALL_NOTE_TEXTURE = new ResourceLocation("bulletin-board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/note_paper.png");
+    private static final ResourceLocation SMALL_NOTE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/small_note_paper.png");
+    private static final ResourceLocation BADGE_TEXTURE = ResourceLocation.fromNamespaceAndPath("bulletin-board", "textures/block/badge.png");
 
     public PlacedNoteBlockRenderer(BlockEntityRendererProvider.Context ctx) {
     }
@@ -33,83 +34,98 @@ public class PlacedNoteBlockRenderer implements BlockEntityRenderer<PlacedNoteBl
         int rotation = state.getValue(PlacedNoteBlock.ROTATION);
 
         matrices.pushPose();
-
-        // Центрируем на блоке
         matrices.translate(0.5, 0.0, 0.5);
-
-        // Поворот по 8 позициям
         matrices.mulPose(Axis.YP.rotationDegrees(rotation * 45.0f));
-
-        // Поднимаем на 1 пиксель над блоком
         matrices.translate(0, 0.001, 0);
 
-        // Масштаб: 0.3 по X и Z
         float scale = 0.2f;
         matrices.scale(scale, 1, scale);
 
-        // Определяем, нужно ли зеркалить UV
-        boolean mirrorUV = (rotation == 0 || rotation == 6);
-
-        // Рендер записки
-        // Рендер записки
         ResourceLocation texture = note.isSmall() ? SMALL_NOTE_TEXTURE : NOTE_TEXTURE;
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        PoseStack.Pose entry = matrices.last();
         float nx = 0, ny = 1, nz = 0;
 
-        // Отзеркаленная текстура (поворот на 180°)
-        consumer.vertex(entry.pose(), -1.0f, 0, -1.0f)
-                .color(255, 255, 255, 255).uv(1, 1).overlayCoords(overlay).uv2(light)
-                .normal(entry.normal(), nx, ny, nz).endVertex();
-        consumer.vertex(entry.pose(), 1.0f, 0, -1.0f)
-                .color(255, 255, 255, 255).uv(0, 1).overlayCoords(overlay).uv2(light)
-                .normal(entry.normal(), nx, ny, nz).endVertex();
-        consumer.vertex(entry.pose(), 1.0f, 0, 1.0f)
-                .color(255, 255, 255, 255).uv(0, 0).overlayCoords(overlay).uv2(light)
-                .normal(entry.normal(), nx, ny, nz).endVertex();
-        consumer.vertex(entry.pose(), -1.0f, 0, 1.0f)
-                .color(255, 255, 255, 255).uv(1, 0).overlayCoords(overlay).uv2(light)
-                .normal(entry.normal(), nx, ny, nz).endVertex();
+        // Вершина 1
+        consumer.addVertex(-1.0f, 0, -1.0f);
+        consumer.setColor(255, 255, 255, 255);
+        consumer.setUv(1, 1);
+        consumer.setOverlay(overlay);
+        consumer.setLight(light);
+        consumer.setNormal(nx, ny, nz);
 
-        // Рендер печати
-        // Рендер печати
+        // Вершина 2
+        consumer.addVertex(1.0f, 0, -1.0f);
+        consumer.setColor(255, 255, 255, 255);
+        consumer.setUv(0, 1);
+        consumer.setOverlay(overlay);
+        consumer.setLight(light);
+        consumer.setNormal(nx, ny, nz);
+
+        // Вершина 3
+        consumer.addVertex(1.0f, 0, 1.0f);
+        consumer.setColor(255, 255, 255, 255);
+        consumer.setUv(0, 0);
+        consumer.setOverlay(overlay);
+        consumer.setLight(light);
+        consumer.setNormal(nx, ny, nz);
+
+        // Вершина 4
+        consumer.addVertex(-1.0f, 0, 1.0f);
+        consumer.setColor(255, 255, 255, 255);
+        consumer.setUv(1, 0);
+        consumer.setOverlay(overlay);
+        consumer.setLight(light);
+        consumer.setNormal(nx, ny, nz);
+
         if (note.getTagColor() != -1) {
-            ResourceLocation badgeTexture = new ResourceLocation("bulletin-board", "textures/block/badge.png");
-            VertexConsumer badgeConsumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(badgeTexture));
+            VertexConsumer badgeConsumer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(BADGE_TEXTURE));
 
             matrices.pushPose();
 
-            // Позиция печати (в пределах записки)
-            // Записка теперь scale = 0.3, значит её размер в блоках = 0.6
-            // Смещаем печать в правый нижний угол записки
             float badgeX = 0.4f;
             float badgeZ = note.isSmall() ? -0.25f : -0.7f;
 
             matrices.translate(badgeX, 0.001f, badgeZ);
 
-            // Масштаб печати
             float badgeScale = note.isSmall() ? 0.2f : 0.25f;
             matrices.scale(badgeScale, 1, badgeScale);
 
-            PoseStack.Pose badgeEntry = matrices.last();
             float r = ((note.getTagColor() >> 16) & 0xFF) / 255f;
             float g = ((note.getTagColor() >> 8) & 0xFF) / 255f;
             float b = (note.getTagColor() & 0xFF) / 255f;
 
-            // Отзеркаленная текстура (поворот на 180°)
-            badgeConsumer.vertex(badgeEntry.pose(), -1.0f, 0, -1.0f)
-                    .color(r, g, b, 1.0f).uv(1, 1).overlayCoords(overlay).uv2(light)
-                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
-            badgeConsumer.vertex(badgeEntry.pose(), 1.0f, 0, -1.0f)
-                    .color(r, g, b, 1.0f).uv(0, 1).overlayCoords(overlay).uv2(light)
-                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
-            badgeConsumer.vertex(badgeEntry.pose(), 1.0f, 0, 1.0f)
-                    .color(r, g, b, 1.0f).uv(0, 0).overlayCoords(overlay).uv2(light)
-                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
-            badgeConsumer.vertex(badgeEntry.pose(), -1.0f, 0, 1.0f)
-                    .color(r, g, b, 1.0f).uv(1, 0).overlayCoords(overlay).uv2(light)
-                    .normal(badgeEntry.normal(), nx, ny, nz).endVertex();
+            // Вершина 1
+            badgeConsumer.addVertex(-1.0f, 0, -1.0f);
+            badgeConsumer.setColor(r, g, b, 1.0f);
+            badgeConsumer.setUv(1, 1);
+            badgeConsumer.setOverlay(overlay);
+            badgeConsumer.setLight(light);
+            badgeConsumer.setNormal(nx, ny, nz);
+
+            // Вершина 2
+            badgeConsumer.addVertex(1.0f, 0, -1.0f);
+            badgeConsumer.setColor(r, g, b, 1.0f);
+            badgeConsumer.setUv(0, 1);
+            badgeConsumer.setOverlay(overlay);
+            badgeConsumer.setLight(light);
+            badgeConsumer.setNormal(nx, ny, nz);
+
+            // Вершина 3
+            badgeConsumer.addVertex(1.0f, 0, 1.0f);
+            badgeConsumer.setColor(r, g, b, 1.0f);
+            badgeConsumer.setUv(0, 0);
+            badgeConsumer.setOverlay(overlay);
+            badgeConsumer.setLight(light);
+            badgeConsumer.setNormal(nx, ny, nz);
+
+            // Вершина 4
+            badgeConsumer.addVertex(-1.0f, 0, 1.0f);
+            badgeConsumer.setColor(r, g, b, 1.0f);
+            badgeConsumer.setUv(1, 0);
+            badgeConsumer.setOverlay(overlay);
+            badgeConsumer.setLight(light);
+            badgeConsumer.setNormal(nx, ny, nz);
 
             matrices.popPose();
         }

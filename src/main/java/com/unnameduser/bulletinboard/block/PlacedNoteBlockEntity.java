@@ -17,7 +17,9 @@ public class PlacedNoteBlockEntity extends BlockEntity {
     private boolean takenByPlayer = false;
 
     public PlacedNoteBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.PLACED_NOTE_ENTITY.get(), pos, state);
+        // В NeoForge 1.21.1 PLACED_NOTE_ENTITY уже имеет тип BlockEntityType,
+        // поэтому не нужно вызывать .get(), передаём напрямую
+        super(ModBlockEntities.PLACED_NOTE_ENTITY, pos, state);
     }
 
     // ============ ГЕТТЕРЫ / СЕТТЕРЫ ============

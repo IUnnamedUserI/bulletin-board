@@ -2,7 +2,7 @@ package com.unnameduser.bulletinboard.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +14,7 @@ import java.nio.file.Path;
  * <p>
  * В Fabric-версии для разбора JSON5 с комментариями использовалась библиотека Jankson.
  * В Forge-порте внешняя зависимость убрана: файл конфига — это обычный JSON с комментариями
- * вида {@code // ...}, поэтому комментарии снимаются собственный разбором, а разбор JSON
+ * вида {@code // ...}, поэтому комментарии снимаются собственным разбором, а разбор JSON
  * выполняет Gson, который уже входит в состав Minecraft.
  */
 public class ModConfig {
@@ -90,7 +90,6 @@ public class ModConfig {
         try (Writer writer = new FileWriter(CONFIG_PATH.toFile())) {
             String output = GSON.toJson(INSTANCE);
 
-            // Вставляем комментарии на английском
             output = output.replace("\"full_title_max\"",
                     "// Maximum characters in the title of a full-size note\n  \"full_title_max\"");
             output = output.replace("\"full_content_max\"",

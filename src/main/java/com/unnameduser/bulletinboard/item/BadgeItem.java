@@ -2,12 +2,14 @@ package com.unnameduser.bulletinboard.item;
 
 import com.unnameduser.bulletinboard.BulletinBoardMod;
 import com.unnameduser.bulletinboard.util.NoteData;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 public class BadgeItem extends Item {
@@ -27,15 +29,17 @@ public class BadgeItem extends Item {
         // Проверяем, что во второй руке подписанная записка
         if ((noteStack.getItem() == BulletinBoardMod.NOTE_PAPER ||
                 noteStack.getItem() == BulletinBoardMod.SMALL_NOTE_PAPER) &&
-                noteStack.hasTag() && noteStack.getTag().contains("NoteData")) {
+                hasNoteData(noteStack)) {
 
-            NoteData note = NoteData.fromNbt(noteStack.getTag().getCompound("NoteData"));
+            CompoundTag noteTag = getCustomTag(noteStack);
+            NoteData note = NoteData.fromNbt(noteTag.getCompound("NoteData"));
             note.setTagColor(badgeColor);
             note.setHasSeal(true);
 
             ItemStack newNote = new ItemStack(noteStack.getItem(), 1);
-            CompoundTag nbt = newNote.getOrCreateTag();
-            nbt.put("NoteData", note.toNbt());
+            CompoundTag rootTag = new CompoundTag();
+            rootTag.put("NoteData", note.toNbt());
+            newNote.set(DataComponents.CUSTOM_DATA, CustomData.of(rootTag));
 
             if (!world.isClientSide) {
                 // Удаляем старую записку
@@ -62,6 +66,16 @@ public class BadgeItem extends Item {
         }
 
         return InteractionResultHolder.pass(badgeStack);
+    }
+
+    private boolean hasNoteData(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
+    }
+
+    private CompoundTag getCustomTag(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
     }
 
     public int getBadgeColor() {

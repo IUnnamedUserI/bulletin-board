@@ -5,11 +5,15 @@ import com.unnameduser.bulletinboard.network.ModPackets;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -118,42 +122,36 @@ public class BulletinBoardBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-
+    protected ItemInteractionResult useItemOn(ItemStack heldItem, BlockState state, Level world,
+                                              BlockPos pos, Player player, InteractionHand hand,
+                                              BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-
         if (!(blockEntity instanceof BulletinBoardBlockEntity boardEntity)) {
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        ItemStack heldItem = player.getItemInHand(hand);
         int hitPosition = getHitPosition(hit, pos, state);
 
-        if (heldItem.getItem() instanceof NotePaperItem notePaper &&
-                heldItem.hasTag() && heldItem.getTag().contains("NoteData")) {
+        if (heldItem.getItem() instanceof NotePaperItem && hasNoteData(heldItem)) {
+            if (!world.isClientSide && hitPosition >= 0) {
+                CompoundTag tag = getCustomTag(heldItem);
+                NoteData note = NoteData.fromNbt(tag.getCompound("NoteData"));
 
-            if (!world.isClientSide) {
-                if (hitPosition >= 0) {
-                    NoteData note = NoteData.fromNbt(heldItem.getTag().getCompound("NoteData"));
+                boolean canPlace;
+                if (note.isSmall()) {
+                    canPlace = hitPosition <= 3;
+                } else {
+                    canPlace = hitPosition == 4 || hitPosition <= 3;
+                }
 
-                    boolean canPlace = false;
-                    if (note.isSmall()) {
-                        canPlace = hitPosition >= 0 && hitPosition <= 3;
-                    } else {
-                        canPlace = (hitPosition == 4) ||
-                                (hitPosition == 0) || (hitPosition == 1) ||
-                                (hitPosition == 2) || (hitPosition == 3);
-                    }
-                    if (canPlace && boardEntity.canPlaceNote(note, hitPosition)) {
-                        boolean added = boardEntity.addNoteAtPosition(note, hitPosition);
-                        if (added) {
-                            heldItem.shrink(1);
-                            return InteractionResult.CONSUME;
-                        }
+                if (canPlace && boardEntity.canPlaceNote(note, hitPosition)) {
+                    if (boardEntity.addNoteAtPosition(note, hitPosition)) {
+                        heldItem.shrink(1);
+                        return ItemInteractionResult.CONSUME;
                     }
                 }
             }
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
 
         if (hitPosition >= 0) {
@@ -164,21 +162,28 @@ public class BulletinBoardBlock extends Block implements EntityBlock {
                     if (index >= 0) {
                         boardEntity.removeNote(index);
                     }
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
 
                 if (!world.isClientSide) {
                     ModPackets.sendOpenNoteScreenToClient((ServerPlayer) player, pos, hitPosition);
                 }
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
             }
         }
 
-        if (!world.isClientSide && player.isShiftKeyDown()) {
-            showNotes(player, boardEntity);
-            return InteractionResult.SUCCESS;
-        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
 
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (!world.isClientSide && player.isShiftKeyDown()) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof BulletinBoardBlockEntity boardEntity) {
+                showNotes(player, boardEntity);
+                return InteractionResult.SUCCESS;
+            }
+        }
         return InteractionResult.PASS;
     }
 
@@ -204,14 +209,12 @@ public class BulletinBoardBlock extends Block implements EntityBlock {
             if (y > 0.29 && y < 0.45) return 2;
             if (y > 0.47 && y < 0.63) return 1;
             if (y > 0.65 && y < 0.81) return 0;
-            return -1; // Попал в левую колонку, но между слотами
-        }
-        // Правая колонка: большой слот 4
-        else if (horizontal > 0.47 && horizontal < 0.83 && y > 0.3 && y < 0.7) {
+            return -1;
+        } else if (horizontal > 0.47 && horizontal < 0.83 && y > 0.3 && y < 0.7) {
             return 4;
         }
 
-        return -1; // Попал в доску, но не в слот
+        return -1;
     }
 
     private void showNotes(Player player, BulletinBoardBlockEntity boardEntity) {
@@ -238,5 +241,17 @@ public class BulletinBoardBlock extends Block implements EntityBlock {
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    // ============ DataComponents хелперы ============
+
+    private boolean hasNoteData(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null && customData.contains("NoteData");
+    }
+
+    private CompoundTag getCustomTag(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
     }
 }

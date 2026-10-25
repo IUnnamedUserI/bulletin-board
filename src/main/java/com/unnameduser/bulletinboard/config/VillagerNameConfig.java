@@ -2,7 +2,7 @@ package com.unnameduser.bulletinboard.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -52,16 +52,19 @@ public class VillagerNameConfig {
         }
 
         try (Reader reader = new FileReader(CONFIG_PATH.toFile())) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> data = GSON.fromJson(reader, Map.class);
             if (data == null) return;
 
             if (data.containsKey("names")) {
+                @SuppressWarnings("unchecked")
                 Map<String, String> namesMap = (Map<String, String>) data.get("names");
                 NAMES.clear();
                 NAMES.putAll(namesMap);
             }
 
             if (data.containsKey("random_names")) {
+                @SuppressWarnings("unchecked")
                 List<String> randomNames = (List<String>) data.get("random_names");
                 RANDOM_NAME_KEYS.clear();
                 RANDOM_NAME_KEYS.addAll(randomNames);
@@ -110,7 +113,6 @@ public class VillagerNameConfig {
             names.put("minecraft:nitwit", "Nitwit");
             config.put("names", names);
 
-            // НОВЫЙ СПИСОК ИМЁН (70 штук)
             List<String> randomNameKeys = Arrays.asList(
                     "villager.name.william", "villager.name.richard", "villager.name.robert",
                     "villager.name.john", "villager.name.thomas", "villager.name.henry",
@@ -183,7 +185,6 @@ public class VillagerNameConfig {
         if (RANDOM_NAME_KEYS.isEmpty()) {
             return "Villager";
         }
-        // Просто возвращаем ключ, который потом будет переведён
         return RANDOM_NAME_KEYS.get(new Random().nextInt(RANDOM_NAME_KEYS.size()));
     }
 

@@ -18,10 +18,12 @@ import java.util.List;
 public class BulletinBoardBlockEntity extends BlockEntity {
     private List<NoteSlot> slots = new ArrayList<>();
     private static final int BIG_SLOT = 4;
-    private static final long NOTE_LIFETIME_TICKS = 144000L; // 1 час в тиках
+    private static final long NOTE_LIFETIME_TICKS = 144000L;
 
     public BulletinBoardBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.BULLETIN_BOARD_ENTITY.get(), pos, state);
+        // В NeoForge 1.21.1 BULLETIN_BOARD_ENTITY уже имеет тип BlockEntityType,
+        // поэтому не нужно вызывать .get(), передаём напрямую
+        super(ModBlockEntities.BULLETIN_BOARD_ENTITY, pos, state);
     }
 
     public static class NoteSlot {

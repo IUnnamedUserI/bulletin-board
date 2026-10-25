@@ -7,6 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public record VillagerNameSyncPacket(Map<String, String> names) implements CustomPacketPayload {
@@ -16,7 +17,7 @@ public record VillagerNameSyncPacket(Map<String, String> names) implements Custo
 
     public static final StreamCodec<RegistryFriendlyByteBuf, VillagerNameSyncPacket> STREAM_CODEC =
             StreamCodec.composite(
-                    ByteBufCodecs.map(ByteBufCodecs.STRING_UTF8, ByteBufCodecs.STRING_UTF8),
+                    ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.STRING_UTF8),
                     VillagerNameSyncPacket::names,
                     VillagerNameSyncPacket::new
             );

@@ -7,6 +7,7 @@ import com.unnameduser.bulletinboard.item.NotePaperItem;
 import com.unnameduser.bulletinboard.server.VillagerNameManager;
 import com.unnameduser.bulletinboard.util.NoteData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -28,7 +30,7 @@ import java.util.Map;
 
 public class ModPackets {
 
-    // ============ РЕГИСТРАЦИЯ (вызывается из BulletinBoardMod с передачей modEventBus) ============
+    // ============ РЕГИСТРАЦИЯ ============
 
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ModPackets::onRegisterPayloadHandlers);
@@ -37,7 +39,6 @@ public class ModPackets {
     private static void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(BulletinBoardMod.MOD_ID);
 
-        // C2S пакеты
         registrar.playToServer(
                 TakeNoteC2SPacket.TYPE,
                 TakeNoteC2SPacket.STREAM_CODEC,
@@ -54,7 +55,6 @@ public class ModPackets {
                 ModPackets::handleTakePlacedNote
         );
 
-        // S2C пакеты
         registrar.playToClient(
                 OpenNoteS2CPacket.TYPE,
                 OpenNoteS2CPacket.STREAM_CODEC,
@@ -98,8 +98,9 @@ public class ModPackets {
                             note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
                             1
                     );
-                    CompoundTag nbt = noteStack.getOrCreateTag();
-                    nbt.put("NoteData", note.toNbt());
+                    CompoundTag rootTag = new CompoundTag();
+                    rootTag.put("NoteData", note.toNbt());
+                    noteStack.set(DataComponents.CUSTOM_DATA, CustomData.of(rootTag));
 
                     player.getInventory().placeItemBackInInventory(noteStack);
                 }
@@ -118,7 +119,7 @@ public class ModPackets {
             if (slot >= 0 && slot < player.getInventory().getContainerSize()) {
                 ItemStack stack = player.getInventory().getItem(slot);
                 if (stack.getItem() instanceof NotePaperItem) {
-                    stack.setTag(nbt.copy());
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt.copy()));
                     player.getInventory().setChanged();
                 }
             }
@@ -142,8 +143,10 @@ public class ModPackets {
                             note.isSmall() ? BulletinBoardMod.SMALL_NOTE_PAPER : BulletinBoardMod.NOTE_PAPER,
                             1
                     );
-                    CompoundTag nbt = noteStack.getOrCreateTag();
-                    nbt.put("NoteData", note.toNbt());
+                    CompoundTag rootTag = new CompoundTag();
+                    rootTag.put("NoteData", note.toNbt());
+                    noteStack.set(DataComponents.CUSTOM_DATA, CustomData.of(rootTag));
+
                     player.getInventory().placeItemBackInInventory(noteStack);
                 }
 
